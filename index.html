@@ -742,7 +742,8 @@
             document.getElementById('mortgageRate').textContent = displayData.mortgage_rate + '%';
 
             // Update card styling for estimated data
-            const cards = ['multiplierCard', 'priceCard', 'incomeCard', 'rateCard'];
+            // Note: rateCard is excluded because mortgage data is never estimated
+            const cards = ['multiplierCard', 'priceCard', 'incomeCard'];
             const isEstimated = displayData.estimated || displayData.interpolated;
 
             cards.forEach(cardId => {
