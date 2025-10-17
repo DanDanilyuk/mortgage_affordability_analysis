@@ -1,0 +1,57 @@
+name: Weekly Case-Shiller Update
+
+on:
+  schedule:
+    # Run at both 16:05 and 17:05 UTC to handle EDT/EST
+    - cron: '5 16 * * 4'
+    - cron: '5 17 * * 4'
+  workflow_dispatch:
+
+permissions:
+  contents: write # Required to commit and push changes
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check if it's 12:05 PM Eastern Time
+        id: time_check
+        env:
+          TZ: 'America/New_York'
+        run: |
+          current_hour=$(date +%H)
+          if [ "$current_hour" -eq "12" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "✅ It's 12:05 PM ET - proceeding with script"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "⏱️ Not 12:05 PM ET - skipping this run"
+          fi
+
+      - name: Checkout repository
+        if: steps.time_check.outputs.run == 'true'
+        uses: actions/checkout@v3
+
+      - name: Set up Ruby
+        if: steps.time_check.outputs.run == 'true'
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.4.4'
+          bundler-cache: true
+
+      - name: Run weekly Case-Shiller script
+        if: steps.time_check.outputs.run == 'true'
+        env:
+          BLS_API_KEY: ${{ secrets.BLS_API_KEY }}
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          TZ: 'America/New_York'
+        run: |
+          ruby weekly_case_shiller.rb --bls-api-key $BLS_API_KEY --fred-api-key $FRED_API_KEY
+
+      - name: Commit and push updated JSON
+        if: steps.time_check.outputs.run == 'true'
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'Update Case-Shiller data for week of ${{ github.run_id }}'
+          file_pattern: '*.json'
