@@ -2,15 +2,6 @@
   "single_costs": [
     {
       "type": "single",
-      "date": "2015-10-22",
-      "total_cost": 293239,
-      "single_income": 45269,
-      "cost_to_income": "6.48",
-      "schiller_price": 175027,
-      "mortgage_rate": "3.79"
-    },
-    {
-      "type": "single",
       "date": "2015-10-29",
       "total_cost": 292165,
       "single_income": 45290,
@@ -4793,18 +4784,24 @@
         "rate_estimated": false,
         "income_estimated": true
       }
+    },
+    {
+      "type": "single",
+      "date": "2025-10-23",
+      "total_cost": 646861,
+      "single_income": 65459,
+      "cost_to_income": "9.88",
+      "schiller_price": 293687,
+      "mortgage_rate": "6.19",
+      "estimated": true,
+      "estimation_details": {
+        "price_estimated": true,
+        "rate_estimated": false,
+        "income_estimated": true
+      }
     }
   ],
   "household_costs": [
-    {
-      "type": "household",
-      "date": "2015-10-22",
-      "total_cost": 293239,
-      "household_income": 63377,
-      "cost_to_income": "4.63",
-      "schiller_price": 175027,
-      "mortgage_rate": "3.79"
-    },
     {
       "type": "household",
       "date": "2015-10-29",
@@ -9589,22 +9586,37 @@
         "rate_estimated": false,
         "income_estimated": true
       }
+    },
+    {
+      "type": "household",
+      "date": "2025-10-23",
+      "total_cost": 646861,
+      "household_income": 91643,
+      "cost_to_income": "7.06",
+      "schiller_price": 293687,
+      "mortgage_rate": "6.19",
+      "estimated": true,
+      "estimation_details": {
+        "price_estimated": true,
+        "rate_estimated": false,
+        "income_estimated": true
+      }
     }
   ],
   "metadata": {
-    "generated_at": "2025-10-16T23:16:00-04:00",
+    "generated_at": "2025-10-23T12:11:32-04:00",
     "frequency": "weekly_thursday_aligned",
     "date_range": {
-      "start": "2015-10-22",
-      "end": "2025-10-16",
+      "start": "2015-10-29",
+      "end": "2025-10-23",
       "last_actual_case_shiller": "2025-07-01",
       "last_actual_income": "2025-08-01"
     },
     "counts": {
       "total": 522,
-      "actual": 506,
-      "estimated": 16,
-      "income_estimated": 11
+      "actual": 505,
+      "estimated": 17,
+      "income_estimated": 12
     },
     "data_sources": {
       "bls_series": "CES0500000011",
