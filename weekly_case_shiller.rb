@@ -233,36 +233,47 @@ class MortgageRateEnhancer
   end
 end
 
-# Generate Case-Shiller values for MORTGAGE30US Thursday dates
-class CaseShillerEnhancer
+# Generate Home Price values for MORTGAGE30US Thursday dates
+class HomePriceEnhancer
   # Uses daily seasonal estimation for Thursday dates after last actual data
   def self.match_thursday_dates(monthly_obs, thursday_dates)
     enhanced = []
     last_actual = monthly_obs.last
     last_actual_date = Date.parse(last_actual['date'])
     last_actual_value = last_actual['value'].to_f
+    last_actual_year = last_actual_date.year
+    last_actual_month = last_actual_date.month
+    last_actual_end = Date.new(last_actual_year, last_actual_month, -1) # Last day of the month
+
+    # Prepare monthly points (assume monthly value is for the entire month, use interpolation based on previous and next)
+    monthly_points = monthly_obs.map do |obs|
+      obs_date = Date.parse(obs['date'])
+      {date: obs_date, value: obs['value'].to_f}
+    end
+    monthly_points.sort_by! { |p| p[:date] }
 
     thursday_dates.each do |thursday|
-      if thursday <= last_actual_date
-        # Use actual monthly data for this period
-        monthly_value = find_monthly_value(monthly_obs, thursday)
+      if thursday <= last_actual_end
+        # Use interpolation based on previous, current, and next month data if available
+        interpolated_value = get_interpolated_value(monthly_points, thursday)
         enhanced << {
           'date' => thursday.strftime('%Y-%m-%d'),
-          'value' => monthly_value.round(3).to_s,
-          'estimated' => false
+          'value' => interpolated_value.round(3).to_s,
+          'estimated' => false,
+          'interpolated' => true
         }
       else
-        # Use DAILY seasonal estimation for Thursdays after last data
+        # Use DAILY seasonal estimation for dates after the last day of the last month
         estimated_value = DailySeasonalEstimator.estimate_daily_price(
           last_actual_value,
           last_actual_date,
           thursday
         )
-
         enhanced << {
           'date' => thursday.strftime('%Y-%m-%d'),
           'value' => estimated_value.round(3).to_s,
           'estimated' => true,
+          'price_estimated' => true,
           'estimation_method' => 'daily_seasonal'
         }
       end
@@ -271,12 +282,79 @@ class CaseShillerEnhancer
     enhanced
   end
 
-  def self.find_monthly_value(monthly_obs, target_date)
-    match = monthly_obs.find do |obs|
-      obs_date = Date.parse(obs['date'])
-      obs_date.year == target_date.year && obs_date.month == target_date.month
+  def self.get_interpolated_value(monthly_points, target_date)
+    # Find the monthly point for the target's month
+    target_month_date = Date.new(target_date.year, target_date.month, 1)
+    current_month_index = monthly_points.find_index { |p| p[:date] == target_month_date }
+
+    if current_month_index
+      prev_month = current_month_index > 0 ? monthly_points[current_month_index - 1] : nil
+      current_month = monthly_points[current_month_index]
+      next_month = monthly_points[current_month_index + 1]
+
+      if prev_month && next_month
+        # Quadratic interpolation using prev, current, next
+        t0 = prev_month[:date].jd.to_f
+        t1 = current_month[:date].jd.to_f
+        t2 = next_month[:date].jd.to_f
+        y0 = prev_month[:value]
+        y1 = current_month[:value]
+        y2 = next_month[:value]
+        t = target_date.jd.to_f
+
+        l0 = ((t - t1) * (t - t2)) / ((t0 - t1) * (t0 - t2))
+        l1 = ((t - t0) * (t - t2)) / ((t1 - t0) * (t1 - t2))
+        l2 = ((t - t0) * (t - t1)) / ((t2 - t0) * (t2 - t1))
+
+        y0 * l0 + y1 * l1 + y2 * l2
+      elsif next_month
+        # Linear between current and next
+        DailySeasonalEstimator.interpolate(
+          current_month[:value], next_month[:value],
+          current_month[:date], next_month[:date],
+          target_date
+        )
+      elsif prev_month
+        # Linear between prev and current
+        DailySeasonalEstimator.interpolate(
+          prev_month[:value], current_month[:value],
+          prev_month[:date], current_month[:date],
+          target_date
+        )
+      else
+        current_month[:value]
+      end
+    else
+      # If no exact month match, fall back to nearest or extrapolation
+      if target_date < monthly_points.first[:date]
+        monthly_points.first[:value]
+      elsif target_date > monthly_points.last[:date]
+        if monthly_points.length >= 2
+          prev = monthly_points[-2]
+          curr = monthly_points[-1]
+          DailySeasonalEstimator.interpolate(
+            prev[:value], curr[:value],
+            prev[:date], curr[:date],
+            target_date
+          )
+        else
+          monthly_points.last[:value]
+        end
+      else
+        # Linear between surrounding
+        prev = monthly_points.reverse.find { |p| p[:date] < target_date }
+        nxt = monthly_points.find { |p| p[:date] > target_date }
+        if prev && nxt
+          DailySeasonalEstimator.interpolate(
+            prev[:value], nxt[:value],
+            prev[:date], nxt[:date],
+            target_date
+          )
+        else
+          monthly_points.last[:value]
+        end
+      end
     end
-    match ? match['value'].to_f : monthly_obs.last['value'].to_f
   end
 end
 
@@ -293,23 +371,23 @@ class MortgageCalculator
     end
   end
 
-  def self.calculate_costs(schiller_data, mortgage_data, income_data)
+  def self.calculate_costs(home_price_data, mortgage_data, income_data)
     single_costs, household_costs = [], []
 
     # Get last income date for tracking estimated income
     last_income_date = Date.parse(income_data.last[:date])
 
-    schiller_data.each_with_index do |schiller_obs, i|
+    home_price_data.each_with_index do |home_price_obs, i|
       mortgage_obs = mortgage_data[i]
       next unless mortgage_obs
 
-      date = Date.parse(schiller_obs['date'])
+      date = Date.parse(home_price_obs['date'])
 
       # NEW: Uses trend projection for future dates
       weekly_income = DailySeasonalEstimator.estimate_weekly_income(income_data, date)
       income_estimated = date > last_income_date
 
-      house_price = schiller_obs['value'].to_f * 1000
+      house_price = home_price_obs['value'].to_f
       rate = mortgage_obs['value'].to_f / 100.0
       total_cost = calculate_total_mortgage_cost(house_price, rate)
 
@@ -317,17 +395,17 @@ class MortgageCalculator
       household_income = single_income * HOUSEHOLD_MULTIPLIER
 
       metadata = {}
-      if schiller_obs['estimated'] || mortgage_obs['estimated'] || income_estimated
+      if home_price_obs['estimated'] || mortgage_obs['estimated'] || income_estimated
         metadata[:estimated] = true
         metadata[:estimation_details] = {
-          price_estimated: schiller_obs['estimated'],
+          price_estimated: home_price_obs['estimated'] || false,
           rate_estimated: mortgage_obs['estimated'],
           income_estimated: income_estimated
         }
       end
 
-      single_costs << build_cost_entry('single', schiller_obs['date'], total_cost, single_income, house_price, rate * 100, metadata)
-      household_costs << build_cost_entry('household', schiller_obs['date'], total_cost, household_income, house_price, rate * 100, metadata)
+      single_costs << build_cost_entry('single', home_price_obs['date'], total_cost, single_income, house_price, rate * 100, metadata)
+      household_costs << build_cost_entry('household', home_price_obs['date'], total_cost, household_income, house_price, rate * 100, metadata)
     end
 
     [single_costs, household_costs]
@@ -348,7 +426,7 @@ class MortgageCalculator
       total_cost: total_cost.to_i,
       "#{type}_income": income.to_i,
       cost_to_income: format('%.2f', (total_cost / income).round(2)),
-      schiller_price: price.to_i,
+      home_price: price.to_i,
       mortgage_rate: format('%.2f', rate.round(2))
     }
     entry.merge!(metadata) unless metadata.empty?
@@ -375,8 +453,8 @@ class WeeklyCaseSchiller
       puts "   Monthly growth rate: #{growth.round(3)}%"
     end
 
-    schiller_monthly = fetcher.fetch_fred_data('CSUSHPINSA')
-    puts "✓ Case-Shiller monthly: #{schiller_monthly['observations'].length} observations"
+    home_price_monthly = fetcher.fetch_fred_data('USAUCSFRCONDOSMSAMID')
+    puts "✓ Home Price monthly: #{home_price_monthly['observations'].length} observations"
 
     mortgage_weekly = fetcher.fetch_fred_data('MORTGAGE30US')
     puts "✓ Mortgage rates (weekly): #{mortgage_weekly['observations'].length} observations"
@@ -389,12 +467,12 @@ class WeeklyCaseSchiller
     puts "   First date: #{thursday_dates.first.strftime('%Y-%m-%d')}"
     puts "   Last date: #{thursday_dates.last.strftime('%Y-%m-%d')}"
 
-    # Generate Case-Shiller values for each Thursday using daily seasonal estimation
-    schiller_aligned = CaseShillerEnhancer.match_thursday_dates(
-      schiller_monthly['observations'],
+    # Generate Home Price values for each Thursday using daily seasonal estimation
+    home_price_aligned = HomePriceEnhancer.match_thursday_dates(
+      home_price_monthly['observations'],
       thursday_dates
     )
-    puts "✓ Case-Shiller (Thursday-aligned): #{schiller_aligned.length} observations"
+    puts "✓ Home Price (Thursday-aligned): #{home_price_aligned.length} observations"
 
     # Get mortgage rates for the same Thursday dates
     mortgage_aligned = MortgageRateEnhancer.match_thursday_dates(
@@ -405,7 +483,7 @@ class WeeklyCaseSchiller
 
     puts "\n🧮 Calculating affordability metrics with income trend projection..."
     single_costs, household_costs = MortgageCalculator.calculate_costs(
-      schiller_aligned,
+      home_price_aligned,
       mortgage_aligned,
       income_data
     )
@@ -416,8 +494,8 @@ class WeeklyCaseSchiller
     # Count how many have estimated income
     income_estimated_count = single_costs.count { |c| c.dig(:estimation_details, :income_estimated) }
 
-    last_actual_schiller = schiller_monthly['observations'].last
-    last_actual_date = Date.parse(last_actual_schiller['date'])
+    last_actual_home_price = home_price_monthly['observations'].last
+    last_actual_date = Date.parse(last_actual_home_price['date'])
     last_income_date = Date.parse(income_data.last[:date])
 
     output_data = {
@@ -429,7 +507,7 @@ class WeeklyCaseSchiller
         date_range: {
           start: single_costs.first[:date],
           end: single_costs.last[:date],
-          last_actual_case_shiller: last_actual_date.strftime('%Y-%m-%d'),
+          last_actual_home_price: last_actual_date.strftime('%Y-%m-%d'),
           last_actual_income: last_income_date.strftime('%Y-%m-%d')
         },
         counts: {
@@ -440,13 +518,13 @@ class WeeklyCaseSchiller
         },
         data_sources: {
           bls_series: 'CES0500000011',
-          fred_schiller: 'CSUSHPINSA',
+          fred_home_price: 'USAUCSFRCONDOSMSAMID',
           fred_mortgage: 'MORTGAGE30US'
         },
         methodology: {
           loan_term_months: LOAN_TERM_MONTHS,
           household_multiplier: HOUSEHOLD_MULTIPLIER,
-          case_shiller_estimation: 'Daily seasonal factors interpolated from monthly patterns',
+          home_price_estimation: 'Daily seasonal factors interpolated from monthly patterns',
           income_estimation: 'Trend projection using growth rate from last two months of BLS data',
           date_alignment: 'All data points aligned to MORTGAGE30US Thursday release dates'
         },
@@ -461,7 +539,7 @@ class WeeklyCaseSchiller
     puts "   - Estimated: #{estimated_count} points"
     puts "     • With estimated income: #{income_estimated_count} points"
     puts "📅 Full range: #{single_costs.first[:date]} to #{single_costs.last[:date]}"
-    puts "📈 Last actual Case-Shiller: #{last_actual_date.strftime('%Y-%m-%d')}"
+    puts "📈 Last actual Home Price: #{last_actual_date.strftime('%Y-%m-%d')}"
     puts "💰 Last actual Income: #{last_income_date.strftime('%Y-%m-%d')}"
   end
 end

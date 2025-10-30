@@ -350,8 +350,9 @@
                     <ul>
                         <li><strong>Average Weekly Earnings:</strong> BLS Series CES0500000011 (Average Weekly Earnings
                             of All Employees, Total Private)</li>
-                        <li><strong>Case-Shiller Home Price Index:</strong> FRED Series CSUSHPINSA (S&P CoreLogic
-                            Case-Shiller U.S. National Home Price Index)</li>
+                        <li><strong>Home Price Index:</strong> FRED Series USAUCSFRCONDOSMSAMID (Zillow Home Value Index
+                            (ZHVI) for All Homes Including Single-Family Residences, Condos, and CO-OPs in the United
+                            States of America)</li>
                         <li><strong>30-Year Mortgage Rates:</strong> FRED Series MORTGAGE30US (30-Year Fixed Rate
                             Mortgage Average)</li>
                     </ul>
@@ -588,7 +589,7 @@
                                     const index = context[0].dataIndex;
                                     const singleData = chartData.single_costs[index];
                                     return '\n' +
-                                        'House Price: $' + singleData.schiller_price.toLocaleString() + '\n' +
+                                        'House Price: $' + singleData.home_price.toLocaleString() + '\n' +
                                         'Mortgage Rate: ' + singleData.mortgage_rate + '%\n' +
                                         'Total Cost: $' + singleData.total_cost.toLocaleString();
                                 },
@@ -737,31 +738,37 @@
             }
 
             document.getElementById('currentMultiplier').textContent = displayData.cost_to_income + 'x';
-            document.getElementById('housePrice').textContent = '$' + displayData.schiller_price.toLocaleString();
+            document.getElementById('housePrice').textContent = '$' + displayData.home_price.toLocaleString();
             document.getElementById('annualIncome').textContent = '$' + displayIncome.toLocaleString();
             document.getElementById('mortgageRate').textContent = displayData.mortgage_rate + '%';
 
             // Update card styling for estimated data
             // Note: rateCard is excluded because mortgage data is never estimated
-            const cards = ['multiplierCard', 'priceCard', 'incomeCard'];
-            const isEstimated = displayData.estimated || displayData.interpolated;
+            const details = displayData.estimation_details || {};
+            const isMultiplierEstimated = displayData.estimated || displayData.interpolated;
+            const isPriceEstimated = details.price_estimated || false;
+            const isIncomeEstimated = details.income_estimated || false;
 
-            cards.forEach(cardId => {
-                const card = document.getElementById(cardId);
-                if (isEstimated) {
-                    card.classList.add('estimated');
-                    if (!card.querySelector('.estimated-badge')) {
-                        const badge = document.createElement('span');
-                        badge.className = 'estimated-badge';
-                        badge.textContent = displayData.estimated ? 'Estimated' : 'Interpolated';
-                        card.appendChild(badge);
-                    }
-                } else {
-                    card.classList.remove('estimated');
-                    const badge = card.querySelector('.estimated-badge');
-                    if (badge) badge.remove();
+            updateCard('multiplierCard', isMultiplierEstimated, displayData.estimated ? 'Estimated' : 'Interpolated');
+            updateCard('priceCard', isPriceEstimated, displayData.estimated ? 'Estimated' : 'Interpolated');
+            updateCard('incomeCard', isIncomeEstimated, displayData.estimated ? 'Estimated' : 'Interpolated');
+        }
+
+        function updateCard(cardId, isEstimated, badgeText) {
+            const card = document.getElementById(cardId);
+            if (isEstimated) {
+                card.classList.add('estimated');
+                if (!card.querySelector('.estimated-badge')) {
+                    const badge = document.createElement('span');
+                    badge.className = 'estimated-badge';
+                    badge.textContent = badgeText;
+                    card.appendChild(badge);
                 }
-            });
+            } else {
+                card.classList.remove('estimated');
+                const badge = card.querySelector('.estimated-badge');
+                if (badge) badge.remove();
+            }
         }
 
         function showBothLines() {
