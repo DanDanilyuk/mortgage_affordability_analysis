@@ -12,13 +12,6 @@ DEFAULT_YEARS_BACK = 10
 HOUSEHOLD_MULTIPLIER = 1.4
 OUTPUT_FILE = 'weekly_case_shiller_output.json'
 
-# Monthly seasonal factors (will be interpolated to daily)
-SEASONAL_FACTORS = {
-  1 => -0.10, 2 => -0.10, 3 => -0.05, 4 => 0.00,
-  5 => 0.05, 6 => 0.10, 7 => 0.10, 8 => 0.08,
-  9 => 0.03, 10 => -0.03, 11 => -0.07, 12 => -0.10
-}.freeze
-
 class CLIParser
   def self.parse
     options = {}
@@ -36,93 +29,139 @@ class CLIParser
   end
 end
 
-# Daily seasonal price estimator with income trend projection
-class DailySeasonalEstimator
-  # Calculate daily seasonal factor by interpolating between monthly factors
-  def self.daily_seasonal_factor(target_date)
-    day_of_year = target_date.yday
-    days_in_year = Date.leap?(target_date.year) ? 366 : 365
+class DailyEstimator
+  # Simple linear interpolation
+  def self.linear_interpolate(v1, v2, d1, d2, target)
+    return v1 if d1 == target
+    return v2 if d2 == target
 
-    # Convert to fractional month position (0-12)
-    month_position = (day_of_year.to_f / days_in_year) * 12
+    days_diff = (d2 - d1).to_f
+    return v1 if days_diff == 0
 
-    # Get surrounding months
-    month_before = month_position.floor
-    month_after = month_position.ceil
-
-    # Handle wraparound
-    month_before = 12 if month_before == 0
-    month_after = 1 if month_after > 12
-    month_after = 12 if month_after == 0
-
-    # Get factors
-    factor_before = SEASONAL_FACTORS[month_before]
-    factor_after = SEASONAL_FACTORS[month_after]
-
-    # Interpolate
-    fraction = month_position - month_position.floor
-    factor_before + (factor_after - factor_before) * fraction
+    target_diff = (target - d1).to_f
+    ratio = target_diff / days_diff
+    v1 + (v2 - v1) * ratio
   end
 
-  # Estimate price for any specific date using daily seasonal factors
-  def self.estimate_daily_price(base_price, base_date, target_date)
-    base_factor = daily_seasonal_factor(base_date)
-    target_factor = daily_seasonal_factor(target_date)
+  # Cubic Hermite spline interpolation with safety checks
+  def self.hermite_interpolate(values, dates, target_date)
+    return nil if values.empty? || dates.empty?
+    return values.first if dates.length == 1
 
-    base_price * (1 + target_factor - base_factor)
+    # Find the surrounding points
+    idx = dates.index { |d| d > target_date }
+
+    if idx.nil?
+      # Target is after all dates - use last value
+      return values.last
+    elsif idx == 0
+      # Target is before all dates - use first value
+      return values.first
+    end
+
+    # We're between idx-1 and idx
+    i1 = idx - 1
+    i2 = idx
+
+    d1 = dates[i1]
+    d2 = dates[i2]
+    v1 = values[i1]
+    v2 = values[i2]
+
+    # For edge cases or insufficient data, fall back to linear
+    if i1 == 0 || i2 == dates.length - 1
+      return linear_interpolate(v1, v2, d1, d2, target_date)
+    end
+
+    # Get surrounding points for tangent calculation
+    i0 = i1 - 1
+    i3 = i2 + 1
+
+    d0 = dates[i0]
+    d3 = dates[i3]
+    v0 = values[i0]
+    v3 = values[i3]
+
+    # Calculate normalized position (0 to 1)
+    total_days = (d2 - d1).to_f
+    return v1 if total_days == 0  # Avoid division by zero
+
+    elapsed_days = (target_date - d1).to_f
+    t = elapsed_days / total_days
+
+    # Calculate tangents using central differences
+    days_before = (d1 - d0).to_f
+    days_after = (d3 - d2).to_f
+    days_current = (d2 - d1).to_f
+
+    # Avoid division by zero
+    return linear_interpolate(v1, v2, d1, d2, target_date) if days_before == 0 || days_after == 0
+
+    slope_left = (v1 - v0) / days_before
+    slope_right = (v2 - v1) / days_current
+    m1 = (slope_left + slope_right) / 2.0
+
+    slope_current = (v2 - v1) / days_current
+    slope_next = (v3 - v2) / days_after
+    m2 = (slope_current + slope_next) / 2.0
+
+    # Hermite basis functions
+    t2 = t * t
+    t3 = t2 * t
+    h00 = 2*t3 - 3*t2 + 1
+    h10 = t3 - 2*t2 + t
+    h01 = -2*t3 + 3*t2
+    h11 = t3 - t2
+
+    # Calculate interpolated value
+    result = v1 * h00 + m1 * total_days * h10 + v2 * h01 + m2 * total_days * h11
+
+    # Safety check for NaN
+    if result.nan? || result.infinite?
+      return linear_interpolate(v1, v2, d1, d2, target_date)
+    end
+
+    result
   end
 
-  # Linear interpolation for other data
-  def self.interpolate(prev_value, next_value, prev_date, next_date, target_date)
-    return prev_value if prev_date == target_date
-    return next_value if next_date == target_date
-
-    days_diff = (next_date - prev_date).to_i
-    target_diff = (target_date - prev_date).to_i
-    ratio = target_diff.to_f / days_diff
-    prev_value + (next_value - prev_value) * ratio
+  # Estimate price with trend
+  def self.estimate_price_with_trend(base_price, base_date, target_date, monthly_growth_rate = 0.0)
+    days_elapsed = (target_date - base_date).to_i
+    daily_growth_rate = (1 + monthly_growth_rate) ** (1.0 / 30.0) - 1
+    trend_multiplier = (1 + daily_growth_rate) ** days_elapsed
+    base_price * trend_multiplier
   end
 
-  # NEW: Estimate weekly income with trend projection for future dates
+  # Estimate weekly income
   def self.estimate_weekly_income(income_data, target_date)
     last_income = income_data.last
     last_income_date = Date.parse(last_income[:date])
 
-    # If target date is within historical range, use interpolation
     if target_date <= last_income_date
-      prev_month = income_data.select { |d| Date.parse(d[:date]) <= target_date }.last
-      next_month = income_data.find { |d| Date.parse(d[:date]) > target_date }
-      return prev_month[:value] unless next_month
+      # Use hermite interpolation for smooth curves
+      dates = income_data.map { |d| Date.parse(d[:date]) }
+      values = income_data.map { |d| d[:value] }
+      result = hermite_interpolate(values, dates, target_date)
+      return result if result
 
-      return interpolate(
-        prev_month[:value], next_month[:value],
-        Date.parse(prev_month[:date]), Date.parse(next_month[:date]),
-        target_date
-      )
+      # Fallback to simple logic
+      prev_month = income_data.select { |d| Date.parse(d[:date]) <= target_date }.last
+      return prev_month[:value] if prev_month
+      return income_data.first[:value]
     end
 
-    # NEW: For future dates, project using trend from last two months
     if income_data.length >= 2
       second_last = income_data[-2]
       last = income_data[-1]
-
       prev_income = second_last[:value]
       current_income = last[:value]
-
-      # Calculate monthly growth rate
       monthly_growth_rate = (current_income - prev_income) / prev_income
-
-      # Calculate how many months ahead we are
       days_ahead = (target_date - last_income_date).to_i
       months_ahead = days_ahead / 30.0
-
-      # Apply exponential growth (compound growth)
       estimated_income = current_income * ((1 + monthly_growth_rate) ** months_ahead)
-
       return estimated_income
     end
 
-    # Fallback: just use last known income
     last_income[:value]
   end
 end
@@ -148,11 +187,9 @@ class DataFetcher
 
   def fetch_fred_data(series_id, frequency: nil)
     uri = build_fred_uri(series_id, frequency)
-
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true
-    http.verify_mode = OpenSSL::SSL::VERIFY_NONE # Insecure: Skips all certificate checks
-
+    http.verify_mode = OpenSSL::SSL::VERIFY_NONE
     response = http.get(uri.request_uri)
     JSON.parse(response.body)
   end
@@ -162,10 +199,7 @@ class DataFetcher
   def make_post_request(uri, payload)
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true
-
-    # Quick insecure fix: Disable all SSL verification
     http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-
     request = Net::HTTP::Post.new(uri.path, { 'Content-Type' => 'application/json' })
     request.body = payload.to_json
     http.request(request)
@@ -185,24 +219,18 @@ class DataFetcher
   end
 end
 
-# Extract actual Thursday dates from MORTGAGE30US observations
 class MortgageRateEnhancer
-  # Get all valid Thursday dates from MORTGAGE30US observations
   def self.extract_thursday_dates(mortgage_weekly)
     valid_dates = []
-
     mortgage_weekly['observations'].each do |obs|
       next if obs['value'].empty? || obs['value'] == '.'
       valid_dates << Date.parse(obs['date'])
     end
-
     valid_dates.sort
   end
 
-  # Match mortgage rates to specific Thursday dates
   def self.match_thursday_dates(mortgage_weekly, thursday_dates)
     rates = []
-
     thursday_dates.each do |thursday|
       rate_obs = mortgage_weekly['observations'].find do |obs|
         Date.parse(obs['date']) == thursday
@@ -223,7 +251,6 @@ class MortgageRateEnhancer
         }
       end
     end
-
     rates
   end
 
@@ -233,29 +260,56 @@ class MortgageRateEnhancer
   end
 end
 
-# Generate Home Price values for MORTGAGE30US Thursday dates
 class HomePriceEnhancer
-  # Uses daily seasonal estimation for Thursday dates after last actual data
   def self.match_thursday_dates(monthly_obs, thursday_dates)
     enhanced = []
+
     last_actual = monthly_obs.last
     last_actual_date = Date.parse(last_actual['date'])
     last_actual_value = last_actual['value'].to_f
     last_actual_year = last_actual_date.year
     last_actual_month = last_actual_date.month
-    last_actual_end = Date.new(last_actual_year, last_actual_month, -1) # Last day of the month
+    last_actual_end = Date.new(last_actual_year, last_actual_month, -1)
 
-    # Prepare monthly points (assume monthly value is for the entire month, use interpolation based on previous and next)
-    monthly_points = monthly_obs.map do |obs|
-      obs_date = Date.parse(obs['date'])
-      {date: obs_date, value: obs['value'].to_f}
+    # Calculate monthly growth rate from last 6 months
+    monthly_growth_rate = 0.0
+    if monthly_obs.length >= 6
+      six_months_ago = monthly_obs[-6]
+      current = monthly_obs[-1]
+      months_diff = 5
+      six_ago_value = six_months_ago['value'].to_f
+      current_value = current['value'].to_f
+      total_growth = (current_value - six_ago_value) / six_ago_value
+      monthly_growth_rate = ((1 + total_growth) ** (1.0 / months_diff)) - 1
     end
-    monthly_points.sort_by! { |p| p[:date] }
+
+    # Prepare control points for interpolation (use first day of each month)
+    control_dates = []
+    control_values = []
+
+    monthly_obs.each do |obs|
+      obs_date = Date.parse(obs['date'])
+      control_point = Date.new(obs_date.year, obs_date.month, 1)
+      control_dates << control_point
+      control_values << obs['value'].to_f
+    end
 
     thursday_dates.each do |thursday|
       if thursday <= last_actual_end
-        # Use interpolation based on previous, current, and next month data if available
-        interpolated_value = get_interpolated_value(monthly_points, thursday)
+        # Use Hermite interpolation for smooth curves
+        interpolated_value = DailyEstimator.hermite_interpolate(
+          control_values,
+          control_dates,
+          thursday
+        )
+
+        # Safety fallback if interpolation fails
+        if interpolated_value.nil? || interpolated_value.nan? || interpolated_value.infinite?
+          # Find closest month value
+          closest_month = control_dates.each_with_index.min_by { |d, i| (d - thursday).abs }
+          interpolated_value = control_values[closest_month[1]]
+        end
+
         enhanced << {
           'date' => thursday.strftime('%Y-%m-%d'),
           'value' => interpolated_value.round(3).to_s,
@@ -263,98 +317,26 @@ class HomePriceEnhancer
           'interpolated' => true
         }
       else
-        # Use DAILY seasonal estimation for dates after the last day of the last month
-        estimated_value = DailySeasonalEstimator.estimate_daily_price(
+        # Estimate future values using trend only
+        estimated_value = DailyEstimator.estimate_price_with_trend(
           last_actual_value,
           last_actual_date,
-          thursday
+          thursday,
+          monthly_growth_rate
         )
+
         enhanced << {
           'date' => thursday.strftime('%Y-%m-%d'),
           'value' => estimated_value.round(3).to_s,
           'estimated' => true,
           'price_estimated' => true,
-          'estimation_method' => 'daily_seasonal'
+          'estimation_method' => 'trend_only',
+          'monthly_growth_rate' => (monthly_growth_rate * 100).round(4)
         }
       end
     end
 
     enhanced
-  end
-
-  def self.get_interpolated_value(monthly_points, target_date)
-    # Find the monthly point for the target's month
-    target_month_date = Date.new(target_date.year, target_date.month, 1)
-    current_month_index = monthly_points.find_index { |p| p[:date] == target_month_date }
-
-    if current_month_index
-      prev_month = current_month_index > 0 ? monthly_points[current_month_index - 1] : nil
-      current_month = monthly_points[current_month_index]
-      next_month = monthly_points[current_month_index + 1]
-
-      if prev_month && next_month
-        # Quadratic interpolation using prev, current, next
-        t0 = prev_month[:date].jd.to_f
-        t1 = current_month[:date].jd.to_f
-        t2 = next_month[:date].jd.to_f
-        y0 = prev_month[:value]
-        y1 = current_month[:value]
-        y2 = next_month[:value]
-        t = target_date.jd.to_f
-
-        l0 = ((t - t1) * (t - t2)) / ((t0 - t1) * (t0 - t2))
-        l1 = ((t - t0) * (t - t2)) / ((t1 - t0) * (t1 - t2))
-        l2 = ((t - t0) * (t - t1)) / ((t2 - t0) * (t2 - t1))
-
-        y0 * l0 + y1 * l1 + y2 * l2
-      elsif next_month
-        # Linear between current and next
-        DailySeasonalEstimator.interpolate(
-          current_month[:value], next_month[:value],
-          current_month[:date], next_month[:date],
-          target_date
-        )
-      elsif prev_month
-        # Linear between prev and current
-        DailySeasonalEstimator.interpolate(
-          prev_month[:value], current_month[:value],
-          prev_month[:date], current_month[:date],
-          target_date
-        )
-      else
-        current_month[:value]
-      end
-    else
-      # If no exact month match, fall back to nearest or extrapolation
-      if target_date < monthly_points.first[:date]
-        monthly_points.first[:value]
-      elsif target_date > monthly_points.last[:date]
-        if monthly_points.length >= 2
-          prev = monthly_points[-2]
-          curr = monthly_points[-1]
-          DailySeasonalEstimator.interpolate(
-            prev[:value], curr[:value],
-            prev[:date], curr[:date],
-            target_date
-          )
-        else
-          monthly_points.last[:value]
-        end
-      else
-        # Linear between surrounding
-        prev = monthly_points.reverse.find { |p| p[:date] < target_date }
-        nxt = monthly_points.find { |p| p[:date] > target_date }
-        if prev && nxt
-          DailySeasonalEstimator.interpolate(
-            prev[:value], nxt[:value],
-            prev[:date], nxt[:date],
-            target_date
-          )
-        else
-          monthly_points.last[:value]
-        end
-      end
-    end
   end
 end
 
@@ -373,8 +355,6 @@ class MortgageCalculator
 
   def self.calculate_costs(home_price_data, mortgage_data, income_data)
     single_costs, household_costs = [], []
-
-    # Get last income date for tracking estimated income
     last_income_date = Date.parse(income_data.last[:date])
 
     home_price_data.each_with_index do |home_price_obs, i|
@@ -382,12 +362,17 @@ class MortgageCalculator
       next unless mortgage_obs
 
       date = Date.parse(home_price_obs['date'])
-
-      # NEW: Uses trend projection for future dates
-      weekly_income = DailySeasonalEstimator.estimate_weekly_income(income_data, date)
+      weekly_income = DailyEstimator.estimate_weekly_income(income_data, date)
       income_estimated = date > last_income_date
 
       house_price = home_price_obs['value'].to_f
+
+      # Safety check for NaN values
+      if house_price.nan? || house_price.infinite? || house_price <= 0
+        puts "⚠️  Warning: Invalid house price for #{date}, skipping"
+        next
+      end
+
       rate = mortgage_obs['value'].to_f / 100.0
       total_cost = calculate_total_mortgage_cost(house_price, rate)
 
@@ -445,43 +430,48 @@ class WeeklyCaseSchiller
     income_data = MortgageCalculator.normalize_income_data(bls_data)
     puts "✓ BLS Income data: #{income_data.length} months"
 
-    # Show last two months for trend calculation
     if income_data.length >= 2
       last_two = income_data[-2..-1]
       growth = ((last_two[1][:value] - last_two[0][:value]) / last_two[0][:value] * 100)
-      puts "   Last two months: #{last_two[0][:date]} (#{last_two[0][:value]}) → #{last_two[1][:date]} (#{last_two[1][:value]})"
-      puts "   Monthly growth rate: #{growth.round(3)}%"
+      puts "  Last two months: #{last_two[0][:date]} (#{last_two[0][:value]}) → #{last_two[1][:date]} (#{last_two[1][:value]})"
+      puts "  Monthly growth rate: #{growth.round(3)}%"
     end
 
     home_price_monthly = fetcher.fetch_fred_data('USAUCSFRCONDOSMSAMID')
     puts "✓ Home Price monthly: #{home_price_monthly['observations'].length} observations"
 
+    if home_price_monthly['observations'].length >= 6
+      last_six = home_price_monthly['observations'][-6..-1]
+      first_val = last_six[0]['value'].to_f
+      last_val = last_six[-1]['value'].to_f
+      growth = ((last_val - first_val) / first_val * 100)
+      avg_monthly = ((1 + growth/100) ** (1.0/5) - 1) * 100
+      puts "  Last 6 months growth: #{growth.round(3)}% total, #{avg_monthly.round(3)}% avg/month"
+    end
+
     mortgage_weekly = fetcher.fetch_fred_data('MORTGAGE30US')
     puts "✓ Mortgage rates (weekly): #{mortgage_weekly['observations'].length} observations"
 
-    # Extract actual Thursday dates from MORTGAGE30US
     thursday_dates = MortgageRateEnhancer.extract_thursday_dates(mortgage_weekly)
-
     puts "\n📅 Using MORTGAGE30US Thursday release dates..."
-    puts "   Total Thursdays: #{thursday_dates.length}"
-    puts "   First date: #{thursday_dates.first.strftime('%Y-%m-%d')}"
-    puts "   Last date: #{thursday_dates.last.strftime('%Y-%m-%d')}"
+    puts "  Total Thursdays: #{thursday_dates.length}"
+    puts "  First date: #{thursday_dates.first.strftime('%Y-%m-%d')}"
+    puts "  Last date: #{thursday_dates.last.strftime('%Y-%m-%d')}"
 
-    # Generate Home Price values for each Thursday using daily seasonal estimation
     home_price_aligned = HomePriceEnhancer.match_thursday_dates(
       home_price_monthly['observations'],
       thursday_dates
     )
     puts "✓ Home Price (Thursday-aligned): #{home_price_aligned.length} observations"
 
-    # Get mortgage rates for the same Thursday dates
     mortgage_aligned = MortgageRateEnhancer.match_thursday_dates(
       mortgage_weekly,
       thursday_dates
     )
     puts "✓ Mortgage rates (Thursday-aligned): #{mortgage_aligned.length} observations"
 
-    puts "\n🧮 Calculating affordability metrics with income trend projection..."
+    puts "\n🧮 Calculating affordability metrics..."
+
     single_costs, household_costs = MortgageCalculator.calculate_costs(
       home_price_aligned,
       mortgage_aligned,
@@ -490,8 +480,6 @@ class WeeklyCaseSchiller
 
     estimated_count = single_costs.count { |c| c[:estimated] }
     actual_count = single_costs.length - estimated_count
-
-    # Count how many have estimated income
     income_estimated_count = single_costs.count { |c| c.dig(:estimation_details, :income_estimated) }
 
     last_actual_home_price = home_price_monthly['observations'].last
@@ -524,20 +512,22 @@ class WeeklyCaseSchiller
         methodology: {
           loan_term_months: LOAN_TERM_MONTHS,
           household_multiplier: HOUSEHOLD_MULTIPLIER,
-          home_price_estimation: 'Daily seasonal factors interpolated from monthly patterns',
-          income_estimation: 'Trend projection using growth rate from last two months of BLS data',
-          date_alignment: 'All data points aligned to MORTGAGE30US Thursday release dates'
-        },
-        seasonal_factors: SEASONAL_FACTORS
+          home_price_estimation: 'Trend-only estimation based on 6-month growth rate',
+          home_price_interpolation: 'Cubic Hermite spline through monthly averages with linear fallback',
+          income_estimation: 'Hermite spline interpolation with trend projection',
+          date_alignment: 'All data points aligned to MORTGAGE30US Thursday release dates',
+          note: 'Smooth curves through monthly data with safety checks for edge cases'
+        }
       }
     }
 
     File.write(OUTPUT_FILE, JSON.pretty_generate(output_data))
+
     puts "\n✅ Data written to #{OUTPUT_FILE}"
     puts "📊 Total: #{single_costs.length} Thursday-aligned data points"
-    puts "   - Actual data: #{actual_count} points"
-    puts "   - Estimated: #{estimated_count} points"
-    puts "     • With estimated income: #{income_estimated_count} points"
+    puts "  - Actual data: #{actual_count} points"
+    puts "  - Estimated: #{estimated_count} points"
+    puts "    • With estimated income: #{income_estimated_count} points"
     puts "📅 Full range: #{single_costs.first[:date]} to #{single_costs.last[:date]}"
     puts "📈 Last actual Home Price: #{last_actual_date.strftime('%Y-%m-%d')}"
     puts "💰 Last actual Income: #{last_income_date.strftime('%Y-%m-%d')}"
