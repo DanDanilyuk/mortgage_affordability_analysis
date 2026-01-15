@@ -276,6 +276,12 @@
         footer a:hover {
             text-decoration: underline;
         }
+
+        .date-range-buttons .btn.active {
+            background-color: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
     </style>
 </head>
 
@@ -719,6 +725,8 @@
                                 }
                             },
                             ticks: {
+                                minRotation: 0,
+                                maxRotation: 45,
                                 maxTicksLimit: 12,
                                 autoSkip: true
                             },
@@ -748,11 +756,29 @@
 
             // Show latest data on load
             updateInfoCards(activePointIndex);
+
+            // Set default range to 2 years
+            setDateRange('2y');
+            highlightActiveButton('2y');
         }
 
         function resetZoom() {
             chartInstance.resetZoom();
+            highlightActiveButton('all');
         }
+
+        function highlightActiveButton(range) {
+            document.querySelectorAll('.date-range-buttons .btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            const buttons = document.querySelectorAll('.date-range-buttons .btn');
+            const rangeIndex = { '1y': 0, '2y': 1, '5y': 2, 'all': 3 };
+            if (rangeIndex[range] !== undefined) {
+                buttons[rangeIndex[range]].classList.add('active');
+            }
+        }
+
 
         function setDateRange(range) {
             const endDate = new Date(maxDate);
@@ -783,6 +809,8 @@
                     max: endIndex !== -1 ? endIndex : chartData.single_costs.length - 1
                 });
             }
+
+            highlightActiveButton(range);
         }
 
         function updateInfoCards(index) {
