@@ -5,7 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mortgage Affordability Analysis</title>
+    <!-- Chart.js Core -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Hammer.js (Required for Panning/Zooming gestures) -->
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+    <!-- Chart.js Zoom Plugin -->
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
     <style>
         * {
@@ -333,7 +337,8 @@
                     </div>
 
                     <div class="zoom-info">
-                        💡 <strong>Tip:</strong> Scroll to zoom, or click and drag to pan the chart.
+                        💡 <strong>Tip:</strong> Scroll to zoom. Click and drag to pan (when zoomed). Click any point to
+                        view details.
                     </div>
                 </div>
 
@@ -384,10 +389,11 @@
         let chartData = null;
         let chartInstance = null;
         let firstEstimatedIndex = -1;
+        let activePointIndex = -1; // New global to track clicked point
         let minDate = null;
         let maxDate = null;
 
-        // Chart.js plugin to add background shading for estimated region
+        // Plugin: Estimated Region Background
         const estimatedRegionPlugin = {
             id: 'estimatedRegion',
             beforeDraw: (chart) => {
@@ -405,6 +411,51 @@
                 ctx.fillStyle = 'rgba(243, 156, 18, 0.08)';
                 ctx.fillRect(x, chartArea.top, chartArea.right - x, chartArea.bottom - chartArea.top);
                 ctx.restore();
+            }
+        };
+
+        // Plugin: Active "Golden Dot" Indicator
+        const activePointPlugin = {
+            id: 'activePoint',
+            afterDatasetsDraw: (chart) => {
+                if (activePointIndex === -1) return;
+
+                const ctx = chart.ctx;
+                const chartArea = chart.chartArea;
+
+                // Loop through all visible datasets to draw dots on lines
+                chart.data.datasets.forEach((dataset, i) => {
+                    if (chart.isDatasetVisible(i)) {
+                        const meta = chart.getDatasetMeta(i);
+                        const point = meta.data[activePointIndex];
+
+                        // Ensure point exists and is within visible chart area (handling zoom)
+                        if (point &&
+                            point.x >= chartArea.left &&
+                            point.x <= chartArea.right &&
+                            point.y >= chartArea.top &&
+                            point.y <= chartArea.bottom) {
+
+                            ctx.save();
+
+                            // Draw Shadow/Glow
+                            ctx.shadowColor = 'rgba(243, 156, 18, 0.4)';
+                            ctx.shadowBlur = 10;
+
+                            // Draw Circle
+                            ctx.beginPath();
+                            ctx.arc(point.x, point.y, 6, 0, 2 * Math.PI);
+                            ctx.fillStyle = '#f39c12'; // The "Golden" color
+                            ctx.strokeStyle = '#ffffff';
+                            ctx.lineWidth = 3;
+
+                            ctx.fill();
+                            ctx.stroke();
+
+                            ctx.restore();
+                        }
+                    }
+                });
             }
         };
 
@@ -476,6 +527,9 @@
         function initializeChart() {
             const ctx = document.getElementById('mortgageChart').getContext('2d');
 
+            // Set initial active point to the latest data
+            activePointIndex = chartData.single_costs.length - 1;
+
             // Prepare data for Chart.js
             const labels = chartData.single_costs.map(item => item.date);
             const singleMultipliers = chartData.single_costs.map(item => item.cost_to_income);
@@ -485,59 +539,58 @@
                 type: 'line',
                 data: {
                     labels: labels,
-                    datasets: [
-                        {
-                            label: 'Single Income',
-                            data: singleMultipliers,
-                            borderColor: 'rgb(102, 126, 234)',
-                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                            borderWidth: 3,
-                            tension: 0.4,
-                            pointRadius: 0,
-                            pointHoverRadius: 8,
-                            pointHoverBackgroundColor: 'rgb(102, 126, 234)',
-                            pointHoverBorderColor: 'white',
-                            pointHoverBorderWidth: 3,
-                            segment: {
-                                borderDash: (ctx) => {
-                                    const index = ctx.p1DataIndex;
-                                    const dataPoint = chartData.single_costs[index];
-                                    return (dataPoint.estimated || dataPoint.interpolated) ? [8, 4] : [];
-                                },
-                                borderColor: (ctx) => {
-                                    const index = ctx.p1DataIndex;
-                                    const dataPoint = chartData.single_costs[index];
-                                    return (dataPoint.estimated || dataPoint.interpolated) ?
-                                        'rgba(102, 126, 234, 0.7)' : 'rgb(102, 126, 234)';
-                                }
-                            }
-                        },
-                        {
-                            label: 'Household Income (1.4x)',
-                            data: householdMultipliers,
-                            borderColor: 'rgb(118, 75, 162)',
-                            backgroundColor: 'rgba(118, 75, 162, 0.1)',
-                            borderWidth: 3,
-                            tension: 0.4,
-                            pointRadius: 0,
-                            pointHoverRadius: 8,
-                            pointHoverBackgroundColor: 'rgb(118, 75, 162)',
-                            pointHoverBorderColor: 'white',
-                            pointHoverBorderWidth: 3,
-                            segment: {
-                                borderDash: (ctx) => {
-                                    const index = ctx.p1DataIndex;
-                                    const dataPoint = chartData.household_costs[index];
-                                    return (dataPoint.estimated || dataPoint.interpolated) ? [8, 4] : [];
-                                },
-                                borderColor: (ctx) => {
-                                    const index = ctx.p1DataIndex;
-                                    const dataPoint = chartData.household_costs[index];
-                                    return (dataPoint.estimated || dataPoint.interpolated) ?
-                                        'rgba(118, 75, 162, 0.7)' : 'rgb(118, 75, 162)';
-                                }
+                    datasets: [{
+                        label: 'Single Income',
+                        data: singleMultipliers,
+                        borderColor: 'rgb(102, 126, 234)',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        pointHoverRadius: 8,
+                        pointHoverBackgroundColor: 'rgb(102, 126, 234)',
+                        pointHoverBorderColor: 'white',
+                        pointHoverBorderWidth: 3,
+                        segment: {
+                            borderDash: (ctx) => {
+                                const index = ctx.p1DataIndex;
+                                const dataPoint = chartData.single_costs[index];
+                                return (dataPoint.estimated || dataPoint.interpolated) ? [8, 4] : [];
+                            },
+                            borderColor: (ctx) => {
+                                const index = ctx.p1DataIndex;
+                                const dataPoint = chartData.single_costs[index];
+                                return (dataPoint.estimated || dataPoint.interpolated) ?
+                                    'rgba(102, 126, 234, 0.7)' : 'rgb(102, 126, 234)';
                             }
                         }
+                    },
+                    {
+                        label: 'Household Income (1.4x)',
+                        data: householdMultipliers,
+                        borderColor: 'rgb(118, 75, 162)',
+                        backgroundColor: 'rgba(118, 75, 162, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        pointHoverRadius: 8,
+                        pointHoverBackgroundColor: 'rgb(118, 75, 162)',
+                        pointHoverBorderColor: 'white',
+                        pointHoverBorderWidth: 3,
+                        segment: {
+                            borderDash: (ctx) => {
+                                const index = ctx.p1DataIndex;
+                                const dataPoint = chartData.household_costs[index];
+                                return (dataPoint.estimated || dataPoint.interpolated) ? [8, 4] : [];
+                            },
+                            borderColor: (ctx) => {
+                                const index = ctx.p1DataIndex;
+                                const dataPoint = chartData.household_costs[index];
+                                return (dataPoint.estimated || dataPoint.interpolated) ?
+                                    'rgba(118, 75, 162, 0.7)' : 'rgb(118, 75, 162)';
+                            }
+                        }
+                    }
                     ]
                 },
                 options: {
@@ -546,6 +599,27 @@
                     interaction: {
                         mode: 'index',
                         intersect: false
+                    },
+                    onClick: function (event, elements, chart) {
+                        let index = -1;
+
+                        if (elements.length > 0) {
+                            index = elements[0].index;
+                        } else {
+                            // Find nearest index if clicked blank space
+                            const points = chart.getElementsAtEventForMode(event, 'index', {
+                                intersect: false
+                            }, false);
+                            if (points.length > 0) {
+                                index = points[0].index;
+                            }
+                        }
+
+                        if (index !== -1) {
+                            activePointIndex = index; // Update the "Golden Dot" position
+                            updateInfoCards(index);
+                            chart.update(); // Re-render to show the dot
+                        }
                     },
                     plugins: {
                         legend: {
@@ -621,7 +695,8 @@
                             pan: {
                                 enabled: true,
                                 mode: 'x',
-                                modifierKey: null
+                                modifierKey: null,
+                                threshold: 10
                             },
                             limits: {
                                 x: {
@@ -666,20 +741,13 @@
                                 color: 'rgba(0, 0, 0, 0.05)'
                             }
                         }
-                    },
-                    onClick: function (event, activeElements) {
-                        if (activeElements.length > 0) {
-                            const index = activeElements[0].index;
-                            updateInfoCards(index);
-                        }
                     }
                 },
-                plugins: [estimatedRegionPlugin]
+                plugins: [estimatedRegionPlugin, activePointPlugin]
             });
 
             // Show latest data on load
-            const latestIndex = chartData.single_costs.length - 1;
-            updateInfoCards(latestIndex);
+            updateInfoCards(activePointIndex);
         }
 
         function resetZoom() {
@@ -733,8 +801,8 @@
                 displayData = householdData;
                 displayIncome = householdData.household_income;
             } else {
-                displayData = householdData;
-                displayIncome = householdData.household_income;
+                displayData = singleVisible ? singleData : householdData;
+                displayIncome = singleVisible ? singleData.single_income : householdData.household_income;
             }
 
             document.getElementById('currentMultiplier').textContent = displayData.cost_to_income + 'x';
@@ -742,8 +810,6 @@
             document.getElementById('annualIncome').textContent = '$' + displayIncome.toLocaleString();
             document.getElementById('mortgageRate').textContent = displayData.mortgage_rate + '%';
 
-            // Update card styling for estimated data
-            // Note: rateCard is excluded because mortgage data is never estimated
             const details = displayData.estimation_details || {};
             const isMultiplierEstimated = displayData.estimated || displayData.interpolated;
             const isPriceEstimated = details.price_estimated || false;
