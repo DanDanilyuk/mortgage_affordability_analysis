@@ -126,42 +126,43 @@
     const householdData = state.chartData.household_costs[index];
     const singleVisible = state.chartInstance.isDatasetVisible(0);
     const householdVisible = state.chartInstance.isDatasetVisible(1);
+    const bothVisible = singleVisible && householdVisible;
 
-    let displayData = singleData;
-    let displayIncome = singleData.single_income;
-    let datasetLabel = '';
+    dom.selectedDate.textContent = formatDate(singleData.date);
+    dom.datasetIndicator.style.display = 'none';
+    dom.housePrice.textContent = formatMoney(singleData.home_price);
+    dom.mortgageRate.textContent = `${singleData.mortgage_rate}%`;
 
-    if (singleVisible && householdVisible) {
-      datasetLabel = 'Showing Single Income values (both lines visible)';
+    if (bothVisible) {
+      dom.currentMultiplier.innerHTML =
+        `<span class="dual-value single">${singleData.cost_to_income}x</span>` +
+        `<span class="dual-value household">${householdData.cost_to_income}x</span>`;
+      dom.annualIncome.innerHTML =
+        `<span class="dual-value single">${formatMoney(singleData.single_income)}</span>` +
+        `<span class="dual-value household">${formatMoney(householdData.household_income)}</span>`;
     } else if (householdVisible) {
-      displayData = householdData;
-      displayIncome = householdData.household_income;
+      dom.currentMultiplier.textContent = `${householdData.cost_to_income}x`;
+      dom.annualIncome.textContent = formatMoney(householdData.household_income);
+    } else {
+      dom.currentMultiplier.textContent = `${singleData.cost_to_income}x`;
+      dom.annualIncome.textContent = formatMoney(singleData.single_income);
     }
 
-    dom.selectedDate.textContent = formatDate(displayData.date);
-    dom.datasetIndicator.textContent = datasetLabel;
-    dom.datasetIndicator.style.display = datasetLabel ? 'block' : 'none';
-
-    dom.currentMultiplier.textContent = `${displayData.cost_to_income}x`;
-    dom.housePrice.textContent = formatMoney(displayData.home_price);
-    dom.annualIncome.textContent = formatMoney(displayIncome);
-    dom.mortgageRate.textContent = `${displayData.mortgage_rate}%`;
-
-    const details = displayData.estimation_details || {};
+    const details = singleData.estimation_details || {};
     updateCardBadge(
       dom.multiplierCard,
-      displayData.estimated || displayData.interpolated,
-      displayData.estimated ? 'Estimated' : 'Interpolated',
+      singleData.estimated || singleData.interpolated,
+      singleData.estimated ? 'Estimated' : 'Interpolated',
     );
     updateCardBadge(
       dom.priceCard,
       details.price_estimated,
-      displayData.estimated ? 'Estimated' : 'Interpolated',
+      singleData.estimated ? 'Estimated' : 'Interpolated',
     );
     updateCardBadge(
       dom.incomeCard,
       details.income_estimated,
-      displayData.estimated ? 'Estimated' : 'Interpolated',
+      singleData.estimated ? 'Estimated' : 'Interpolated',
     );
   };
 

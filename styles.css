@@ -131,6 +131,19 @@ h1 {
   color: var(--text-primary);
 }
 
+.dual-value {
+  display: block;
+  line-height: 1.2;
+}
+
+.dual-value.single {
+  color: var(--accent-blue);
+}
+
+.dual-value.household {
+  color: var(--accent-purple);
+}
+
 .estimated-badge {
   position: absolute;
   top: 10px;
