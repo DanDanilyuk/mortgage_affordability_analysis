@@ -2,47 +2,38 @@
   "single_costs": [
     {
       "type": "single",
-      "date": "2016-03-03",
-      "total_cost": 325372,
-      "single_income": 45534,
-      "cost_to_income": "7.15",
-      "home_price": 197815,
-      "mortgage_rate": "3.64"
-    },
-    {
-      "type": "single",
       "date": "2016-03-10",
-      "total_cost": 327273,
-      "single_income": 45567,
+      "total_cost": 327259,
+      "single_income": 45566,
       "cost_to_income": "7.18",
-      "home_price": 197993,
+      "home_price": 197985,
       "mortgage_rate": "3.68"
     },
     {
       "type": "single",
       "date": "2016-03-17",
-      "total_cost": 329573,
-      "single_income": 45601,
+      "total_cost": 329563,
+      "single_income": 45598,
       "cost_to_income": "7.23",
-      "home_price": 198164,
+      "home_price": 198158,
       "mortgage_rate": "3.73"
     },
     {
       "type": "single",
       "date": "2016-03-24",
-      "total_cost": 329044,
-      "single_income": 45634,
+      "total_cost": 329042,
+      "single_income": 45631,
       "cost_to_income": "7.21",
-      "home_price": 198332,
+      "home_price": 198331,
       "mortgage_rate": "3.71"
     },
     {
       "type": "single",
       "date": "2016-03-31",
       "total_cost": 329329,
-      "single_income": 45664,
+      "single_income": 45663,
       "cost_to_income": "7.21",
-      "home_price": 198503,
+      "home_price": 198504,
       "mortgage_rate": "3.71"
     },
     {
@@ -4745,52 +4736,58 @@
         "rate_estimated": false,
         "income_estimated": true
       }
+    },
+    {
+      "type": "single",
+      "date": "2026-03-05",
+      "total_cost": 774097,
+      "single_income": 67273,
+      "cost_to_income": "11.51",
+      "home_price": 358647,
+      "mortgage_rate": "6.00",
+      "estimated": true,
+      "estimation_details": {
+        "price_estimated": true,
+        "rate_estimated": false,
+        "income_estimated": true
+      }
     }
   ],
   "household_costs": [
     {
       "type": "household",
-      "date": "2016-03-03",
-      "total_cost": 325372,
-      "household_income": 63747,
-      "cost_to_income": "5.10",
-      "home_price": 197815,
-      "mortgage_rate": "3.64"
-    },
-    {
-      "type": "household",
       "date": "2016-03-10",
-      "total_cost": 327273,
-      "household_income": 63794,
+      "total_cost": 327259,
+      "household_income": 63793,
       "cost_to_income": "5.13",
-      "home_price": 197993,
+      "home_price": 197985,
       "mortgage_rate": "3.68"
     },
     {
       "type": "household",
       "date": "2016-03-17",
-      "total_cost": 329573,
-      "household_income": 63842,
+      "total_cost": 329563,
+      "household_income": 63838,
       "cost_to_income": "5.16",
-      "home_price": 198164,
+      "home_price": 198158,
       "mortgage_rate": "3.73"
     },
     {
       "type": "household",
       "date": "2016-03-24",
-      "total_cost": 329044,
-      "household_income": 63888,
+      "total_cost": 329042,
+      "household_income": 63883,
       "cost_to_income": "5.15",
-      "home_price": 198332,
+      "home_price": 198331,
       "mortgage_rate": "3.71"
     },
     {
       "type": "household",
       "date": "2016-03-31",
       "total_cost": 329329,
-      "household_income": 63929,
+      "household_income": 63928,
       "cost_to_income": "5.15",
-      "home_price": 198503,
+      "home_price": 198504,
       "mortgage_rate": "3.71"
     },
     {
@@ -9493,22 +9490,37 @@
         "rate_estimated": false,
         "income_estimated": true
       }
+    },
+    {
+      "type": "household",
+      "date": "2026-03-05",
+      "total_cost": 774097,
+      "household_income": 94182,
+      "cost_to_income": "8.22",
+      "home_price": 358647,
+      "mortgage_rate": "6.00",
+      "estimated": true,
+      "estimation_details": {
+        "price_estimated": true,
+        "rate_estimated": false,
+        "income_estimated": true
+      }
     }
   ],
   "metadata": {
-    "generated_at": "2026-02-26T12:30:05-05:00",
+    "generated_at": "2026-03-05T12:24:09-05:00",
     "frequency": "weekly_thursday_aligned",
     "date_range": {
-      "start": "2016-03-03",
-      "end": "2026-02-26",
+      "start": "2016-03-10",
+      "end": "2026-03-05",
       "last_actual_home_price": "2026-01-01",
       "last_actual_income": "2026-01-01"
     },
     "counts": {
       "total": 522,
-      "actual": 514,
-      "estimated": 8,
-      "income_estimated": 8
+      "actual": 513,
+      "estimated": 9,
+      "income_estimated": 9
     },
     "data_sources": {
       "bls_series": "CES0500000011",
