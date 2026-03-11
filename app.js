@@ -415,8 +415,6 @@
       state.firstEstimatedIndex = state.chartData.single_costs.findIndex(
         i => i.estimated || i.interpolated,
       );
-      if (state.firstEstimatedIndex !== -1)
-        document.getElementById('estimationWarning').style.display = 'block';
 
       state.minDate = new Date(state.chartData.single_costs[0].date);
       state.maxDate = new Date(
