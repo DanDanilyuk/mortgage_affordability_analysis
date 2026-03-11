@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Interactive analysis of U.S. mortgage affordability over time.">
-    <title>Mortgage Affordability Analysis</title>
+    <meta name="description" content="Track U.S. mortgage affordability trends with real-time data on home prices, earnings, and interest rates.">
+    <title>Mortgage Affordability Tracker</title>
     <link rel="stylesheet" href="styles.css">
 
     <!-- Fonts -->
@@ -27,9 +27,9 @@
         <header>
             <div class="header-inner">
                 <div class="header-eyebrow">U.S. Housing Market</div>
-                <h1>Mortgage Affordability<br><span class="header-accent">Analysis</span></h1>
-                <p class="subtitle">Cost-to-Income Multiplier Over Time</p>
-                <p class="update-info" id="updateInfo">Loading data...</p>
+                <h1>Mortgage Affordability<br><span class="header-accent">Tracker</span></h1>
+                <p class="subtitle">How Many Years of Income Does a Home Really Cost?</p>
+                <p class="update-info" id="updateInfo">Fetching latest data...</p>
             </div>
             <div class="header-decoration" aria-hidden="true">
                 <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
@@ -44,20 +44,20 @@
 
         <main class="content">
             <noscript>
-                <div class="error-message">JavaScript is required to view the interactive charts.</div>
+                <div class="error-message">This interactive dashboard requires JavaScript to display charts and data.</div>
             </noscript>
 
             <div id="loadingMessage" class="loading">
                 <div class="loading-spinner"></div>
-                Loading mortgage affordability data...
+                Crunching the numbers...
             </div>
 
             <div id="mainContent" style="display: none;">
                 <div id="estimationWarning" class="legend-info" style="display: none;">
                     <span class="legend-icon">&#x1F4CA;</span>
                     <div>
-                        <strong>Note:</strong> Dashed lines and shaded areas represent <strong>estimated
-                            values</strong>. Solid lines show actual reported data.
+                        <strong>Heads up:</strong> Dashed lines and shaded areas are <strong>estimated values</strong>
+                            between reporting periods. Solid lines reflect officially reported data.
                     </div>
                 </div>
 
@@ -65,31 +65,31 @@
 
                 <div class="info-grid" id="infoGrid">
                     <div class="info-card" id="dateCard" data-accent="slate">
-                        <div class="info-label">Selected Date</div>
+                        <div class="info-label">Date</div>
                         <div class="info-value" id="selectedDate">-</div>
                     </div>
                     <div class="info-card" id="multiplierCard" data-accent="amber">
-                        <div class="info-label">Current Multiplier</div>
+                        <div class="info-label">Price-to-Income Ratio</div>
                         <div class="info-value" id="currentMultiplier">-</div>
                     </div>
                     <div class="info-card" id="priceCard" data-accent="blue">
-                        <div class="info-label">House Price</div>
+                        <div class="info-label">Median Home Price</div>
                         <div class="info-value" id="housePrice">-</div>
                     </div>
                     <div class="info-card" id="incomeCard" data-accent="emerald">
-                        <div class="info-label">Annual Income</div>
+                        <div class="info-label">Avg. Annual Earnings</div>
                         <div class="info-value" id="annualIncome">-</div>
                     </div>
                     <div class="info-card" id="rateCard" data-accent="rose">
-                        <div class="info-label">Mortgage Rate</div>
+                        <div class="info-label">30-Yr Fixed Rate</div>
                         <div class="info-value" id="mortgageRate">-</div>
                     </div>
                 </div>
 
                 <div class="controls">
-                    <button class="btn btn-primary active" id="btnBoth">Both</button>
-                    <button class="btn btn-secondary" id="btnSingle">Single Income</button>
-                    <button class="btn btn-secondary" id="btnHousehold">Household Income (1.4x)</button>
+                    <button class="btn btn-primary active" id="btnBoth">Compare Both</button>
+                    <button class="btn btn-secondary" id="btnSingle">Single Earner</button>
+                    <button class="btn btn-secondary" id="btnHousehold">Dual Income (1.4×)</button>
                 </div>
 
                 <div class="chart-toolbar">
@@ -105,8 +105,8 @@
                                 <button class="btn btn-secondary btn-small" id="btnToggleY"
                                     aria-label="Toggle Y-Axis origin">Y-Axis: Auto</button>
                                 <button class="btn btn-secondary btn-small" id="btnDownload"
-                                    aria-label="Download Chart as PNG">Download PNG</button>
-                                <button class="btn btn-secondary btn-small" id="btnResetZoom">Reset Zoom</button>
+                                    aria-label="Download Chart as PNG">Export PNG</button>
+                                <button class="btn btn-secondary btn-small" id="btnResetZoom">Reset View</button>
                             </div>
                         </div>
                     </div>
@@ -117,24 +117,22 @@
                 </div>
 
                 <div class="zoom-info" id="zoomTip">
-                    Scroll to zoom &middot; Drag to pan &middot; Click points for details &middot; Arrow keys to navigate
+                    Scroll to zoom, drag to pan, click any point for details, or use arrow keys to step through dates.
                 </div>
 
                 <details class="methodology">
-                    <summary><h2>Methodology</h2></summary>
+                    <summary><h2>How It Works</h2></summary>
                     <div class="methodology-content">
-                        <p><strong>Cost-to-Income Multiplier:</strong> Represents how many years of income it would take to
-                            pay off a 30-year mortgage (including interest). Higher = lower affordability.</p>
+                        <p><strong>Price-to-Income Ratio:</strong> The total cost of a 30-year mortgage (principal + interest) divided by annual earnings. A higher ratio means housing is less affordable.</p>
                         <div class="data-sources">
                             <h3>Data Sources</h3>
                             <ul>
-                                <li><strong>Earnings:</strong> BLS Series CES0500000011 (Average Weekly Earnings, Total Private)</li>
-                                <li><strong>Home Prices:</strong> FRED Series USAUCSFRCONDOSMSAMID (Zillow Home Value Index)</li>
-                                <li><strong>Mortgage Rates:</strong> FRED Series MORTGAGE30US (30-Year Fixed Rate Average)</li>
+                                <li><strong>Earnings:</strong> BLS Average Weekly Earnings, Total Private (CES0500000011)</li>
+                                <li><strong>Home Prices:</strong> Zillow Home Value Index via FRED (USAUCSFRCONDOSMSAMID)</li>
+                                <li><strong>Mortgage Rates:</strong> Freddie Mac 30-Year Fixed Rate via FRED (MORTGAGE30US)</li>
                             </ul>
                         </div>
-                        <p><strong>Household Income:</strong> Calculated as 1.4x single income to account for dual-income
-                            households.</p>
+                        <p><strong>Dual Income:</strong> Estimated at 1.4× single-earner income, reflecting typical dual-income household dynamics.</p>
                     </div>
                 </details>
             </div>
@@ -142,9 +140,9 @@
 
         <footer>
             <div class="footer-inner">
-                <p>Data analysis inspired by <a href="https://www.calculatedriskblog.com/p/weekly-schedule.html"
+                <p>Inspired by <a href="https://www.calculatedriskblog.com/p/weekly-schedule.html"
                         target="_blank">Calculated Risk</a></p>
-                <p class="footer-meta">Built with Chart.js &middot; Data from BLS and FRED APIs &middot; Made by <a
+                <p class="footer-meta">Built with Chart.js &middot; Data from BLS &amp; FRED &middot; Made by <a
                         href="https://www.dandanilyuk.com" target="_blank">Dan Danilyuk</a></p>
             </div>
         </footer>

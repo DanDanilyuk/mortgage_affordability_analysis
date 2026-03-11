@@ -192,7 +192,7 @@
         labels,
         datasets: [
           {
-            label: 'Single Income',
+            label: 'Single Earner',
             data: singleData,
             borderColor: colorPrimary,
             backgroundColor: `${colorPrimary}20`,
@@ -214,7 +214,7 @@
             },
           },
           {
-            label: 'Household Income (1.4x)',
+            label: 'Dual Income (1.4×)',
             data: householdData,
             borderColor: colorSecondary,
             backgroundColor: `${colorSecondary}20`,
@@ -319,7 +319,7 @@
             grid: { color: gridColor },
             title: {
               display: true,
-              text: 'Cost-to-Income Multiplier',
+              text: 'Price-to-Income Ratio',
               color: textColor,
               font: { weight: 'bold' },
             },
