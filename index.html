@@ -8,6 +8,11 @@
     <title>Mortgage Affordability Analysis</title>
     <link rel="stylesheet" href="styles.css">
 
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,700;1,8..60,400&display=swap" rel="stylesheet">
+
     <!-- Chart.js & Plugins -->
     <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
@@ -20,9 +25,21 @@
 <body>
     <div class="container">
         <header>
-            <h1>Mortgage Affordability Analysis</h1>
-            <p class="subtitle">Cost-to-Income Multiplier Over Time</p>
-            <p class="update-info" id="updateInfo">Loading data...</p>
+            <div class="header-inner">
+                <div class="header-eyebrow">U.S. Housing Market</div>
+                <h1>Mortgage Affordability<br><span class="header-accent">Analysis</span></h1>
+                <p class="subtitle">Cost-to-Income Multiplier Over Time</p>
+                <p class="update-info" id="updateInfo">Loading data...</p>
+            </div>
+            <div class="header-decoration" aria-hidden="true">
+                <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="100" cy="100" r="80" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.15"/>
+                    <circle cx="100" cy="100" r="60" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.1"/>
+                    <circle cx="100" cy="100" r="40" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.08"/>
+                    <line x1="20" y1="100" x2="180" y2="100" stroke="currentColor" stroke-width="0.3" opacity="0.1"/>
+                    <line x1="100" y1="20" x2="100" y2="180" stroke="currentColor" stroke-width="0.3" opacity="0.1"/>
+                </svg>
+            </div>
         </header>
 
         <main class="content">
@@ -30,34 +47,40 @@
                 <div class="error-message">JavaScript is required to view the interactive charts.</div>
             </noscript>
 
-            <div id="loadingMessage" class="loading">Loading mortgage affordability data...</div>
+            <div id="loadingMessage" class="loading">
+                <div class="loading-spinner"></div>
+                Loading mortgage affordability data...
+            </div>
 
             <div id="mainContent" style="display: none;">
                 <div id="estimationWarning" class="legend-info" style="display: none;">
-                    <strong>&#x1F4CA; Note:</strong> Dashed lines and shaded areas represent <strong>estimated
-                        values</strong>. Solid lines show actual reported data.
+                    <span class="legend-icon">&#x1F4CA;</span>
+                    <div>
+                        <strong>Note:</strong> Dashed lines and shaded areas represent <strong>estimated
+                            values</strong>. Solid lines show actual reported data.
+                    </div>
                 </div>
 
                 <p id="datasetIndicator" class="dataset-indicator"></p>
 
                 <div class="info-grid" id="infoGrid">
-                    <div class="info-card" id="dateCard">
+                    <div class="info-card" id="dateCard" data-accent="slate">
                         <div class="info-label">Selected Date</div>
                         <div class="info-value" id="selectedDate">-</div>
                     </div>
-                    <div class="info-card" id="multiplierCard">
+                    <div class="info-card" id="multiplierCard" data-accent="amber">
                         <div class="info-label">Current Multiplier</div>
                         <div class="info-value" id="currentMultiplier">-</div>
                     </div>
-                    <div class="info-card" id="priceCard">
+                    <div class="info-card" id="priceCard" data-accent="blue">
                         <div class="info-label">House Price</div>
                         <div class="info-value" id="housePrice">-</div>
                     </div>
-                    <div class="info-card" id="incomeCard">
+                    <div class="info-card" id="incomeCard" data-accent="emerald">
                         <div class="info-label">Annual Income</div>
                         <div class="info-value" id="annualIncome">-</div>
                     </div>
-                    <div class="info-card" id="rateCard">
+                    <div class="info-card" id="rateCard" data-accent="rose">
                         <div class="info-label">Mortgage Rate</div>
                         <div class="info-value" id="mortgageRate">-</div>
                     </div>
@@ -69,28 +92,23 @@
                     <button class="btn btn-secondary" id="btnHousehold">Household Income (1.4x)</button>
                 </div>
 
-                <div class="date-range-controls">
-                    <div class="date-range-header">
-                        <h3>&#x1F4C5; Controls & Date Range</h3>
-                        <div class="action-buttons">
-                            <button class="btn btn-secondary btn-small" id="btnToggleY"
-                                aria-label="Toggle Y-Axis origin">Y-Axis: Auto</button>
-                            <button class="btn btn-secondary btn-small" id="btnDownload"
-                                aria-label="Download Chart as PNG">⬇️ Download Chart</button>
-                            <button class="btn btn-secondary btn-small" id="btnResetZoom">Reset Zoom</button>
+                <div class="chart-toolbar">
+                    <div class="date-range-controls">
+                        <div class="date-range-header">
+                            <div class="date-range-buttons">
+                                <button class="btn btn-secondary btn-small" data-range="1y">1Y</button>
+                                <button class="btn btn-secondary btn-small active" data-range="2y">2Y</button>
+                                <button class="btn btn-secondary btn-small" data-range="5y">5Y</button>
+                                <button class="btn btn-secondary btn-small" data-range="all">All</button>
+                            </div>
+                            <div class="action-buttons">
+                                <button class="btn btn-secondary btn-small" id="btnToggleY"
+                                    aria-label="Toggle Y-Axis origin">Y-Axis: Auto</button>
+                                <button class="btn btn-secondary btn-small" id="btnDownload"
+                                    aria-label="Download Chart as PNG">Download PNG</button>
+                                <button class="btn btn-secondary btn-small" id="btnResetZoom">Reset Zoom</button>
+                            </div>
                         </div>
-                    </div>
-
-                    <div class="date-range-buttons">
-                        <button class="btn btn-secondary btn-small" data-range="1y">Last Year</button>
-                        <button class="btn btn-secondary btn-small active" data-range="2y">Last 2 Years</button>
-                        <button class="btn btn-secondary btn-small" data-range="5y">Last 5 Years</button>
-                        <button class="btn btn-secondary btn-small" data-range="all">All Data</button>
-                    </div>
-
-                    <div class="zoom-info" id="zoomTip">
-                        &#x1F4A1; <strong>Tip:</strong> Scroll to zoom. Drag to pan. Click points to view details. Use
-                        arrow keys to step through data.
                     </div>
                 </div>
 
@@ -98,29 +116,37 @@
                     <canvas id="mortgageChart"></canvas>
                 </div>
 
-                <section class="methodology">
-                    <h2>Methodology</h2>
-                    <p><strong>Cost-to-Income Multiplier:</strong> Represents how many years of income it would take to
-                        pay off a 30-year mortgage (including interest). Higher = lower affordability.</p>
-                    <p><strong>Data Sources:</strong></p>
-                    <ul>
-                        <li><strong>Earnings:</strong> BLS Series CES0500000011 (Average Weekly Earnings, Total Private)
-                        </li>
-                        <li><strong>Home Prices:</strong> FRED Series USAUCSFRCONDOSMSAMID (Zillow Home Value Index)
-                        </li>
-                        <li><strong>Mortgage Rates:</strong> FRED Series MORTGAGE30US (30-Year Fixed Rate Average)</li>
-                    </ul>
-                    <p><strong>Household Income:</strong> Calculated as 1.4x single income to account for dual-income
-                        households.</p>
-                </section>
+                <div class="zoom-info" id="zoomTip">
+                    Scroll to zoom &middot; Drag to pan &middot; Click points for details &middot; Arrow keys to navigate
+                </div>
+
+                <details class="methodology">
+                    <summary><h2>Methodology</h2></summary>
+                    <div class="methodology-content">
+                        <p><strong>Cost-to-Income Multiplier:</strong> Represents how many years of income it would take to
+                            pay off a 30-year mortgage (including interest). Higher = lower affordability.</p>
+                        <div class="data-sources">
+                            <h3>Data Sources</h3>
+                            <ul>
+                                <li><strong>Earnings:</strong> BLS Series CES0500000011 (Average Weekly Earnings, Total Private)</li>
+                                <li><strong>Home Prices:</strong> FRED Series USAUCSFRCONDOSMSAMID (Zillow Home Value Index)</li>
+                                <li><strong>Mortgage Rates:</strong> FRED Series MORTGAGE30US (30-Year Fixed Rate Average)</li>
+                            </ul>
+                        </div>
+                        <p><strong>Household Income:</strong> Calculated as 1.4x single income to account for dual-income
+                            households.</p>
+                    </div>
+                </details>
             </div>
         </main>
 
         <footer>
-            <p>Data analysis inspired by <a href="https://www.calculatedriskblog.com/p/weekly-schedule.html"
-                    target="_blank">Calculated Risk</a>.</p>
-            <p class="footer-meta">Built with Chart.js | Data from BLS and FRED APIs | Made by <a
-                    href="https://www.dandanilyuk.com" target="_blank">Dan Danilyuk</a></p>
+            <div class="footer-inner">
+                <p>Data analysis inspired by <a href="https://www.calculatedriskblog.com/p/weekly-schedule.html"
+                        target="_blank">Calculated Risk</a></p>
+                <p class="footer-meta">Built with Chart.js &middot; Data from BLS and FRED APIs &middot; Made by <a
+                        href="https://www.dandanilyuk.com" target="_blank">Dan Danilyuk</a></p>
+            </div>
         </footer>
     </div>
 </body>
