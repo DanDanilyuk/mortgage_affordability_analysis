@@ -1,4 +1,11 @@
 (() => {
+  // Defaults for URL params (non-default values are written to the URL)
+  const DEFAULTS = { state: 'ALL', range: '2y', view: 'both', yaxis: 'auto' };
+  const VALID_RANGES = ['1y', '2y', '5y', 'all'];
+  const VALID_VIEWS = ['both', 'single', 'household'];
+  const VIEW_TO_BTN = { both: 'btnBoth', single: 'btnSingle', household: 'btnHousehold' };
+  const BTN_TO_VIEW = { btnBoth: 'both', btnSingle: 'single', btnHousehold: 'household' };
+
   // Encapsulated Application State
   const state = {
     chartData: null,
@@ -8,6 +15,26 @@
     minDate: null,
     maxDate: null,
     yAxisZero: false,
+    currentState: 'ALL',
+    currentRange: '2y',
+    currentView: 'both',
+  };
+
+  // State name lookup for display
+  const STATE_NAMES = {
+    ALL: 'U.S.', AL: 'Alabama', AK: 'Alaska', AZ: 'Arizona', AR: 'Arkansas',
+    CA: 'California', CO: 'Colorado', CT: 'Connecticut', DE: 'Delaware',
+    DC: 'District of Columbia', FL: 'Florida', GA: 'Georgia', HI: 'Hawaii',
+    ID: 'Idaho', IL: 'Illinois', IN: 'Indiana', IA: 'Iowa', KS: 'Kansas',
+    KY: 'Kentucky', LA: 'Louisiana', ME: 'Maine', MD: 'Maryland',
+    MA: 'Massachusetts', MI: 'Michigan', MN: 'Minnesota', MS: 'Mississippi',
+    MO: 'Missouri', MT: 'Montana', NE: 'Nebraska', NV: 'Nevada',
+    NH: 'New Hampshire', NJ: 'New Jersey', NM: 'New Mexico', NY: 'New York',
+    NC: 'North Carolina', ND: 'North Dakota', OH: 'Ohio', OK: 'Oklahoma',
+    OR: 'Oregon', PA: 'Pennsylvania', RI: 'Rhode Island', SC: 'South Carolina',
+    SD: 'South Dakota', TN: 'Tennessee', TX: 'Texas', UT: 'Utah',
+    VT: 'Vermont', VA: 'Virginia', WA: 'Washington', WV: 'West Virginia',
+    WI: 'Wisconsin', WY: 'Wyoming',
   };
 
   // DOM Elements
@@ -23,6 +50,40 @@
     priceCard: document.getElementById('priceCard'),
     incomeCard: document.getElementById('incomeCard'),
     btnToggleY: document.getElementById('btnToggleY'),
+    stateSelect: document.getElementById('stateSelect'),
+    headerEyebrow: document.getElementById('headerEyebrow'),
+  };
+
+  // URL Parameter Management
+  const resolveState = raw => {
+    if (!raw) return DEFAULTS.state;
+    const upper = raw.toUpperCase();
+    if (upper === 'US' || upper === 'ALL') return 'ALL';
+    return STATE_NAMES[upper] ? upper : DEFAULTS.state;
+  };
+
+  const readUrlParams = () => {
+    const params = new URLSearchParams(window.location.search);
+    const range = (params.get('range') || '').toLowerCase();
+    const view = (params.get('view') || '').toLowerCase();
+    const yaxis = (params.get('yaxis') || '').toLowerCase();
+    return {
+      state: resolveState(params.get('state')),
+      range: VALID_RANGES.includes(range) ? range : DEFAULTS.range,
+      view: VALID_VIEWS.includes(view) ? view : DEFAULTS.view,
+      yaxis: yaxis === 'zero' ? 'zero' : DEFAULTS.yaxis,
+    };
+  };
+
+  const syncUrlParams = () => {
+    const params = new URLSearchParams();
+    params.set('state', state.currentState.toLowerCase());
+    params.set('range', state.currentRange);
+    params.set('view', state.currentView);
+    params.set('yaxis', state.yAxisZero ? 'zero' : 'auto');
+
+    const url = `${window.location.pathname}?${params.toString()}`;
+    history.replaceState(null, '', url);
   };
 
   // Formatting Utilities
@@ -88,7 +149,6 @@
         });
       },
     },
-    // Ensures transparent background becomes solid when exporting as PNG
     customCanvasBackgroundColor: {
       id: 'customCanvasBackgroundColor',
       beforeDraw: chart => {
@@ -334,7 +394,8 @@
     });
 
     updateInfoCards(state.activePointIndex);
-    setDateRange('2y');
+    setDateRange(state.currentRange);
+    applyCurrentView();
   };
 
   // Event & UI Handlers
@@ -344,6 +405,8 @@
       .forEach(b => b.classList.remove('active'));
 
   const setDateRange = range => {
+    state.currentRange = range;
+
     const end = new Date(state.maxDate);
     let start = new Date(state.maxDate);
 
@@ -371,6 +434,15 @@
       );
       if (btn) btn.classList.add('active');
     }
+
+    syncUrlParams();
+  };
+
+  const applyCurrentView = () => {
+    const btnId = VIEW_TO_BTN[state.currentView] || 'btnBoth';
+    const showSingle = state.currentView !== 'household';
+    const showHousehold = state.currentView !== 'single';
+    updateLineVisibility(showSingle, showHousehold, btnId);
   };
 
   const updateLineVisibility = (showSingle, showHousehold, btnId) => {
@@ -379,18 +451,21 @@
     if (showHousehold) state.chartInstance.show(1);
     else state.chartInstance.hide(1);
 
+    state.currentView = BTN_TO_VIEW[btnId] || 'both';
+
     document.querySelectorAll('.controls .btn').forEach(btn => {
       btn.classList.toggle('btn-primary', btn.id === btnId);
       btn.classList.toggle('active', btn.id === btnId);
       btn.classList.toggle('btn-secondary', btn.id !== btnId);
     });
     updateInfoCards(state.activePointIndex);
+    syncUrlParams();
   };
 
   // Features
   const downloadChart = () => {
     const link = document.createElement('a');
-    link.download = `mortgage-affordability-${new Date().toISOString().split('T')[0]}.png`;
+    link.download = `home-affordability-${state.currentState}-${new Date().toISOString().split('T')[0]}.png`;
     link.href = state.chartInstance.toBase64Image();
     link.click();
   };
@@ -402,15 +477,47 @@
       ? 'Y-Axis: Zero'
       : 'Y-Axis: Auto';
     state.chartInstance.update();
+    syncUrlParams();
+  };
+
+  const getDataUrl = stateCode => {
+    if (stateCode === 'ALL') return 'weekly_case_shiller_output.json';
+    return `data/${stateCode}.json`;
+  };
+
+  const updateHeaderForState = stateCode => {
+    const name = STATE_NAMES[stateCode] || stateCode;
+    dom.headerEyebrow.textContent =
+      stateCode === 'ALL' ? 'U.S. Housing Market' : `${name} Housing Market`;
   };
 
   // Bootstrapping
-  const loadData = async () => {
-    try {
-      const response = await fetch('weekly_case_shiller_output.json');
-      if (!response.ok)
-        throw new Error('Failed to load data file. Run the Ruby script first.');
+  const loadData = async stateCode => {
+    const mainContent = document.getElementById('mainContent');
+    const isSwitch = state.chartInstance !== null;
 
+    if (isSwitch) {
+      mainContent.classList.add('is-loading');
+    }
+
+    try {
+      if (state.chartInstance) {
+        state.chartInstance.destroy();
+        state.chartInstance = null;
+      }
+
+      const url = getDataUrl(stateCode);
+      const response = await fetch(url);
+      if (!response.ok) {
+        if (stateCode !== 'ALL') {
+          throw new Error(
+            `Data for ${STATE_NAMES[stateCode]} is not yet available. Run the data script first.`,
+          );
+        }
+        throw new Error('Failed to load data file. Run the Ruby script first.');
+      }
+
+      state.currentState = stateCode;
       state.chartData = await response.json();
       state.firstEstimatedIndex = state.chartData.single_costs.findIndex(
         i => i.estimated || i.interpolated,
@@ -434,18 +541,37 @@
       dom.updateInfo.textContent = `Last updated: ${genDate} | ${actCount} actual ${estCount > 0 ? '+ ' + estCount + ' estimated' : ''} data points`;
 
       document.getElementById('loadingMessage').style.display = 'none';
-      document.getElementById('mainContent').style.display = 'block';
+      mainContent.style.display = 'block';
 
+      updateHeaderForState(stateCode);
       initChart();
+      syncUrlParams();
     } catch (error) {
       console.error(error);
-      document.getElementById('loadingMessage').innerHTML =
-        `<div class="error-message"><strong>Error:</strong> ${error.message}</div>`;
+      if (state.chartInstance) {
+        dom.updateInfo.textContent = `Error: ${error.message}`;
+      } else {
+        document.getElementById('loadingMessage').innerHTML =
+          `<div class="error-message"><strong>Error:</strong> ${error.message}</div>`;
+      }
+    } finally {
+      mainContent.classList.remove('is-loading');
     }
   };
 
   // Listeners bindings
   document.addEventListener('DOMContentLoaded', () => {
+    // Read URL params and apply initial state
+    const params = readUrlParams();
+    state.currentRange = params.range;
+    state.currentView = params.view;
+    state.yAxisZero = params.yaxis === 'zero';
+    dom.stateSelect.value = params.state;
+
+    if (state.yAxisZero) {
+      dom.btnToggleY.textContent = 'Y-Axis: Zero';
+    }
+
     document
       .getElementById('btnBoth')
       .addEventListener('click', () =>
@@ -477,6 +603,11 @@
       .addEventListener('click', downloadChart);
     dom.btnToggleY.addEventListener('click', toggleYAxis);
 
+    // State market selector
+    dom.stateSelect.addEventListener('change', () => {
+      loadData(dom.stateSelect.value);
+    });
+
     // Keyboard arrows navigation
     document
       .querySelector('.chart-container')
@@ -496,6 +627,6 @@
         }
       });
 
-    loadData();
+    loadData(params.state);
   });
 })();

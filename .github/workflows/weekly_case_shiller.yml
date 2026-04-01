@@ -40,7 +40,7 @@ jobs:
           ruby-version: '3.4.4'
           bundler-cache: true
 
-      - name: Run weekly Case-Shiller script
+      - name: Run weekly Case-Shiller script (national + all states)
         if: steps.time_check.outputs.run == 'true'
         env:
           BLS_API_KEY: ${{ secrets.BLS_API_KEY }}
@@ -54,4 +54,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: 'Update Case-Shiller data for week of ${{ github.run_id }}'
-          file_pattern: '*.json'
+          file_pattern: '*.json data/*.json'

@@ -2,15 +2,113 @@
 
 require 'net/http'
 require 'json'
+require 'csv'
 require 'uri'
 require 'date'
 require 'optparse'
+require 'fileutils'
 
 # Configuration constants
 LOAN_TERM_MONTHS = 30 * 12
 DEFAULT_YEARS_BACK = 10
 HOUSEHOLD_MULTIPLIER = 1.4
 OUTPUT_FILE = 'weekly_case_shiller_output.json'
+STATE_DATA_DIR = 'data'
+
+# FRED Zillow Home Value Index series by state
+# Pattern: {STATE_CODE}UCSFRCONDOSMSAMID
+STATE_FRED_SERIES = {
+  'US' => 'USAUCSFRCONDOSMSAMID',
+  'AL' => 'ALUCSFRCONDOSMSAMID',
+  'AK' => 'AKUCSFRCONDOSMSAMID',
+  'AZ' => 'AZUCSFRCONDOSMSAMID',
+  'AR' => 'ARUCSFRCONDOSMSAMID',
+  'CA' => 'CAUCSFRCONDOSMSAMID',
+  'CO' => 'COUCSFRCONDOSMSAMID',
+  'CT' => 'CTUCSFRCONDOSMSAMID',
+  'DE' => 'DEUCSFRCONDOSMSAMID',
+  'DC' => 'DCUCSFRCONDOSMSAMID',
+  'FL' => 'FLUCSFRCONDOSMSAMID',
+  'GA' => 'GAUCSFRCONDOSMSAMID',
+  'HI' => 'HIUCSFRCONDOSMSAMID',
+  'ID' => 'IDUCSFRCONDOSMSAMID',
+  'IL' => 'ILUCSFRCONDOSMSAMID',
+  'IN' => 'INUCSFRCONDOSMSAMID',
+  'IA' => 'IAUCSFRCONDOSMSAMID',
+  'KS' => 'KSUCSFRCONDOSMSAMID',
+  'KY' => 'KYUCSFRCONDOSMSAMID',
+  'LA' => 'LAUCSFRCONDOSMSAMID',
+  'ME' => 'MEUCSFRCONDOSMSAMID',
+  'MD' => 'MDUCSFRCONDOSMSAMID',
+  'MA' => 'MAUCSFRCONDOSMSAMID',
+  'MI' => 'MIUCSFRCONDOSMSAMID',
+  'MN' => 'MNUCSFRCONDOSMSAMID',
+  'MS' => 'MSUCSFRCONDOSMSAMID',
+  'MO' => 'MOUCSFRCONDOSMSAMID',
+  'MT' => 'MTUCSFRCONDOSMSAMID',
+  'NE' => 'NEUCSFRCONDOSMSAMID',
+  'NV' => 'NVUCSFRCONDOSMSAMID',
+  'NH' => 'NHUCSFRCONDOSMSAMID',
+  'NJ' => 'NJUCSFRCONDOSMSAMID',
+  'NM' => 'NMUCSFRCONDOSMSAMID',
+  'NY' => 'NYUCSFRCONDOSMSAMID',
+  'NC' => 'NCUCSFRCONDOSMSAMID',
+  'ND' => 'NDUCSFRCONDOSMSAMID',
+  'OH' => 'OHUCSFRCONDOSMSAMID',
+  'OK' => 'OKUCSFRCONDOSMSAMID',
+  'OR' => 'ORUCSFRCONDOSMSAMID',
+  'PA' => 'PAUCSFRCONDOSMSAMID',
+  'RI' => 'RIUCSFRCONDOSMSAMID',
+  'SC' => 'SCUCSFRCONDOSMSAMID',
+  'SD' => 'SDUCSFRCONDOSMSAMID',
+  'TN' => 'TNUCSFRCONDOSMSAMID',
+  'TX' => 'TXUCSFRCONDOSMSAMID',
+  'UT' => 'UTUCSFRCONDOSMSAMID',
+  'VT' => 'VTUCSFRCONDOSMSAMID',
+  'VA' => 'VAUCSFRCONDOSMSAMID',
+  'WA' => 'WAUCSFRCONDOSMSAMID',
+  'WV' => 'WVUCSFRCONDOSMSAMID',
+  'WI' => 'WIUCSFRCONDOSMSAMID',
+  'WY' => 'WYUCSFRCONDOSMSAMID',
+}.freeze
+
+STATE_NAMES = {
+  'US' => 'United States', 'AL' => 'Alabama', 'AK' => 'Alaska',
+  'AZ' => 'Arizona', 'AR' => 'Arkansas', 'CA' => 'California',
+  'CO' => 'Colorado', 'CT' => 'Connecticut', 'DE' => 'Delaware',
+  'DC' => 'District of Columbia', 'FL' => 'Florida', 'GA' => 'Georgia',
+  'HI' => 'Hawaii', 'ID' => 'Idaho', 'IL' => 'Illinois', 'IN' => 'Indiana',
+  'IA' => 'Iowa', 'KS' => 'Kansas', 'KY' => 'Kentucky', 'LA' => 'Louisiana',
+  'ME' => 'Maine', 'MD' => 'Maryland', 'MA' => 'Massachusetts',
+  'MI' => 'Michigan', 'MN' => 'Minnesota', 'MS' => 'Mississippi',
+  'MO' => 'Missouri', 'MT' => 'Montana', 'NE' => 'Nebraska',
+  'NV' => 'Nevada', 'NH' => 'New Hampshire', 'NJ' => 'New Jersey',
+  'NM' => 'New Mexico', 'NY' => 'New York', 'NC' => 'North Carolina',
+  'ND' => 'North Dakota', 'OH' => 'Ohio', 'OK' => 'Oklahoma',
+  'OR' => 'Oregon', 'PA' => 'Pennsylvania', 'RI' => 'Rhode Island',
+  'SC' => 'South Carolina', 'SD' => 'South Dakota', 'TN' => 'Tennessee',
+  'TX' => 'Texas', 'UT' => 'Utah', 'VT' => 'Vermont', 'VA' => 'Virginia',
+  'WA' => 'Washington', 'WV' => 'West Virginia', 'WI' => 'Wisconsin',
+  'WY' => 'Wyoming',
+}.freeze
+
+# QCEW area FIPS codes for states
+STATE_FIPS = {
+  'US' => 'US000',
+  'AL' => '01000', 'AK' => '02000', 'AZ' => '04000', 'AR' => '05000',
+  'CA' => '06000', 'CO' => '08000', 'CT' => '09000', 'DE' => '10000',
+  'DC' => '11000', 'FL' => '12000', 'GA' => '13000', 'HI' => '15000',
+  'ID' => '16000', 'IL' => '17000', 'IN' => '18000', 'IA' => '19000',
+  'KS' => '20000', 'KY' => '21000', 'LA' => '22000', 'ME' => '23000',
+  'MD' => '24000', 'MA' => '25000', 'MI' => '26000', 'MN' => '27000',
+  'MS' => '28000', 'MO' => '29000', 'MT' => '30000', 'NE' => '31000',
+  'NV' => '32000', 'NH' => '33000', 'NJ' => '34000', 'NM' => '35000',
+  'NY' => '36000', 'NC' => '37000', 'ND' => '38000', 'OH' => '39000',
+  'OK' => '40000', 'OR' => '41000', 'PA' => '42000', 'RI' => '44000',
+  'SC' => '45000', 'SD' => '46000', 'TN' => '47000', 'TX' => '48000',
+  'UT' => '49000', 'VT' => '50000', 'VA' => '51000', 'WA' => '53000',
+  'WV' => '54000', 'WI' => '55000', 'WY' => '56000',
+}.freeze
 
 class CLIParser
   def self.parse
@@ -24,8 +122,97 @@ class CLIParser
       rescue ArgumentError
         abort "Invalid date format. Use YYYY-MM-DD."
       end
+      opts.on("--state STATE", "Generate data for a specific state only (e.g., CA)") do |st|
+        st = st.upcase
+        abort "Unknown state code: #{st}" unless STATE_FRED_SERIES.key?(st)
+        options[:state] = st
+      end
     end.parse!
     options
+  end
+end
+
+class QCEWFetcher
+  QCEW_BASE_URL = 'https://data.bls.gov/cew/data/api'
+
+  # Fetches QCEW annual data and computes state-to-national wage ratios.
+  # Returns [multipliers_hash, year_used] where multipliers_hash maps
+  # state codes to their wage ratio vs national (e.g., CA => 1.25).
+  # US is always 1.0.
+  def self.fetch_state_multipliers
+    year = Date.today.year - 1
+
+    2.times do |attempt|
+      target_year = year - attempt
+      puts "  Trying QCEW data for #{target_year}..."
+
+      csv_data = fetch_industry_data(target_year)
+      if csv_data
+        multipliers = parse_multipliers(csv_data)
+        if multipliers
+          puts "  ✓ Using QCEW #{target_year} data for state income multipliers"
+          return [multipliers, target_year]
+        end
+      end
+    end
+
+    puts "  ⚠️  QCEW data unavailable, using 1.0 multiplier for all states"
+    [default_multipliers, nil]
+  end
+
+  private
+
+  def self.fetch_industry_data(year)
+    uri = URI("#{QCEW_BASE_URL}/#{year}/a/industry/10.csv")
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+    http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+    http.open_timeout = 30
+    http.read_timeout = 60
+    response = http.get(uri.request_uri)
+    return nil unless response.code == '200' && response.body.length > 100
+    response.body
+  rescue => e
+    puts "  ⚠️  QCEW fetch error: #{e.message}"
+    nil
+  end
+
+  def self.parse_multipliers(csv_data)
+    fips_to_state = STATE_FIPS.invert
+    national_wage = nil
+    state_wages = {}
+
+    CSV.parse(csv_data, headers: true, liberal_parsing: true) do |row|
+      own_code = row['own_code'].to_s.strip.delete('"')
+      next unless own_code == '5' # Private sector only
+
+      area = row['area_fips'].to_s.strip.delete('"')
+      wage_str = row['annual_avg_wkly_wage'].to_s.strip.delete('"')
+      wage = wage_str.to_f
+      next if wage <= 0
+
+      if area == 'US000'
+        national_wage = wage
+      elsif fips_to_state.key?(area)
+        state_wages[fips_to_state[area]] = wage
+      end
+    end
+
+    return nil unless national_wage && national_wage > 0
+
+    multipliers = { 'US' => 1.0 }
+    state_wages.each do |code, wage|
+      multipliers[code] = (wage / national_wage).round(4)
+    end
+
+    # Fill any missing states with 1.0
+    STATE_FIPS.each_key { |code| multipliers[code] ||= 1.0 }
+
+    multipliers
+  end
+
+  def self.default_multipliers
+    STATE_FIPS.each_key.with_object({}) { |code, h| h[code] = 1.0 }
   end
 end
 
@@ -353,7 +540,7 @@ class MortgageCalculator
     end
   end
 
-  def self.calculate_costs(home_price_data, mortgage_data, income_data)
+  def self.calculate_costs(home_price_data, mortgage_data, income_data, income_multiplier: 1.0)
     single_costs, household_costs = [], []
     last_income_date = Date.parse(income_data.last[:date])
 
@@ -376,7 +563,7 @@ class MortgageCalculator
       rate = mortgage_obs['value'].to_f / 100.0
       total_cost = calculate_total_mortgage_cost(house_price, rate)
 
-      single_income = weekly_income * 52
+      single_income = weekly_income * 52 * income_multiplier
       household_income = single_income * HOUSEHOLD_MULTIPLIER
 
       metadata = {}
@@ -424,7 +611,7 @@ class WeeklyCaseSchiller
     options = CLIParser.parse
     fetcher = DataFetcher.new(options[:bls_api_key], options[:fred_api_key], options[:start_date])
 
-    puts "📊 Fetching data from APIs..."
+    puts "📊 Fetching shared data from APIs..."
 
     bls_data = fetcher.fetch_bls_income_data
     income_data = MortgageCalculator.normalize_income_data(bls_data)
@@ -437,18 +624,6 @@ class WeeklyCaseSchiller
       puts "  Monthly growth rate: #{growth.round(3)}%"
     end
 
-    home_price_monthly = fetcher.fetch_fred_data('USAUCSFRCONDOSMSAMID')
-    puts "✓ Home Price monthly: #{home_price_monthly['observations'].length} observations"
-
-    if home_price_monthly['observations'].length >= 6
-      last_six = home_price_monthly['observations'][-6..-1]
-      first_val = last_six[0]['value'].to_f
-      last_val = last_six[-1]['value'].to_f
-      growth = ((last_val - first_val) / first_val * 100)
-      avg_monthly = ((1 + growth/100) ** (1.0/5) - 1) * 100
-      puts "  Last 6 months growth: #{growth.round(3)}% total, #{avg_monthly.round(3)}% avg/month"
-    end
-
     mortgage_weekly = fetcher.fetch_fred_data('MORTGAGE30US')
     puts "✓ Mortgage rates (weekly): #{mortgage_weekly['observations'].length} observations"
 
@@ -458,31 +633,93 @@ class WeeklyCaseSchiller
     puts "  First date: #{thursday_dates.first.strftime('%Y-%m-%d')}"
     puts "  Last date: #{thursday_dates.last.strftime('%Y-%m-%d')}"
 
-    home_price_aligned = HomePriceEnhancer.match_thursday_dates(
-      home_price_monthly['observations'],
-      thursday_dates
-    )
-    puts "✓ Home Price (Thursday-aligned): #{home_price_aligned.length} observations"
-
     mortgage_aligned = MortgageRateEnhancer.match_thursday_dates(
       mortgage_weekly,
       thursday_dates
     )
     puts "✓ Mortgage rates (Thursday-aligned): #{mortgage_aligned.length} observations"
 
-    puts "\n🧮 Calculating affordability metrics..."
+    # Fetch QCEW state income multipliers
+    puts "\n💰 Fetching state income multipliers from BLS QCEW..."
+    income_multipliers, qcew_year = QCEWFetcher.fetch_state_multipliers
+
+    # Show a sample of multipliers
+    sample_states = ['CA', 'TX', 'NY', 'FL', 'MS'].select { |s| income_multipliers.key?(s) }
+    sample_states.each do |s|
+      puts "  #{STATE_NAMES[s]}: #{income_multipliers[s]}x"
+    end
+
+    # Determine which states to generate
+    states_to_generate = if options[:state]
+                           [options[:state]]
+                         else
+                           STATE_FRED_SERIES.keys
+                         end
+
+    states_to_generate.each do |state_code|
+      multiplier = income_multipliers[state_code] || 1.0
+      generate_state_data(fetcher, state_code, income_data, thursday_dates, mortgage_aligned, multiplier, qcew_year)
+    end
+  end
+
+  private
+
+  def generate_state_data(fetcher, state_code, income_data, thursday_dates, mortgage_aligned, income_multiplier, qcew_year)
+    series_id = STATE_FRED_SERIES[state_code]
+    state_name = STATE_NAMES[state_code]
+    puts "\n" + "=" * 60
+    puts "📍 Generating data for #{state_name} (#{state_code})..."
+    puts "   FRED series: #{series_id}"
+    puts "   Income multiplier: #{income_multiplier}x" unless state_code == 'US'
+
+    home_price_monthly = fetcher.fetch_fred_data(series_id)
+
+    if home_price_monthly['observations'].nil? || home_price_monthly['observations'].empty?
+      puts "⚠️  No home price data found for #{state_name}, skipping"
+      return
+    end
+
+    # Filter out invalid observations
+    valid_observations = home_price_monthly['observations'].select do |obs|
+      obs['value'] && obs['value'] != '.' && !obs['value'].empty?
+    end
+
+    if valid_observations.empty?
+      puts "⚠️  No valid home price observations for #{state_name}, skipping"
+      return
+    end
+
+    puts "✓ Home Price monthly: #{valid_observations.length} observations"
+
+    if valid_observations.length >= 6
+      last_six = valid_observations[-6..-1]
+      first_val = last_six[0]['value'].to_f
+      last_val = last_six[-1]['value'].to_f
+      growth = ((last_val - first_val) / first_val * 100)
+      avg_monthly = ((1 + growth/100) ** (1.0/5) - 1) * 100
+      puts "  Last 6 months growth: #{growth.round(3)}% total, #{avg_monthly.round(3)}% avg/month"
+    end
+
+    home_price_aligned = HomePriceEnhancer.match_thursday_dates(
+      valid_observations,
+      thursday_dates
+    )
+    puts "✓ Home Price (Thursday-aligned): #{home_price_aligned.length} observations"
+
+    puts "🧮 Calculating affordability metrics..."
 
     single_costs, household_costs = MortgageCalculator.calculate_costs(
       home_price_aligned,
       mortgage_aligned,
-      income_data
+      income_data,
+      income_multiplier: income_multiplier
     )
 
     estimated_count = single_costs.count { |c| c[:estimated] }
     actual_count = single_costs.length - estimated_count
     income_estimated_count = single_costs.count { |c| c.dig(:estimation_details, :income_estimated) }
 
-    last_actual_home_price = home_price_monthly['observations'].last
+    last_actual_home_price = valid_observations.last
     last_actual_date = Date.parse(last_actual_home_price['date'])
     last_income_date = Date.parse(income_data.last[:date])
 
@@ -491,6 +728,8 @@ class WeeklyCaseSchiller
       household_costs: household_costs,
       metadata: {
         generated_at: Time.now.iso8601,
+        state: state_code,
+        state_name: state_name,
         frequency: 'weekly_thursday_aligned',
         date_range: {
           start: single_costs.first[:date],
@@ -506,8 +745,10 @@ class WeeklyCaseSchiller
         },
         data_sources: {
           bls_series: 'CES0500000011',
-          fred_home_price: 'USAUCSFRCONDOSMSAMID',
-          fred_mortgage: 'MORTGAGE30US'
+          fred_home_price: series_id,
+          fred_mortgage: 'MORTGAGE30US',
+          qcew_income_multiplier: income_multiplier,
+          qcew_year: qcew_year
         },
         methodology: {
           loan_term_months: LOAN_TERM_MONTHS,
@@ -515,15 +756,24 @@ class WeeklyCaseSchiller
           home_price_estimation: 'Trend-only estimation based on 6-month growth rate',
           home_price_interpolation: 'Cubic Hermite spline through monthly averages with linear fallback',
           income_estimation: 'Hermite spline interpolation with trend projection',
+          income_note: 'National BLS weekly earnings scaled by QCEW state-to-national private sector wage ratio',
           date_alignment: 'All data points aligned to MORTGAGE30US Thursday release dates',
           note: 'Smooth curves through monthly data with safety checks for edge cases'
         }
       }
     }
 
-    File.write(OUTPUT_FILE, JSON.pretty_generate(output_data))
+    # Write to appropriate file
+    if state_code == 'US'
+      output_file = OUTPUT_FILE
+    else
+      FileUtils.mkdir_p(STATE_DATA_DIR)
+      output_file = File.join(STATE_DATA_DIR, "#{state_code}.json")
+    end
 
-    puts "\n✅ Data written to #{OUTPUT_FILE}"
+    File.write(output_file, JSON.pretty_generate(output_data))
+
+    puts "✅ Data written to #{output_file}"
     puts "📊 Total: #{single_costs.length} Thursday-aligned data points"
     puts "  - Actual data: #{actual_count} points"
     puts "  - Estimated: #{estimated_count} points"
