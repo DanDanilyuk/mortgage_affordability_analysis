@@ -54,8 +54,7 @@
 }
 
 /* --- Dark Mode --- */
-@media (prefers-color-scheme: dark) {
-  :root {
+:root[data-theme="dark"] {
     --bg-body: #0c0f17;
     --bg-container: #141821;
     --bg-card: #1c2030;
@@ -81,7 +80,6 @@
     --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
     --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.4);
     --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.03);
-  }
 }
 
 /* --- Reset & Base --- */
@@ -185,6 +183,40 @@ h1 .header-accent {
   color: #64748b;
   letter-spacing: 0.02em;
 }
+
+/* --- Theme Toggle --- */
+.theme-toggle {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-sm);
+  padding: 8px;
+  cursor: pointer;
+  color: #f1f5f9;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  line-height: 0;
+}
+
+.theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--accent-amber);
+  outline-offset: 2px;
+}
+
+.theme-icon {
+  width: 18px;
+  height: 18px;
+}
+
+[data-theme="light"] .theme-icon-sun { display: none; }
+[data-theme="dark"] .theme-icon-moon { display: none; }
 
 /* --- Main Content --- */
 .content {
@@ -382,10 +414,8 @@ h1 .header-accent {
   border-color: var(--accent-amber);
 }
 
-@media (prefers-color-scheme: dark) {
-  .market-selector select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' fill='none' stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  }
+[data-theme="dark"] .market-selector select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' fill='none' stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 
 /* --- Loading State (State Switch) --- */

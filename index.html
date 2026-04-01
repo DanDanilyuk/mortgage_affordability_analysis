@@ -4,8 +4,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Track U.S. mortgage affordability trends with real-time data on home prices, earnings, and interest rates.">
-    <title>Home Affordability Tracker</title>
+
+    <!-- SEO -->
+    <title>Home Affordability Tracker - U.S. Mortgage Cost vs. Income</title>
+    <meta name="description" content="How many years of income does a home really cost? Track U.S. mortgage affordability trends with weekly-updated data on home prices, earnings, and interest rates across all 50 states.">
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+    <meta name="author" content="Dan Danilyuk">
+    <link rel="canonical" href="https://homeaffordabilitytracker.com/">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Home Affordability Tracker">
+    <meta property="og:description" content="How many years of income does a home really cost? Track U.S. mortgage affordability with weekly-updated data across all 50 states.">
+    <meta property="og:url" content="https://homeaffordabilitytracker.com/">
+    <meta property="og:site_name" content="Home Affordability Tracker">
+    <meta property="og:image" content="https://homeaffordabilitytracker.com/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Home Affordability Tracker - U.S. mortgage cost vs. income trends">
+    <meta property="og:locale" content="en_US">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Home Affordability Tracker">
+    <meta name="twitter:description" content="How many years of income does a home really cost? Track U.S. mortgage affordability with weekly-updated data across all 50 states.">
+    <meta name="twitter:image" content="https://homeaffordabilitytracker.com/og-image.png">
+    <meta name="twitter:image:alt" content="Home Affordability Tracker - U.S. mortgage cost vs. income trends">
+
+    <!-- Theme & Favicon -->
+    <meta name="theme-color" content="#d97706" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#f59e0b" media="(prefers-color-scheme: dark)">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Home Affordability Tracker",
+        "url": "https://homeaffordabilitytracker.com/",
+        "description": "Track U.S. home affordability trends with weekly-updated data on mortgage costs, home prices, earnings, and interest rates across all 50 states.",
+        "applicationCategory": "FinanceApplication",
+        "operatingSystem": "Any",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "author": {
+            "@type": "Person",
+            "name": "Dan Danilyuk",
+            "url": "https://www.dandanilyuk.com"
+        }
+    }
+    </script>
+
+    <!-- Theme (prevent flash of wrong theme) -->
+    <script>
+      (function() {
+        var t = localStorage.getItem('theme');
+        if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', t);
+      })();
+    </script>
+
     <link rel="stylesheet" href="styles.css">
 
     <!-- Fonts -->
@@ -25,6 +88,14 @@
 <body>
     <div class="container">
         <header>
+            <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+                <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                </svg>
+                <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+                </svg>
+            </button>
             <div class="header-inner">
                 <div class="header-eyebrow" id="headerEyebrow">U.S. Housing Market</div>
                 <h1>Home Affordability<br><span class="header-accent">Tracker</span></h1>
