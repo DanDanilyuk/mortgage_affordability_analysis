@@ -604,7 +604,18 @@
     dom.btnToggleY.addEventListener('click', toggleYAxis);
 
     // State market selector
+    const resizeSelect = () => {
+      const tmp = document.createElement('span');
+      const cs = getComputedStyle(dom.stateSelect);
+      tmp.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;font:' + cs.font + ';letter-spacing:' + cs.letterSpacing;
+      tmp.textContent = dom.stateSelect.options[dom.stateSelect.selectedIndex].text;
+      document.body.appendChild(tmp);
+      dom.stateSelect.style.width = (tmp.offsetWidth + 52) + 'px';
+      tmp.remove();
+    };
+    resizeSelect();
     dom.stateSelect.addEventListener('change', () => {
+      resizeSelect();
       loadData(dom.stateSelect.value);
     });
 

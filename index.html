@@ -127,9 +127,31 @@
 
                 <p id="datasetIndicator" class="dataset-indicator"></p>
 
-                <div class="market-selector">
-                    <label for="stateSelect">Market</label>
-                    <select id="stateSelect">
+                <div class="info-grid" id="infoGrid">
+                    <div class="info-card" id="dateCard" data-accent="slate">
+                        <div class="info-label">Date</div>
+                        <div class="info-value" id="selectedDate">-</div>
+                    </div>
+                    <div class="info-card" id="multiplierCard" data-accent="amber">
+                        <div class="info-label">Price-to-Income Ratio</div>
+                        <div class="info-value" id="currentMultiplier">-</div>
+                    </div>
+                    <div class="info-card" id="priceCard" data-accent="blue">
+                        <div class="info-label">Median Home Price</div>
+                        <div class="info-value" id="housePrice">-</div>
+                    </div>
+                    <div class="info-card" id="incomeCard" data-accent="emerald">
+                        <div class="info-label">Avg. Annual Earnings</div>
+                        <div class="info-value" id="annualIncome">-</div>
+                    </div>
+                    <div class="info-card" id="rateCard" data-accent="rose">
+                        <div class="info-label">30-Yr Fixed Rate</div>
+                        <div class="info-value" id="mortgageRate">-</div>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <select id="stateSelect" aria-label="Select market">
                         <option value="ALL" selected>All U.S.</option>
                         <option value="AL">Alabama</option>
                         <option value="AK">Alaska</option>
@@ -183,35 +205,12 @@
                         <option value="WI">Wisconsin</option>
                         <option value="WY">Wyoming</option>
                     </select>
-                </div>
-
-                <div class="info-grid" id="infoGrid">
-                    <div class="info-card" id="dateCard" data-accent="slate">
-                        <div class="info-label">Date</div>
-                        <div class="info-value" id="selectedDate">-</div>
+                    <span class="controls-divider"></span>
+                    <div class="controls-views">
+                        <button class="btn btn-primary active" id="btnBoth">Compare Both</button>
+                        <button class="btn btn-secondary" id="btnSingle">Single Earner</button>
+                        <button class="btn btn-secondary" id="btnHousehold">Dual Income (1.4×)</button>
                     </div>
-                    <div class="info-card" id="multiplierCard" data-accent="amber">
-                        <div class="info-label">Price-to-Income Ratio</div>
-                        <div class="info-value" id="currentMultiplier">-</div>
-                    </div>
-                    <div class="info-card" id="priceCard" data-accent="blue">
-                        <div class="info-label">Median Home Price</div>
-                        <div class="info-value" id="housePrice">-</div>
-                    </div>
-                    <div class="info-card" id="incomeCard" data-accent="emerald">
-                        <div class="info-label">Avg. Annual Earnings</div>
-                        <div class="info-value" id="annualIncome">-</div>
-                    </div>
-                    <div class="info-card" id="rateCard" data-accent="rose">
-                        <div class="info-label">30-Yr Fixed Rate</div>
-                        <div class="info-value" id="mortgageRate">-</div>
-                    </div>
-                </div>
-
-                <div class="controls">
-                    <button class="btn btn-primary active" id="btnBoth">Compare Both</button>
-                    <button class="btn btn-secondary" id="btnSingle">Single Earner</button>
-                    <button class="btn btn-secondary" id="btnHousehold">Dual Income (1.4×)</button>
                 </div>
 
                 <div class="chart-toolbar">
