@@ -90,12 +90,14 @@
 
   // Formatting Utilities
   const formatMoney = val => '$' + Math.round(val).toLocaleString();
-  const formatDate = dateStr =>
-    new Date(dateStr).toLocaleDateString('en-US', {
+  const formatDate = dateStr => {
+    const [y, m, d] = dateStr.split('-');
+    return new Date(y, m - 1, d).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
     });
+  };
 
   // Chart Plugins
   const plugins = {
