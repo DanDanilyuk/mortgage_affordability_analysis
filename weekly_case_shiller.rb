@@ -166,7 +166,7 @@ class QCEWFetcher
     uri = URI("#{QCEW_BASE_URL}/#{year}/a/industry/10.csv")
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true
-    http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+    http.verify_mode = OpenSSL::SSL::VERIFY_PEER
     http.open_timeout = 30
     http.read_timeout = 60
     response = http.get(uri.request_uri)
@@ -342,7 +342,7 @@ class DailyEstimator
       last = income_data[-1]
       prev_income = second_last[:value]
       current_income = last[:value]
-      monthly_growth_rate = (current_income - prev_income) / prev_income
+      monthly_growth_rate = prev_income.zero? ? 0.0 : (current_income - prev_income) / prev_income
       days_ahead = (target_date - last_income_date).to_i
       months_ahead = days_ahead / 30.0
       estimated_income = current_income * ((1 + monthly_growth_rate) ** months_ahead)
@@ -361,32 +361,61 @@ class DataFetcher
   end
 
   def fetch_bls_income_data
-    uri = URI('https://api.bls.gov/publicAPI/v2/timeseries/data/')
-    payload = {
-      'seriesid' => ['CES0500000011'],
-      'startyear' => @start_date.year.to_s,
-      'endyear' => (Date.today.year + 1).to_s,
-      'registrationkey' => @bls_key
-    }
-    response = make_post_request(uri, payload)
-    JSON.parse(response.body)
+    with_retry('BLS income data fetch') do
+      uri = URI('https://api.bls.gov/publicAPI/v2/timeseries/data/')
+      payload = {
+        'seriesid' => ['CES0500000011'],
+        'startyear' => @start_date.year.to_s,
+        'endyear' => (Date.today.year + 1).to_s,
+        'registrationkey' => @bls_key
+      }
+      response = make_post_request(uri, payload)
+      raise "BLS API error (HTTP #{response.code}): #{response.body[0..200]}" unless response.code.to_i == 200
+      parsed = JSON.parse(response.body)
+      raise "BLS API error: #{parsed['message']}" unless parsed['status'] == 'REQUEST_SUCCEEDED'
+      parsed
+    end
   end
 
   def fetch_fred_data(series_id, frequency: nil)
-    uri = build_fred_uri(series_id, frequency)
-    http = Net::HTTP.new(uri.host, uri.port)
-    http.use_ssl = true
-    http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-    response = http.get(uri.request_uri)
-    JSON.parse(response.body)
+    with_retry("FRED data fetch (#{series_id})") do
+      uri = build_fred_uri(series_id, frequency)
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.use_ssl = true
+      http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+      http.open_timeout = 30
+      http.read_timeout = 60
+      response = http.get(uri.request_uri)
+      raise "FRED API error (HTTP #{response.code}): #{response.body[0..200]}" unless response.code.to_i == 200
+      JSON.parse(response.body)
+    end
   end
 
   private
 
+  def with_retry(description, max_attempts: 3, base_delay: 2)
+    attempts = 0
+    begin
+      attempts += 1
+      yield
+    rescue StandardError => e
+      if attempts < max_attempts
+        delay = base_delay * (2 ** (attempts - 1))
+        puts "  ⚠️  #{description} failed (attempt #{attempts}/#{max_attempts}): #{e.message}. Retrying in #{delay}s..."
+        sleep delay
+        retry
+      else
+        raise
+      end
+    end
+  end
+
   def make_post_request(uri, payload)
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true
-    http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+    http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+    http.open_timeout = 30
+    http.read_timeout = 60
     request = Net::HTTP::Post.new(uri.path, { 'Content-Type' => 'application/json' })
     request.body = payload.to_json
     http.request(request)
@@ -466,7 +495,7 @@ class HomePriceEnhancer
       months_diff = 5
       six_ago_value = six_months_ago['value'].to_f
       current_value = current['value'].to_f
-      total_growth = (current_value - six_ago_value) / six_ago_value
+      total_growth = six_ago_value.zero? ? 0.0 : (current_value - six_ago_value) / six_ago_value
       monthly_growth_rate = ((1 + total_growth) ** (1.0 / months_diff)) - 1
     end
 
@@ -619,7 +648,7 @@ class WeeklyCaseSchiller
 
     if income_data.length >= 2
       last_two = income_data[-2..-1]
-      growth = ((last_two[1][:value] - last_two[0][:value]) / last_two[0][:value] * 100)
+      growth = last_two[0][:value].zero? ? 0.0 : ((last_two[1][:value] - last_two[0][:value]) / last_two[0][:value] * 100)
       puts "  Last two months: #{last_two[0][:date]} (#{last_two[0][:value]}) → #{last_two[1][:date]} (#{last_two[1][:value]})"
       puts "  Monthly growth rate: #{growth.round(3)}%"
     end
@@ -695,7 +724,7 @@ class WeeklyCaseSchiller
       last_six = valid_observations[-6..-1]
       first_val = last_six[0]['value'].to_f
       last_val = last_six[-1]['value'].to_f
-      growth = ((last_val - first_val) / first_val * 100)
+      growth = first_val.zero? ? 0.0 : ((last_val - first_val) / first_val * 100)
       avg_monthly = ((1 + growth/100) ** (1.0/5) - 1) * 100
       puts "  Last 6 months growth: #{growth.round(3)}% total, #{avg_monthly.round(3)}% avg/month"
     end

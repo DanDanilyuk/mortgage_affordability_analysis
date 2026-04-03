@@ -23,7 +23,6 @@
   --accent-amber: #d97706;
   --accent-amber-glow: rgba(217, 119, 6, 0.15);
   --accent-blue: #3b82f6;
-  --accent-blue-hover: #2563eb;
   --accent-purple: #8b5cf6;
   --accent-emerald: #059669;
   --accent-rose: #e11d48;
@@ -32,8 +31,6 @@
 
   /* Borders & Shadows */
   --border-color: #e2e0dc;
-  --border-est: #fcd34d;
-  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
   --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06);
   --shadow-lg: 0 12px 40px rgba(15, 23, 42, 0.08);
   --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.04), 0 0 0 1px rgba(15, 23, 42, 0.02);
@@ -75,8 +72,6 @@
     --accent-slate: #94a3b8;
 
     --border-color: #2a2f3e;
-    --border-est: #92400e;
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
     --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
     --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.4);
     --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.03);
@@ -159,7 +154,7 @@ h1 {
   font-size: clamp(2rem, 4vw, 3rem);
   font-weight: 700;
   line-height: 1.15;
-  color: #f1f5f9;
+  color: var(--text-on-dark);
   letter-spacing: -0.02em;
   margin-bottom: 12px;
 }
@@ -172,7 +167,7 @@ h1 .header-accent {
   font-family: var(--font-body);
   font-size: 1rem;
   font-weight: 400;
-  color: #94a3b8;
+  color: var(--text-muted);
   letter-spacing: 0.01em;
 }
 

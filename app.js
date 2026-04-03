@@ -52,6 +52,8 @@
     btnToggleY: document.getElementById('btnToggleY'),
     stateSelect: document.getElementById('stateSelect'),
     headerEyebrow: document.getElementById('headerEyebrow'),
+    dateRangeButtons: document.querySelectorAll('.date-range-buttons .btn'),
+    controlsButtons: document.querySelectorAll('.controls .btn'),
   };
 
   // URL Parameter Management
@@ -334,13 +336,13 @@
               title: ctx => {
                 const d = state.chartData.single_costs[ctx[0].dataIndex];
                 let title = `Date: ${ctx[0].label}`;
-                if (d.estimated) title += ' 🔮 (Estimated)';
-                else if (d.interpolated) title += ' 📊 (Interpolated)';
+                if (d.estimated) title += ' (Estimated)';
+                else if (d.interpolated) title += ' (Interpolated)';
                 return title;
               },
               afterTitle: ctx => {
                 const d = state.chartData.single_costs[ctx[0].dataIndex];
-                return `\nHouse Price: ${formatMoney(d.home_price)}\nMortgage Rate: ${d.mortgage_rate}%\nTotal Cost: ${formatMoney(d.total_cost)}`;
+                return `\nHome Price: ${formatMoney(d.home_price)}\nMortgage Rate: ${d.mortgage_rate}%\nTotal Cost: ${formatMoney(d.total_cost)}`;
               },
               label: ctx => {
                 const isSingle = ctx.datasetIndex === 0;
@@ -400,9 +402,7 @@
 
   // Event & UI Handlers
   const clearDateButtons = () =>
-    document
-      .querySelectorAll('.date-range-buttons .btn')
-      .forEach(b => b.classList.remove('active'));
+    dom.dateRangeButtons.forEach(b => b.classList.remove('active'));
 
   const setDateRange = range => {
     state.currentRange = range;
@@ -415,11 +415,13 @@
     else if (range === '5y') start.setFullYear(end.getFullYear() - 5);
     else if (range === 'all') start = new Date(state.minDate);
 
+    const startISO = start.toISOString().slice(0, 10);
+    const endISO = end.toISOString().slice(0, 10);
     const startIndex = state.chartData.single_costs.findIndex(
-      d => new Date(d.date) >= start,
+      d => d.date >= startISO,
     );
     const endIndex = state.chartData.single_costs.findIndex(
-      d => new Date(d.date) >= end,
+      d => d.date >= endISO,
     );
 
     if (startIndex !== -1) {
@@ -453,7 +455,7 @@
 
     state.currentView = BTN_TO_VIEW[btnId] || 'both';
 
-    document.querySelectorAll('.controls .btn').forEach(btn => {
+    dom.controlsButtons.forEach(btn => {
       btn.classList.toggle('btn-primary', btn.id === btnId);
       btn.classList.toggle('active', btn.id === btnId);
       btn.classList.toggle('btn-secondary', btn.id !== btnId);
@@ -588,10 +590,9 @@
         updateLineVisibility(false, true, 'btnHousehold'),
       );
 
-    document.querySelectorAll('.date-range-buttons .btn').forEach(btn => {
-      btn.addEventListener('click', function () {
-        setDateRange(this.dataset.range);
-      });
+    document.querySelector('.date-range-buttons').addEventListener('click', e => {
+      const btn = e.target.closest('.btn');
+      if (btn) setDateRange(btn.dataset.range);
     });
 
     document.getElementById('btnResetZoom').addEventListener('click', () => {
@@ -604,14 +605,15 @@
     dom.btnToggleY.addEventListener('click', toggleYAxis);
 
     // State market selector
+    const measureSpan = document.createElement('span');
+    measureSpan.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap';
+    document.body.appendChild(measureSpan);
     const resizeSelect = () => {
-      const tmp = document.createElement('span');
       const cs = getComputedStyle(dom.stateSelect);
-      tmp.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;font:' + cs.font + ';letter-spacing:' + cs.letterSpacing;
-      tmp.textContent = dom.stateSelect.options[dom.stateSelect.selectedIndex].text;
-      document.body.appendChild(tmp);
-      dom.stateSelect.style.width = (tmp.offsetWidth + 52) + 'px';
-      tmp.remove();
+      measureSpan.style.font = cs.font;
+      measureSpan.style.letterSpacing = cs.letterSpacing;
+      measureSpan.textContent = dom.stateSelect.options[dom.stateSelect.selectedIndex].text;
+      dom.stateSelect.style.width = (measureSpan.offsetWidth + 52) + 'px';
     };
     resizeSelect();
     dom.stateSelect.addEventListener('change', () => {

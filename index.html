@@ -118,7 +118,7 @@
                 <div class="error-message">This interactive dashboard requires JavaScript to display charts and data.</div>
             </noscript>
 
-            <div id="loadingMessage" class="loading">
+            <div id="loadingMessage" class="loading" role="status" aria-live="polite">
                 <div class="loading-spinner"></div>
                 Crunching the numbers...
             </div>
@@ -151,7 +151,7 @@
                 </div>
 
                 <div class="controls">
-                    <select id="stateSelect" aria-label="Select market">
+                    <select id="stateSelect" aria-label="Select state for housing market data">
                         <option value="ALL" selected>All U.S.</option>
                         <option value="AL">Alabama</option>
                         <option value="AK">Alaska</option>
@@ -234,7 +234,7 @@
                 </div>
 
                 <div class="chart-container" tabindex="0">
-                    <canvas id="mortgageChart"></canvas>
+                    <canvas id="mortgageChart" role="img" aria-label="Home affordability price-to-income ratio chart"></canvas>
                 </div>
 
                 <div class="zoom-info" id="zoomTip">
@@ -255,6 +255,7 @@
                         </div>
                         <p><strong>Dual Income:</strong> Estimated at 1.4× single-earner income, reflecting typical dual-income household dynamics.</p>
                         <p><strong>State-Level Data:</strong> When a state is selected, home prices reflect that state's Zillow Home Value Index (ZHVI) data sourced from FRED. Income is estimated by applying a state-specific multiplier to the national BLS average weekly earnings. This multiplier is derived from the BLS Quarterly Census of Employment and Wages (QCEW), comparing each state's private sector average weekly wage to the national average. Mortgage rates remain national regardless of state selection, using the Freddie Mac 30-year fixed rate.</p>
+                        <p><strong>Data Annotations:</strong> Data points marked as Interpolated are calculated between known monthly observations to provide weekly granularity. Estimated points extend recent trends where source data has not yet been published.</p>
                     </div>
                 </details>
             </div>
@@ -263,9 +264,9 @@
         <footer>
             <div class="footer-inner">
                 <p>Inspired by <a href="https://www.calculatedriskblog.com/p/weekly-schedule.html"
-                        target="_blank">Calculated Risk</a></p>
+                        target="_blank" rel="noopener noreferrer">Calculated Risk</a></p>
                 <p class="footer-meta">Built with Chart.js &middot; Data from BLS &amp; FRED &middot; Made by <a
-                        href="https://www.dandanilyuk.com" target="_blank">Dan Danilyuk</a></p>
+                        href="https://www.dandanilyuk.com" target="_blank" rel="noopener noreferrer">Dan Danilyuk</a></p>
             </div>
         </footer>
     </div>

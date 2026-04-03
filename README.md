@@ -1,131 +1,55 @@
-# Mortgage Affordability Analysis Website
+# Home Affordability Tracker
 
-## Overview
+A single-page dashboard tracking U.S. home affordability trends by comparing mortgage costs to income over time. Updated weekly with data from federal sources, covering all 50 states and Washington, D.C.
 
-This project is a web-based tool designed to help users analyze mortgage affordability based on their financial inputs such as income, expenses, interest rates, and loan terms. It provides estimates for maximum affordable home prices, monthly payments, and amortization schedules to aid in home-buying decisions.
+Live at [homeaffordabilitytracker.com](https://homeaffordabilitytracker.com/)
 
-The application is built as a user-friendly website, allowing interactive calculations and visualizations.
+## What It Shows
 
-## Features
+The dashboard charts the **price-to-income ratio** - the total cost of a 30-year mortgage (principal + interest) divided by annual earnings. A higher ratio means housing is less affordable relative to income.
 
-- **Affordability Calculator**: Input your income, down payment, loan term, and interest rate to get instant affordability estimates.
-- **Payment Breakdown**: Detailed breakdown of principal, interest, taxes, and insurance (PITI).
-- **Amortization Schedule**: Generate and view a full loan amortization table.
-- **Sensitivity Analysis**: Explore how changes in interest rates or terms affect affordability.
-- **Responsive Design**: Works on desktop and mobile devices.
+- **Single earner** and **dual income (1.4x)** household views
+- State-level breakdowns using state-specific income multipliers and home prices
+- Interactive chart with zoom, pan, date range selection, and data point inspection
+- Dark mode with system preference detection
 
-## Technologies Used
+## Data Sources
 
-- **Frontend**: HTML5, CSS3, JavaScript (with potential use of frameworks like React or vanilla JS for interactivity).
-- **Backend**: Ruby for data processing and calculations.
-- **Libraries**: Chart.js for visualizations, or similar for graphs of payment trends.
-- **Data Sources**: Case-Shiller Home Price Index (via FRED API), Bureau of Labor Statistics (BLS) data.
-- **Deployment**: Static hosting (e.g., GitHub Pages).
+- **Earnings**: BLS Average Weekly Earnings, Total Private (CES0500000011)
+- **Home Prices**: Zillow Home Value Index (ZHVI) via FRED, national and per-state
+- **Mortgage Rates**: Freddie Mac 30-Year Fixed Rate via FRED (MORTGAGE30US)
+- **State Income Multipliers**: BLS Quarterly Census of Employment and Wages (QCEW), comparing each state's private sector average weekly wage to the national figure
 
-## Installation
+## Tech Stack
 
-1. **Clone the Repository**:
+- **Frontend**: Vanilla JavaScript (ES6+), HTML, CSS with custom properties for theming
+- **Charts**: Chart.js 4.4.0 with chartjs-plugin-zoom
+- **Data Pipeline**: Ruby script (`weekly_case_shiller.rb`) fetching from BLS and FRED APIs
+- **Automation**: GitHub Actions workflow runs every Thursday, regenerating all data files
+- **Hosting**: GitHub Pages - no build step, static files served directly
 
-   ```
-   git clone https://github.com/DanDanilyuk/mortgage_affordability_analysis.git
-   cd mortgage_affordability_analysis
-   ```
+## Running Locally
 
-2. **Install Dependencies**:
-   Ensure Ruby is installed (version 3.0 or higher recommended). Install required gems:
+### Prerequisites
 
-   ```
-   bundle install
-   ```
+- Ruby (3.0+)
+- A [BLS API key](https://www.bls.gov/developers/)
+- A [FRED API key](https://fred.stlouisfed.org/docs/api/fred/)
 
-3. **Set Up API Keys**:
-   Obtain API keys from:
+### Generate Data
 
-   - [FRED API](https://fred.stlouisfed.org/docs/api/fred/) for Case-Shiller data.
-   - [BLS API](https://www.bls.gov/developers/) for economic indicators.
-     Set environment variables or pass them directly in commands (see Data Generation).
+```sh
+ruby weekly_case_shiller.rb --bls-api-key YOUR_BLS_KEY --fred-api-key YOUR_FRED_KEY
+```
 
-4. **Run Locally**:
-   - Generate the necessary data (see Data Generation).
-   - Open `index.html` in a web browser to use the application.
+To generate data for a single state:
 
-## Data Generation
+```sh
+ruby weekly_case_shiller.rb --bls-api-key YOUR_BLS_KEY --fred-api-key YOUR_FRED_KEY --state CA
+```
 
-To generate or update the dataset used for affordability calculations (e.g., Case-Shiller indices and BLS economic data):
-
-1. Ensure you have the required API keys.
-2. Run the Ruby script with the following command:
-   ```
-   ruby weekly_case_shiller.rb --bls-api-key YOUR_BLS_API_KEY --fred-api-key YOUR_FRED_API_KEY
-   ```
-   - Replace `YOUR_BLS_API_KEY` and `YOUR_FRED_API_KEY` with your actual API keys.
-   - This script fetches and processes data, saving it to the appropriate data files used by the application.
-3. The generated data will be stored in the project directory (e.g., `/data` folder) for use by the frontend.
-4. After running the script, open `index.html` in a web browser to view the application.
-
-## Usage
-
-1. Open `index.html` in your browser.
-2. Enter your financial details in the input form:
-   - Annual income
-   - Monthly debts
-   - Desired down payment percentage
-   - Loan term (years)
-   - Estimated interest rate
-3. Click "Calculate" to view results, including:
-   - Maximum affordable home price
-   - Estimated monthly mortgage payment
-   - Affordability ratio
-4. Use sliders or inputs to adjust variables and see real-time updates.
-5. Export or print the results for reference.
-
-Example inputs:
-
-- Income: $80,000/year
-- Down Payment: 20%
-- Term: 30 years
-- Rate: 4.5%
-
-## Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository.
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`).
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`).
-4. Push to the branch (`git push origin feature/AmazingFeature`).
-5. Open a Pull Request.
+Then open `index.html` in a browser.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-```
-MIT License
-
-Copyright (c) 2025 Dan Danilyuk
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
-
-## Contact
-
-Project maintained by [Dan Danilyuk](https://github.com/DanDanilyuk) – feel free to open an issue for feedback or questions.
-
----
+MIT License. See [LICENSE](LICENSE) for details.

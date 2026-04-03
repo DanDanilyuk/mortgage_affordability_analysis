@@ -10,6 +10,10 @@ on:
 permissions:
   contents: write # Required to commit and push changes
 
+concurrency:
+  group: weekly-case-shiller
+  cancel-in-progress: false
+
 jobs:
   run-script:
     runs-on: ubuntu-latest
@@ -48,6 +52,19 @@ jobs:
           TZ: 'America/New_York'
         run: |
           ruby weekly_case_shiller.rb --bls-api-key $BLS_API_KEY --fred-api-key $FRED_API_KEY
+
+      - name: Validate generated data
+        if: steps.time_check.outputs.run == 'true'
+        run: |
+          if [ ! -f weekly_case_shiller_output.json ]; then
+            echo "ERROR: Missing national output file"
+            exit 1
+          fi
+          if [ ! -f data/CA.json ]; then
+            echo "ERROR: Missing state data files"
+            exit 1
+          fi
+          echo "Data generation validated successfully"
 
       - name: Commit and push updated JSON
         if: steps.time_check.outputs.run == 'true'
