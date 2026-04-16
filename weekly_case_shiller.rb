@@ -11,7 +11,11 @@ require 'fileutils'
 # Configuration constants
 LOAN_TERM_MONTHS = 30 * 12
 DEFAULT_YEARS_BACK = 10
+# Ratio applied to single-earner income to model a dual-income household.
+# 1.4 approximates 1.0 primary earner + 0.4 part-time/secondary earner,
+# consistent with BLS data on household income vs individual wages.
 HOUSEHOLD_MULTIPLIER = 1.4
+MAX_RATE_GAP_DAYS = 14
 OUTPUT_FILE = 'weekly_case_shiller_output.json'
 STATE_DATA_DIR = 'data'
 
@@ -110,6 +114,21 @@ STATE_FIPS = {
   'WV' => '54000', 'WI' => '55000', 'WY' => '56000',
 }.freeze
 
+def sanitize_for_log(str)
+  str.to_s
+     .gsub(/([?&]api_key=)[^&\s"]+/i, '\1[REDACTED]')
+     .gsub(/"registrationkey"\s*=>\s*"[^"]+"/, '"registrationkey"=>"[REDACTED]"')
+end
+
+def strict_float(str, field_name = nil)
+  return nil if str.nil? || str.to_s.strip.empty? || str.to_s.strip == '.'
+  Float(str)
+rescue ArgumentError, TypeError
+  label = field_name ? " (#{field_name})" : ''
+  puts "⚠️  Warning: malformed numeric value#{label}: #{str.inspect}"
+  nil
+end
+
 class CLIParser
   def self.parse
     options = {}
@@ -173,7 +192,7 @@ class QCEWFetcher
     return nil unless response.code == '200' && response.body.length > 100
     response.body
   rescue => e
-    puts "  ⚠️  QCEW fetch error: #{e.message}"
+    puts "  ⚠️  QCEW fetch error: #{sanitize_for_log(e.message)}"
     nil
   end
 
@@ -188,8 +207,8 @@ class QCEWFetcher
 
       area = row['area_fips'].to_s.strip.delete('"')
       wage_str = row['annual_avg_wkly_wage'].to_s.strip.delete('"')
-      wage = wage_str.to_f
-      next if wage <= 0
+      wage = strict_float(wage_str, 'QCEW wage')
+      next unless wage && wage > 0
 
       if area == 'US000'
         national_wage = wage
@@ -370,7 +389,7 @@ class DataFetcher
         'registrationkey' => @bls_key
       }
       response = make_post_request(uri, payload)
-      raise "BLS API error (HTTP #{response.code}): #{response.body[0..200]}" unless response.code.to_i == 200
+      raise "BLS API error (HTTP #{response.code}): #{sanitize_for_log(response.body[0..200])}" unless response.code.to_i == 200
       parsed = JSON.parse(response.body)
       raise "BLS API error: #{parsed['message']}" unless parsed['status'] == 'REQUEST_SUCCEEDED'
       parsed
@@ -386,7 +405,7 @@ class DataFetcher
       http.open_timeout = 30
       http.read_timeout = 60
       response = http.get(uri.request_uri)
-      raise "FRED API error (HTTP #{response.code}): #{response.body[0..200]}" unless response.code.to_i == 200
+      raise "FRED API error (HTTP #{response.code}): #{sanitize_for_log(response.body[0..200])}" unless response.code.to_i == 200
       JSON.parse(response.body)
     end
   end
@@ -401,7 +420,7 @@ class DataFetcher
     rescue StandardError => e
       if attempts < max_attempts
         delay = base_delay * (2 ** (attempts - 1))
-        puts "  ⚠️  #{description} failed (attempt #{attempts}/#{max_attempts}): #{e.message}. Retrying in #{delay}s..."
+        puts "  ⚠️  #{description} failed (attempt #{attempts}/#{max_attempts}): #{sanitize_for_log(e.message)}. Retrying in #{delay}s..."
         sleep delay
         retry
       else
@@ -460,11 +479,16 @@ class MortgageRateEnhancer
         }
       else
         nearest = find_nearest_rate(mortgage_weekly['observations'], thursday)
-        rates << {
-          'date' => thursday.strftime('%Y-%m-%d'),
-          'value' => nearest['value'],
-          'estimated' => true
-        }
+        if nearest
+          rates << {
+            'date' => thursday.strftime('%Y-%m-%d'),
+            'value' => nearest['value'],
+            'estimated' => true
+          }
+        else
+          puts "⚠️  No mortgage rate within #{MAX_RATE_GAP_DAYS} days of #{thursday}, skipping data point"
+          rates << nil
+        end
       end
     end
     rates
@@ -472,7 +496,9 @@ class MortgageRateEnhancer
 
   def self.find_nearest_rate(observations, target_date)
     valid_obs = observations.select { |o| !o['value'].empty? && o['value'] != '.' }
-    valid_obs.min_by { |obs| (Date.parse(obs['date']) - target_date).abs }
+    nearest = valid_obs.min_by { |obs| (Date.parse(obs['date']) - target_date).abs }
+    return nil unless nearest
+    (Date.parse(nearest['date']) - target_date).abs <= MAX_RATE_GAP_DAYS ? nearest : nil
   end
 end
 
@@ -482,7 +508,7 @@ class HomePriceEnhancer
 
     last_actual = monthly_obs.last
     last_actual_date = Date.parse(last_actual['date'])
-    last_actual_value = last_actual['value'].to_f
+    last_actual_value = strict_float(last_actual['value'], 'home price') || 0.0
     last_actual_year = last_actual_date.year
     last_actual_month = last_actual_date.month
     last_actual_end = Date.new(last_actual_year, last_actual_month, -1)
@@ -493,8 +519,8 @@ class HomePriceEnhancer
       six_months_ago = monthly_obs[-6]
       current = monthly_obs[-1]
       months_diff = 5
-      six_ago_value = six_months_ago['value'].to_f
-      current_value = current['value'].to_f
+      six_ago_value = strict_float(six_months_ago['value'], 'home price') || 0.0
+      current_value = strict_float(current['value'], 'home price') || 0.0
       total_growth = six_ago_value.zero? ? 0.0 : (current_value - six_ago_value) / six_ago_value
       monthly_growth_rate = ((1 + total_growth) ** (1.0 / months_diff)) - 1
     end
@@ -507,7 +533,7 @@ class HomePriceEnhancer
       obs_date = Date.parse(obs['date'])
       control_point = Date.new(obs_date.year, obs_date.month, 1)
       control_dates << control_point
-      control_values << obs['value'].to_f
+      control_values << (strict_float(obs['value'], 'home price') || 0.0)
     end
 
     # For each monthly control point, find the closest Thursday - that Thursday is
@@ -581,7 +607,9 @@ class MortgageCalculator
     data.filter_map do |entry|
       date = Date.parse("#{entry['year']}-#{entry['periodName']}-01")
       next if date < cutoff_date
-      { date: date.to_s, value: entry['value'].to_f }
+      value = strict_float(entry['value'], 'BLS income')
+      next unless value
+      { date: date.to_s, value: value }
     end
   end
 
@@ -597,15 +625,20 @@ class MortgageCalculator
       weekly_income = DailyEstimator.estimate_weekly_income(income_data, date)
       income_estimated = date > last_income_date
 
-      house_price = home_price_obs['value'].to_f
+      house_price = strict_float(home_price_obs['value'], 'home price')
 
       # Safety check for NaN values
-      if house_price.nan? || house_price.infinite? || house_price <= 0
+      if house_price.nil? || house_price.nan? || house_price.infinite? || house_price <= 0
         puts "⚠️  Warning: Invalid house price for #{date}, skipping"
         next
       end
 
-      rate = mortgage_obs['value'].to_f / 100.0
+      rate_pct = strict_float(mortgage_obs['value'], 'mortgage rate')
+      if rate_pct.nil?
+        puts "⚠️  Warning: Invalid mortgage rate for #{date}, skipping"
+        next
+      end
+      rate = rate_pct / 100.0
       total_cost = calculate_total_mortgage_cost(house_price, rate)
 
       single_income = weekly_income * 52 * income_multiplier
@@ -711,7 +744,7 @@ class WeeklyCaseSchiller
       begin
         generate_state_data(fetcher, state_code, income_data, thursday_dates, mortgage_aligned, multiplier, qcew_year, multiplier_source)
       rescue => e
-        puts "❌ Failed to generate data for #{state_code}: #{e.message}"
+        puts "❌ Failed to generate data for #{state_code}: #{sanitize_for_log(e.message)}"
         failed_states << state_code
       end
     end
