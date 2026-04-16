@@ -55,6 +55,7 @@
     headerEyebrow: document.getElementById('headerEyebrow'),
     dateRangeButtons: document.querySelectorAll('.date-range-buttons .btn'),
     controlsButtons: document.querySelectorAll('.controls .btn'),
+    chartLiveRegion: document.getElementById('chartLiveRegion'),
   };
 
   let fetchToken = 0;
@@ -236,6 +237,16 @@
       details.income_estimated,
       singleData.estimated ? 'Estimated' : 'Interpolated',
     );
+
+    if (dom.chartLiveRegion) {
+      const stateName = STATE_NAMES[state.currentState] || state.currentState;
+      const multiplierPart = bothVisible
+        ? `Price-to-Income ${singleData.cost_to_income}x (single) / ${householdData.cost_to_income}x (dual)`
+        : householdVisible
+          ? `Price-to-Income ${householdData.cost_to_income}x`
+          : `Price-to-Income ${singleData.cost_to_income}x`;
+      dom.chartLiveRegion.textContent = `${formatDate(singleData.date)} - ${stateName}: ${multiplierPart}, Median Home Price ${formatMoney(singleData.home_price)}, Mortgage ${singleData.mortgage_rate}%`;
+    }
   };
 
   const readChartTokens = () => {
@@ -494,9 +505,8 @@
   const toggleYAxis = () => {
     state.yAxisZero = !state.yAxisZero;
     state.chartInstance.options.scales.y.beginAtZero = state.yAxisZero;
-    dom.btnToggleY.textContent = state.yAxisZero
-      ? 'Y-Axis: Zero'
-      : 'Y-Axis: Auto';
+    dom.btnToggleY.textContent = state.yAxisZero ? 'Y-Axis: Zero' : 'Y-Axis: Auto';
+    dom.btnToggleY.classList.toggle('active', state.yAxisZero);
     state.chartInstance.update();
     syncUrlParams();
   };
@@ -519,6 +529,13 @@
     const myToken = ++fetchToken;
     if (currentFetchController) currentFetchController.abort();
     currentFetchController = new AbortController();
+    const controller = currentFetchController;
+
+    let timedOut = false;
+    const timeoutId = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, 15000);
 
     const mainContent = document.getElementById('mainContent');
     const isSwitch = state.chartInstance !== null;
@@ -534,7 +551,7 @@
       }
 
       const url = getDataUrl(stateCode);
-      const response = await fetch(url, { signal: currentFetchController.signal });
+      const response = await fetch(url, { signal: controller.signal });
       if (!response.ok) {
         if (stateCode !== 'ALL') {
           throw new Error(
@@ -584,7 +601,20 @@
       initChart();
       syncUrlParams();
     } catch (error) {
-      if (error.name === 'AbortError') return;
+      if (error.name === 'AbortError') {
+        if (timedOut) {
+          const retryHTML = `Couldn't load data - network timeout. <button class="btn btn-secondary btn-small" id="retryBtn">Retry</button>`;
+          if (isSwitch) {
+            dom.updateInfo.innerHTML = retryHTML;
+          } else {
+            const lm = document.getElementById('loadingMessage');
+            lm.innerHTML = `<div class="error-message">${retryHTML}</div>`;
+            lm.style.display = '';
+          }
+          document.getElementById('retryBtn').addEventListener('click', () => loadData(stateCode));
+        }
+        return;
+      }
       console.error(error);
       if (state.chartInstance) {
         dom.updateInfo.textContent = `Error: ${error.message}`;
@@ -593,6 +623,7 @@
           `<div class="error-message"><strong>Error:</strong> ${error.message}</div>`;
       }
     } finally {
+      clearTimeout(timeoutId);
       if (myToken === fetchToken) mainContent.classList.remove('is-loading');
     }
   };
@@ -601,6 +632,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     // Read URL params and apply initial state
     const params = readUrlParams();
+    const initialRange = params.range;
     state.currentRange = params.range;
     state.currentView = params.view;
     state.yAxisZero = params.yaxis === 'zero';
@@ -608,6 +640,7 @@
 
     if (state.yAxisZero) {
       dom.btnToggleY.textContent = 'Y-Axis: Zero';
+      dom.btnToggleY.classList.add('active');
     }
 
     document
@@ -632,8 +665,7 @@
     });
 
     document.getElementById('btnResetZoom').addEventListener('click', () => {
-      state.chartInstance.resetZoom();
-      setDateRange('all');
+      setDateRange(initialRange);
     });
     document
       .getElementById('btnDownload')

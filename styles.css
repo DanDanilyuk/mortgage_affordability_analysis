@@ -844,6 +844,16 @@ footer a:hover {
   border-radius: 4px;
 }
 
+/* --- Accessibility --- */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
 }
