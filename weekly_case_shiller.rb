@@ -685,9 +685,20 @@ class WeeklyCaseSchiller
                            STATE_FRED_SERIES.keys
                          end
 
+    failed_states = []
     states_to_generate.each do |state_code|
       multiplier = income_multipliers[state_code] || 1.0
-      generate_state_data(fetcher, state_code, income_data, thursday_dates, mortgage_aligned, multiplier, qcew_year)
+      begin
+        generate_state_data(fetcher, state_code, income_data, thursday_dates, mortgage_aligned, multiplier, qcew_year)
+      rescue => e
+        puts "❌ Failed to generate data for #{state_code}: #{e.message}"
+        failed_states << state_code
+      end
+    end
+
+    if failed_states.any?
+      puts "\n❌ #{failed_states.length} state(s) failed: #{failed_states.join(', ')}"
+      exit 1
     end
   end
 
@@ -704,8 +715,7 @@ class WeeklyCaseSchiller
     home_price_monthly = fetcher.fetch_fred_data(series_id)
 
     if home_price_monthly['observations'].nil? || home_price_monthly['observations'].empty?
-      puts "⚠️  No home price data found for #{state_name}, skipping"
-      return
+      raise "No home price data found for #{state_name}"
     end
 
     # Filter out invalid observations
@@ -714,8 +724,7 @@ class WeeklyCaseSchiller
     end
 
     if valid_observations.empty?
-      puts "⚠️  No valid home price observations for #{state_name}, skipping"
-      return
+      raise "No valid home price observations for #{state_name}"
     end
 
     puts "✓ Home Price monthly: #{valid_observations.length} observations"
@@ -800,7 +809,9 @@ class WeeklyCaseSchiller
       output_file = File.join(STATE_DATA_DIR, "#{state_code}.json")
     end
 
-    File.write(output_file, JSON.pretty_generate(output_data))
+    tmp_file = "#{output_file}.tmp"
+    File.write(tmp_file, JSON.pretty_generate(output_data))
+    File.rename(tmp_file, output_file)
 
     puts "✅ Data written to #{output_file}"
     puts "📊 Total: #{single_costs.length} Thursday-aligned data points"
