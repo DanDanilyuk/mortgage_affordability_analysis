@@ -57,6 +57,9 @@
     controlsButtons: document.querySelectorAll('.controls .btn'),
   };
 
+  let fetchToken = 0;
+  let currentFetchController = null;
+
   // URL Parameter Management
   const resolveState = raw => {
     if (!raw) return DEFAULTS.state;
@@ -511,6 +514,12 @@
 
   // Bootstrapping
   const loadData = async stateCode => {
+    state.currentState = stateCode;
+
+    const myToken = ++fetchToken;
+    if (currentFetchController) currentFetchController.abort();
+    currentFetchController = new AbortController();
+
     const mainContent = document.getElementById('mainContent');
     const isSwitch = state.chartInstance !== null;
 
@@ -525,7 +534,7 @@
       }
 
       const url = getDataUrl(stateCode);
-      const response = await fetch(url);
+      const response = await fetch(url, { signal: currentFetchController.signal });
       if (!response.ok) {
         if (stateCode !== 'ALL') {
           throw new Error(
@@ -535,8 +544,10 @@
         throw new Error('Failed to load data file. Run the Ruby script first.');
       }
 
-      state.currentState = stateCode;
-      state.chartData = await response.json();
+      const json = await response.json();
+      if (myToken !== fetchToken) return;
+
+      state.chartData = json;
       state.firstEstimatedIndex = state.chartData.single_costs.findIndex(
         i => i.estimated || i.interpolated,
       );
@@ -563,6 +574,7 @@
       initChart();
       syncUrlParams();
     } catch (error) {
+      if (error.name === 'AbortError') return;
       console.error(error);
       if (state.chartInstance) {
         dom.updateInfo.textContent = `Error: ${error.message}`;
@@ -571,7 +583,7 @@
           `<div class="error-message"><strong>Error:</strong> ${error.message}</div>`;
       }
     } finally {
-      mainContent.classList.remove('is-loading');
+      if (myToken === fetchToken) mainContent.classList.remove('is-loading');
     }
   };
 
