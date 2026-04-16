@@ -19,100 +19,66 @@ MAX_RATE_GAP_DAYS = 14
 OUTPUT_FILE = 'weekly_case_shiller_output.json'
 STATE_DATA_DIR = 'data'
 
-# FRED Zillow Home Value Index series by state
-# Pattern: {STATE_CODE}UCSFRCONDOSMSAMID
-STATE_FRED_SERIES = {
-  'US' => 'USAUCSFRCONDOSMSAMID',
-  'AL' => 'ALUCSFRCONDOSMSAMID',
-  'AK' => 'AKUCSFRCONDOSMSAMID',
-  'AZ' => 'AZUCSFRCONDOSMSAMID',
-  'AR' => 'ARUCSFRCONDOSMSAMID',
-  'CA' => 'CAUCSFRCONDOSMSAMID',
-  'CO' => 'COUCSFRCONDOSMSAMID',
-  'CT' => 'CTUCSFRCONDOSMSAMID',
-  'DE' => 'DEUCSFRCONDOSMSAMID',
-  'DC' => 'DCUCSFRCONDOSMSAMID',
-  'FL' => 'FLUCSFRCONDOSMSAMID',
-  'GA' => 'GAUCSFRCONDOSMSAMID',
-  'HI' => 'HIUCSFRCONDOSMSAMID',
-  'ID' => 'IDUCSFRCONDOSMSAMID',
-  'IL' => 'ILUCSFRCONDOSMSAMID',
-  'IN' => 'INUCSFRCONDOSMSAMID',
-  'IA' => 'IAUCSFRCONDOSMSAMID',
-  'KS' => 'KSUCSFRCONDOSMSAMID',
-  'KY' => 'KYUCSFRCONDOSMSAMID',
-  'LA' => 'LAUCSFRCONDOSMSAMID',
-  'ME' => 'MEUCSFRCONDOSMSAMID',
-  'MD' => 'MDUCSFRCONDOSMSAMID',
-  'MA' => 'MAUCSFRCONDOSMSAMID',
-  'MI' => 'MIUCSFRCONDOSMSAMID',
-  'MN' => 'MNUCSFRCONDOSMSAMID',
-  'MS' => 'MSUCSFRCONDOSMSAMID',
-  'MO' => 'MOUCSFRCONDOSMSAMID',
-  'MT' => 'MTUCSFRCONDOSMSAMID',
-  'NE' => 'NEUCSFRCONDOSMSAMID',
-  'NV' => 'NVUCSFRCONDOSMSAMID',
-  'NH' => 'NHUCSFRCONDOSMSAMID',
-  'NJ' => 'NJUCSFRCONDOSMSAMID',
-  'NM' => 'NMUCSFRCONDOSMSAMID',
-  'NY' => 'NYUCSFRCONDOSMSAMID',
-  'NC' => 'NCUCSFRCONDOSMSAMID',
-  'ND' => 'NDUCSFRCONDOSMSAMID',
-  'OH' => 'OHUCSFRCONDOSMSAMID',
-  'OK' => 'OKUCSFRCONDOSMSAMID',
-  'OR' => 'ORUCSFRCONDOSMSAMID',
-  'PA' => 'PAUCSFRCONDOSMSAMID',
-  'RI' => 'RIUCSFRCONDOSMSAMID',
-  'SC' => 'SCUCSFRCONDOSMSAMID',
-  'SD' => 'SDUCSFRCONDOSMSAMID',
-  'TN' => 'TNUCSFRCONDOSMSAMID',
-  'TX' => 'TXUCSFRCONDOSMSAMID',
-  'UT' => 'UTUCSFRCONDOSMSAMID',
-  'VT' => 'VTUCSFRCONDOSMSAMID',
-  'VA' => 'VAUCSFRCONDOSMSAMID',
-  'WA' => 'WAUCSFRCONDOSMSAMID',
-  'WV' => 'WVUCSFRCONDOSMSAMID',
-  'WI' => 'WIUCSFRCONDOSMSAMID',
-  'WY' => 'WYUCSFRCONDOSMSAMID',
+# Single source of truth for all state metadata.
+# STATE_FRED_SERIES / STATE_NAMES / STATE_FIPS are derived below for callsite compatibility.
+STATES = {
+  'US' => { name: 'United States',        fred: 'USAUCSFRCONDOSMSAMID', fips: 'US000' },
+  'AL' => { name: 'Alabama',              fred: 'ALUCSFRCONDOSMSAMID',  fips: '01000' },
+  'AK' => { name: 'Alaska',               fred: 'AKUCSFRCONDOSMSAMID',  fips: '02000' },
+  'AZ' => { name: 'Arizona',              fred: 'AZUCSFRCONDOSMSAMID',  fips: '04000' },
+  'AR' => { name: 'Arkansas',             fred: 'ARUCSFRCONDOSMSAMID',  fips: '05000' },
+  'CA' => { name: 'California',           fred: 'CAUCSFRCONDOSMSAMID',  fips: '06000' },
+  'CO' => { name: 'Colorado',             fred: 'COUCSFRCONDOSMSAMID',  fips: '08000' },
+  'CT' => { name: 'Connecticut',          fred: 'CTUCSFRCONDOSMSAMID',  fips: '09000' },
+  'DE' => { name: 'Delaware',             fred: 'DEUCSFRCONDOSMSAMID',  fips: '10000' },
+  'DC' => { name: 'District of Columbia', fred: 'DCUCSFRCONDOSMSAMID',  fips: '11000' },
+  'FL' => { name: 'Florida',              fred: 'FLUCSFRCONDOSMSAMID',  fips: '12000' },
+  'GA' => { name: 'Georgia',              fred: 'GAUCSFRCONDOSMSAMID',  fips: '13000' },
+  'HI' => { name: 'Hawaii',               fred: 'HIUCSFRCONDOSMSAMID',  fips: '15000' },
+  'ID' => { name: 'Idaho',                fred: 'IDUCSFRCONDOSMSAMID',  fips: '16000' },
+  'IL' => { name: 'Illinois',             fred: 'ILUCSFRCONDOSMSAMID',  fips: '17000' },
+  'IN' => { name: 'Indiana',              fred: 'INUCSFRCONDOSMSAMID',  fips: '18000' },
+  'IA' => { name: 'Iowa',                 fred: 'IAUCSFRCONDOSMSAMID',  fips: '19000' },
+  'KS' => { name: 'Kansas',               fred: 'KSUCSFRCONDOSMSAMID',  fips: '20000' },
+  'KY' => { name: 'Kentucky',             fred: 'KYUCSFRCONDOSMSAMID',  fips: '21000' },
+  'LA' => { name: 'Louisiana',            fred: 'LAUCSFRCONDOSMSAMID',  fips: '22000' },
+  'ME' => { name: 'Maine',                fred: 'MEUCSFRCONDOSMSAMID',  fips: '23000' },
+  'MD' => { name: 'Maryland',             fred: 'MDUCSFRCONDOSMSAMID',  fips: '24000' },
+  'MA' => { name: 'Massachusetts',        fred: 'MAUCSFRCONDOSMSAMID',  fips: '25000' },
+  'MI' => { name: 'Michigan',             fred: 'MIUCSFRCONDOSMSAMID',  fips: '26000' },
+  'MN' => { name: 'Minnesota',            fred: 'MNUCSFRCONDOSMSAMID',  fips: '27000' },
+  'MS' => { name: 'Mississippi',          fred: 'MSUCSFRCONDOSMSAMID',  fips: '28000' },
+  'MO' => { name: 'Missouri',             fred: 'MOUCSFRCONDOSMSAMID',  fips: '29000' },
+  'MT' => { name: 'Montana',              fred: 'MTUCSFRCONDOSMSAMID',  fips: '30000' },
+  'NE' => { name: 'Nebraska',             fred: 'NEUCSFRCONDOSMSAMID',  fips: '31000' },
+  'NV' => { name: 'Nevada',               fred: 'NVUCSFRCONDOSMSAMID',  fips: '32000' },
+  'NH' => { name: 'New Hampshire',        fred: 'NHUCSFRCONDOSMSAMID',  fips: '33000' },
+  'NJ' => { name: 'New Jersey',           fred: 'NJUCSFRCONDOSMSAMID',  fips: '34000' },
+  'NM' => { name: 'New Mexico',           fred: 'NMUCSFRCONDOSMSAMID',  fips: '35000' },
+  'NY' => { name: 'New York',             fred: 'NYUCSFRCONDOSMSAMID',  fips: '36000' },
+  'NC' => { name: 'North Carolina',       fred: 'NCUCSFRCONDOSMSAMID',  fips: '37000' },
+  'ND' => { name: 'North Dakota',         fred: 'NDUCSFRCONDOSMSAMID',  fips: '38000' },
+  'OH' => { name: 'Ohio',                 fred: 'OHUCSFRCONDOSMSAMID',  fips: '39000' },
+  'OK' => { name: 'Oklahoma',             fred: 'OKUCSFRCONDOSMSAMID',  fips: '40000' },
+  'OR' => { name: 'Oregon',               fred: 'ORUCSFRCONDOSMSAMID',  fips: '41000' },
+  'PA' => { name: 'Pennsylvania',         fred: 'PAUCSFRCONDOSMSAMID',  fips: '42000' },
+  'RI' => { name: 'Rhode Island',         fred: 'RIUCSFRCONDOSMSAMID',  fips: '44000' },
+  'SC' => { name: 'South Carolina',       fred: 'SCUCSFRCONDOSMSAMID',  fips: '45000' },
+  'SD' => { name: 'South Dakota',         fred: 'SDUCSFRCONDOSMSAMID',  fips: '46000' },
+  'TN' => { name: 'Tennessee',            fred: 'TNUCSFRCONDOSMSAMID',  fips: '47000' },
+  'TX' => { name: 'Texas',                fred: 'TXUCSFRCONDOSMSAMID',  fips: '48000' },
+  'UT' => { name: 'Utah',                 fred: 'UTUCSFRCONDOSMSAMID',  fips: '49000' },
+  'VT' => { name: 'Vermont',              fred: 'VTUCSFRCONDOSMSAMID',  fips: '50000' },
+  'VA' => { name: 'Virginia',             fred: 'VAUCSFRCONDOSMSAMID',  fips: '51000' },
+  'WA' => { name: 'Washington',           fred: 'WAUCSFRCONDOSMSAMID',  fips: '53000' },
+  'WV' => { name: 'West Virginia',        fred: 'WVUCSFRCONDOSMSAMID',  fips: '54000' },
+  'WI' => { name: 'Wisconsin',            fred: 'WIUCSFRCONDOSMSAMID',  fips: '55000' },
+  'WY' => { name: 'Wyoming',              fred: 'WYUCSFRCONDOSMSAMID',  fips: '56000' },
 }.freeze
 
-STATE_NAMES = {
-  'US' => 'United States', 'AL' => 'Alabama', 'AK' => 'Alaska',
-  'AZ' => 'Arizona', 'AR' => 'Arkansas', 'CA' => 'California',
-  'CO' => 'Colorado', 'CT' => 'Connecticut', 'DE' => 'Delaware',
-  'DC' => 'District of Columbia', 'FL' => 'Florida', 'GA' => 'Georgia',
-  'HI' => 'Hawaii', 'ID' => 'Idaho', 'IL' => 'Illinois', 'IN' => 'Indiana',
-  'IA' => 'Iowa', 'KS' => 'Kansas', 'KY' => 'Kentucky', 'LA' => 'Louisiana',
-  'ME' => 'Maine', 'MD' => 'Maryland', 'MA' => 'Massachusetts',
-  'MI' => 'Michigan', 'MN' => 'Minnesota', 'MS' => 'Mississippi',
-  'MO' => 'Missouri', 'MT' => 'Montana', 'NE' => 'Nebraska',
-  'NV' => 'Nevada', 'NH' => 'New Hampshire', 'NJ' => 'New Jersey',
-  'NM' => 'New Mexico', 'NY' => 'New York', 'NC' => 'North Carolina',
-  'ND' => 'North Dakota', 'OH' => 'Ohio', 'OK' => 'Oklahoma',
-  'OR' => 'Oregon', 'PA' => 'Pennsylvania', 'RI' => 'Rhode Island',
-  'SC' => 'South Carolina', 'SD' => 'South Dakota', 'TN' => 'Tennessee',
-  'TX' => 'Texas', 'UT' => 'Utah', 'VT' => 'Vermont', 'VA' => 'Virginia',
-  'WA' => 'Washington', 'WV' => 'West Virginia', 'WI' => 'Wisconsin',
-  'WY' => 'Wyoming',
-}.freeze
-
-# QCEW area FIPS codes for states
-STATE_FIPS = {
-  'US' => 'US000',
-  'AL' => '01000', 'AK' => '02000', 'AZ' => '04000', 'AR' => '05000',
-  'CA' => '06000', 'CO' => '08000', 'CT' => '09000', 'DE' => '10000',
-  'DC' => '11000', 'FL' => '12000', 'GA' => '13000', 'HI' => '15000',
-  'ID' => '16000', 'IL' => '17000', 'IN' => '18000', 'IA' => '19000',
-  'KS' => '20000', 'KY' => '21000', 'LA' => '22000', 'ME' => '23000',
-  'MD' => '24000', 'MA' => '25000', 'MI' => '26000', 'MN' => '27000',
-  'MS' => '28000', 'MO' => '29000', 'MT' => '30000', 'NE' => '31000',
-  'NV' => '32000', 'NH' => '33000', 'NJ' => '34000', 'NM' => '35000',
-  'NY' => '36000', 'NC' => '37000', 'ND' => '38000', 'OH' => '39000',
-  'OK' => '40000', 'OR' => '41000', 'PA' => '42000', 'RI' => '44000',
-  'SC' => '45000', 'SD' => '46000', 'TN' => '47000', 'TX' => '48000',
-  'UT' => '49000', 'VT' => '50000', 'VA' => '51000', 'WA' => '53000',
-  'WV' => '54000', 'WI' => '55000', 'WY' => '56000',
-}.freeze
+STATE_FRED_SERIES = STATES.transform_values { |v| v[:fred] }.freeze
+STATE_NAMES       = STATES.transform_values { |v| v[:name] }.freeze
+STATE_FIPS        = STATES.transform_values { |v| v[:fips] }.freeze
 
 def sanitize_for_log(str)
   str.to_s
@@ -133,7 +99,7 @@ class CLIParser
   def self.parse
     options = {}
     OptionParser.new do |opts|
-      opts.banner = "Usage: weekly_case_schiller.rb [options]"
+      opts.banner = "Usage: weekly_case_shiller.rb [options]"
       opts.on("-b", "--bls-api-key KEY", "BLS API Key") { |key| options[:bls_api_key] = key }
       opts.on("-f", "--fred-api-key KEY", "FRED API Key") { |key| options[:fred_api_key] = key }
       opts.on("-s", "--start-date DATE", "Start Date (YYYY-MM-DD)") do |date|
@@ -189,7 +155,7 @@ class QCEWFetcher
     http.open_timeout = 30
     http.read_timeout = 60
     response = http.get(uri.request_uri)
-    return nil unless response.code == '200' && response.body.length > 100
+    return nil unless response.code.to_i == 200 && response.body.length > 100
     response.body
   rescue => e
     puts "  ⚠️  QCEW fetch error: #{sanitize_for_log(e.message)}"
@@ -376,7 +342,7 @@ class DataFetcher
   def initialize(bls_key, fred_key, start_date = nil)
     @bls_key = bls_key
     @fred_key = fred_key
-    @start_date = start_date || (Date.today - (DEFAULT_YEARS_BACK * 365))
+    @start_date = start_date || Date.today.prev_year(DEFAULT_YEARS_BACK)
   end
 
   def fetch_bls_income_data
@@ -605,8 +571,7 @@ end
 class MortgageCalculator
   def self.normalize_income_data(raw_data)
     data = raw_data.dig('Results', 'series', 0, 'data')&.reverse || []
-    cutoff_year = Date.today.year - DEFAULT_YEARS_BACK
-    cutoff_date = Date.new(cutoff_year, Date.today.month, 1)
+    cutoff_date = Date.new(Date.today.year - DEFAULT_YEARS_BACK, 1, 1)
 
     data.filter_map do |entry|
       date = Date.parse("#{entry['year']}-#{entry['periodName']}-01")
@@ -690,7 +655,7 @@ class MortgageCalculator
   end
 end
 
-class WeeklyCaseSchiller
+class WeeklyCaseShiller
   def run
     options = CLIParser.parse
     fetcher = DataFetcher.new(options[:bls_api_key], options[:fred_api_key], options[:start_date])
@@ -891,4 +856,4 @@ class WeeklyCaseSchiller
   end
 end
 
-WeeklyCaseSchiller.new.run if $PROGRAM_NAME == __FILE__
+WeeklyCaseShiller.new.run if $PROGRAM_NAME == __FILE__

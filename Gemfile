@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'httparty'    # For net/http functionality with a simpler interface
+gem 'csv'         # Explicitly required; no longer bundled with Ruby 3.4+
 gem 'json'        # For JSON parsing and generation
 gem 'uri'         # Standard library for URI handling (included by default, but listed for clarity)
 gem 'date'        # Standard library for date handling (included by default, but listed for clarity)
