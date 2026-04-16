@@ -460,6 +460,27 @@ h1 .header-accent {
   gap: 8px;
 }
 
+.btn-reset-filters {
+  background: transparent;
+  color: var(--text-muted);
+  border: none;
+  padding: 8px 14px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: var(--border-color);
+  text-underline-offset: 3px;
+}
+
+.btn-reset-filters:hover {
+  color: var(--text-primary);
+  text-decoration-color: var(--text-muted);
+}
+
+.btn-reset-filters[hidden] {
+  display: none;
+}
+
 /* --- Buttons --- */
 .btn {
   font-family: var(--font-body);
@@ -767,6 +788,10 @@ footer a:hover {
   .controls .btn {
     padding: 8px 16px;
     font-size: 0.8rem;
+  }
+
+  .btn-reset-filters {
+    padding: 6px 10px;
   }
 
   .controls select {

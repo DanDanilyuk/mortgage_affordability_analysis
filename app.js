@@ -50,6 +50,7 @@
     priceCard: document.getElementById('priceCard'),
     incomeCard: document.getElementById('incomeCard'),
     btnToggleY: document.getElementById('btnToggleY'),
+    btnResetFilters: document.getElementById('btnResetFilters'),
     stateSelect: document.getElementById('stateSelect'),
     headerEyebrow: document.getElementById('headerEyebrow'),
     dateRangeButtons: document.querySelectorAll('.date-range-buttons .btn'),
@@ -85,6 +86,12 @@
     };
   };
 
+  const isAnyFilterNonDefault = () =>
+    state.currentState !== DEFAULTS.state ||
+    state.currentRange !== DEFAULTS.range ||
+    state.currentView !== DEFAULTS.view ||
+    state.yAxisZero !== (DEFAULTS.yaxis === 'zero');
+
   const syncUrlParams = () => {
     const params = new URLSearchParams();
     params.set('state', state.currentState.toLowerCase());
@@ -94,6 +101,8 @@
 
     const url = `${window.location.pathname}?${params.toString()}`;
     history.replaceState(null, '', url);
+
+    if (dom.btnResetFilters) dom.btnResetFilters.hidden = !isAnyFilterNonDefault();
   };
 
   // Formatting Utilities
@@ -695,6 +704,17 @@
       .getElementById('btnDownload')
       .addEventListener('click', downloadChart);
     dom.btnToggleY.addEventListener('click', () => { toggleYAxis(); syncUrlParams(); });
+
+    dom.btnResetFilters.addEventListener('click', () => {
+      state.currentRange = DEFAULTS.range;
+      state.currentView = DEFAULTS.view;
+      state.yAxisZero = DEFAULTS.yaxis === 'zero';
+      dom.stateSelect.value = DEFAULTS.state;
+      dom.btnToggleY.textContent = `Y-Axis: ${state.yAxisZero ? 'Zero' : 'Auto'}`;
+      dom.btnToggleY.classList.toggle('active', state.yAxisZero);
+      resizeSelect();
+      loadData(DEFAULTS.state);
+    });
 
     // State market selector
     const measureSpan = document.createElement('span');
