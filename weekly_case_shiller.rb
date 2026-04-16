@@ -595,7 +595,10 @@ class MortgageCalculator
       single_income = weekly_income * 52 * income_multiplier
       household_income = single_income * HOUSEHOLD_MULTIPLIER
 
+      is_extrapolated = home_price_obs['estimated'] == true || income_estimated
       metadata = {}
+      metadata[:observed] = !is_extrapolated && mortgage_obs['estimated'] == false
+
       if home_price_obs['estimated'] || mortgage_obs['estimated'] || income_estimated
         metadata[:estimated] = true
         metadata[:estimation_details] = {
@@ -758,6 +761,9 @@ class WeeklyCaseSchiller
     estimated_count = single_costs.count { |c| c[:estimated] }
     actual_count = single_costs.length - estimated_count
     income_estimated_count = single_costs.count { |c| c.dig(:estimation_details, :income_estimated) }
+    sq_observed_count = single_costs.count { |c| c[:observed] == true }
+    sq_extrapolated_count = estimated_count
+    sq_interpolated_count = single_costs.length - sq_observed_count - sq_extrapolated_count
 
     last_actual_home_price = valid_observations.last
     last_actual_date = Date.parse(last_actual_home_price['date'])
@@ -782,6 +788,11 @@ class WeeklyCaseSchiller
           actual: actual_count,
           estimated: estimated_count,
           income_estimated: income_estimated_count
+        },
+        series_quality: {
+          observed: sq_observed_count,
+          interpolated: sq_interpolated_count,
+          extrapolated: sq_extrapolated_count
         },
         data_sources: {
           bls_series: 'CES0500000011',
@@ -818,8 +829,9 @@ class WeeklyCaseSchiller
 
     puts "✅ Data written to #{output_file}"
     puts "📊 Total: #{single_costs.length} Thursday-aligned data points"
-    puts "  - Actual data: #{actual_count} points"
-    puts "  - Estimated: #{estimated_count} points"
+    puts "  - Observed:    #{sq_observed_count} points (actual mortgage reading + within price/income range)"
+    puts "  - Interpolated: #{sq_interpolated_count} points (nearest-neighbor mortgage, within price/income range)"
+    puts "  - Extrapolated: #{sq_extrapolated_count} points (price or income projected beyond actual data)"
     puts "    • With estimated income: #{income_estimated_count} points"
     puts "📅 Full range: #{single_costs.first[:date]} to #{single_costs.last[:date]}"
     puts "📈 Last actual Home Price: #{last_actual_date.strftime('%Y-%m-%d')}"

@@ -560,12 +560,22 @@
       const genDate = new Date(
         state.chartData.metadata.generated_at,
       ).toLocaleString();
-      const actCount =
-        state.firstEstimatedIndex === -1
-          ? state.chartData.single_costs.length
-          : state.firstEstimatedIndex;
-      const estCount = state.chartData.single_costs.length - actCount;
-      dom.updateInfo.textContent = `Last updated: ${genDate} | ${actCount} actual ${estCount > 0 ? '+ ' + estCount + ' estimated' : ''} data points`;
+      const sq = state.chartData.metadata.series_quality;
+      let countsText;
+      if (sq) {
+        const parts = [`${sq.observed} observed`];
+        if (sq.interpolated > 0) parts.push(`${sq.interpolated} interpolated`);
+        if (sq.extrapolated > 0) parts.push(`${sq.extrapolated} extrapolated`);
+        countsText = `${parts.join(' + ')} data points`;
+      } else {
+        const actCount =
+          state.firstEstimatedIndex === -1
+            ? state.chartData.single_costs.length
+            : state.firstEstimatedIndex;
+        const estCount = state.chartData.single_costs.length - actCount;
+        countsText = `${actCount} actual${estCount > 0 ? ' + ' + estCount + ' estimated' : ''} data points`;
+      }
+      dom.updateInfo.textContent = `Last updated: ${genDate} | ${countsText}`;
 
       document.getElementById('loadingMessage').style.display = 'none';
       mainContent.style.display = 'block';
