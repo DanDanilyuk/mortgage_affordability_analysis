@@ -255,6 +255,7 @@
                         </div>
                         <p><strong>Dual Income:</strong> Estimated at 1.4× single-earner income, reflecting typical dual-income household dynamics.</p>
                         <p><strong>State-Level Data:</strong> When a state is selected, home prices reflect that state's Zillow Home Value Index (ZHVI) data sourced from FRED. Income is estimated by applying a state-specific multiplier to the national BLS average weekly earnings. This multiplier is derived from the BLS Quarterly Census of Employment and Wages (QCEW), comparing each state's private sector average weekly wage to the national average. Mortgage rates remain national regardless of state selection, using the Freddie Mac 30-year fixed rate.</p>
+                        <p><strong>Multiplier Availability:</strong> When QCEW data is unavailable for a given year, the state income multiplier falls back to 1.0 (equivalent to national earnings). Each state's JSON records the source as <code>qcew_&lt;year&gt;</code>, <code>fallback_missing</code>, or <code>fallback_unavailable</code> so the provenance of the income figure is traceable.</p>
                         <p><strong>Data Annotations:</strong> Data points marked as Interpolated are calculated between known monthly observations to provide weekly granularity. Estimated points extend recent trends where source data has not yet been published.</p>
                     </div>
                 </details>

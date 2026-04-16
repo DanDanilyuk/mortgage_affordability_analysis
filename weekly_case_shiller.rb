@@ -148,7 +148,7 @@ class QCEWFetcher
 
       csv_data = fetch_industry_data(target_year)
       if csv_data
-        multipliers = parse_multipliers(csv_data)
+        multipliers = parse_multipliers(csv_data, target_year)
         if multipliers
           puts "  ✓ Using QCEW #{target_year} data for state income multipliers"
           return [multipliers, target_year]
@@ -177,7 +177,7 @@ class QCEWFetcher
     nil
   end
 
-  def self.parse_multipliers(csv_data)
+  def self.parse_multipliers(csv_data, year)
     fips_to_state = STATE_FIPS.invert
     national_wage = nil
     state_wages = {}
@@ -200,19 +200,19 @@ class QCEWFetcher
 
     return nil unless national_wage && national_wage > 0
 
-    multipliers = { 'US' => 1.0 }
+    multipliers = { 'US' => {value: 1.0, source: "qcew_#{year}"} }
     state_wages.each do |code, wage|
-      multipliers[code] = (wage / national_wage).round(4)
+      multipliers[code] = {value: (wage / national_wage).round(4), source: "qcew_#{year}"}
     end
 
     # Fill any missing states with 1.0
-    STATE_FIPS.each_key { |code| multipliers[code] ||= 1.0 }
+    STATE_FIPS.each_key { |code| multipliers[code] ||= {value: 1.0, source: 'fallback_missing'} }
 
     multipliers
   end
 
   def self.default_multipliers
-    STATE_FIPS.each_key.with_object({}) { |code, h| h[code] = 1.0 }
+    STATE_FIPS.each_key.with_object({}) { |code, h| h[code] = {value: 1.0, source: 'fallback_unavailable'} }
   end
 end
 
@@ -675,7 +675,7 @@ class WeeklyCaseSchiller
     # Show a sample of multipliers
     sample_states = ['CA', 'TX', 'NY', 'FL', 'MS'].select { |s| income_multipliers.key?(s) }
     sample_states.each do |s|
-      puts "  #{STATE_NAMES[s]}: #{income_multipliers[s]}x"
+      puts "  #{STATE_NAMES[s]}: #{income_multipliers[s][:value]}x"
     end
 
     # Determine which states to generate
@@ -687,9 +687,11 @@ class WeeklyCaseSchiller
 
     failed_states = []
     states_to_generate.each do |state_code|
-      multiplier = income_multipliers[state_code] || 1.0
+      entry = income_multipliers[state_code] || {value: 1.0, source: 'fallback_unavailable'}
+      multiplier = entry[:value]
+      multiplier_source = entry[:source]
       begin
-        generate_state_data(fetcher, state_code, income_data, thursday_dates, mortgage_aligned, multiplier, qcew_year)
+        generate_state_data(fetcher, state_code, income_data, thursday_dates, mortgage_aligned, multiplier, qcew_year, multiplier_source)
       rescue => e
         puts "❌ Failed to generate data for #{state_code}: #{e.message}"
         failed_states << state_code
@@ -704,7 +706,7 @@ class WeeklyCaseSchiller
 
   private
 
-  def generate_state_data(fetcher, state_code, income_data, thursday_dates, mortgage_aligned, income_multiplier, qcew_year)
+  def generate_state_data(fetcher, state_code, income_data, thursday_dates, mortgage_aligned, income_multiplier, qcew_year, multiplier_source)
     series_id = STATE_FRED_SERIES[state_code]
     state_name = STATE_NAMES[state_code]
     puts "\n" + "=" * 60
@@ -786,7 +788,8 @@ class WeeklyCaseSchiller
           fred_home_price: series_id,
           fred_mortgage: 'MORTGAGE30US',
           qcew_income_multiplier: income_multiplier,
-          qcew_year: qcew_year
+          qcew_year: qcew_year,
+          qcew_multiplier_source: multiplier_source
         },
         methodology: {
           loan_term_months: LOAN_TERM_MONTHS,
