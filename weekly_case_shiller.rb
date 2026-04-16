@@ -510,8 +510,24 @@ class HomePriceEnhancer
       control_values << obs['value'].to_f
     end
 
+    # For each monthly control point, find the closest Thursday - that Thursday is
+    # "observed" (uses the actual monthly value directly, not interpolated).
+    observed_thursday_map = {}
+    control_dates.each_with_index do |cd, i|
+      next unless cd <= last_actual_end
+      closest = thursday_dates.select { |t| t <= last_actual_end }.min_by { |t| (t - cd).abs }
+      observed_thursday_map[closest] = control_values[i] if closest
+    end
+
     thursday_dates.each do |thursday|
-      if thursday <= last_actual_end
+      if observed_thursday_map.key?(thursday)
+        enhanced << {
+          'date' => thursday.strftime('%Y-%m-%d'),
+          'value' => observed_thursday_map[thursday].round(3).to_s,
+          'estimated' => false,
+          'observed' => true
+        }
+      elsif thursday <= last_actual_end
         # Use Hermite interpolation for smooth curves
         interpolated_value = DailyEstimator.hermite_interpolate(
           control_values,
@@ -595,9 +611,8 @@ class MortgageCalculator
       single_income = weekly_income * 52 * income_multiplier
       household_income = single_income * HOUSEHOLD_MULTIPLIER
 
-      is_extrapolated = home_price_obs['estimated'] == true || income_estimated
       metadata = {}
-      metadata[:observed] = !is_extrapolated && mortgage_obs['estimated'] == false
+      metadata[:observed] = home_price_obs['observed'] == true
 
       if home_price_obs['estimated'] || mortgage_obs['estimated'] || income_estimated
         metadata[:estimated] = true
@@ -762,7 +777,7 @@ class WeeklyCaseSchiller
     actual_count = single_costs.length - estimated_count
     income_estimated_count = single_costs.count { |c| c.dig(:estimation_details, :income_estimated) }
     sq_observed_count = single_costs.count { |c| c[:observed] == true }
-    sq_extrapolated_count = estimated_count
+    sq_extrapolated_count = single_costs.count { |c| c.dig(:estimation_details, :price_estimated) == true }
     sq_interpolated_count = single_costs.length - sq_observed_count - sq_extrapolated_count
 
     last_actual_home_price = valid_observations.last
