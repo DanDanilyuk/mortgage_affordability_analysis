@@ -480,13 +480,19 @@ class MortgageRateEnhancer
       else
         nearest = find_nearest_rate(mortgage_weekly['observations'], thursday)
         if nearest
-          rates << {
-            'date' => thursday.strftime('%Y-%m-%d'),
-            'value' => nearest['value'],
-            'estimated' => true
-          }
+          gap = (Date.parse(nearest['date']) - thursday).abs.to_i
+          if gap > MAX_RATE_GAP_DAYS
+            puts "⚠️  No mortgage rate within #{MAX_RATE_GAP_DAYS} days of #{thursday} (nearest is #{gap} days away), skipping data point"
+            rates << nil
+          else
+            rates << {
+              'date' => thursday.strftime('%Y-%m-%d'),
+              'value' => nearest['value'],
+              'estimated' => true,
+              'rate_gap_days' => gap
+            }
+          end
         else
-          puts "⚠️  No mortgage rate within #{MAX_RATE_GAP_DAYS} days of #{thursday}, skipping data point"
           rates << nil
         end
       end
@@ -496,9 +502,7 @@ class MortgageRateEnhancer
 
   def self.find_nearest_rate(observations, target_date)
     valid_obs = observations.select { |o| !o['value'].empty? && o['value'] != '.' }
-    nearest = valid_obs.min_by { |obs| (Date.parse(obs['date']) - target_date).abs }
-    return nil unless nearest
-    (Date.parse(nearest['date']) - target_date).abs <= MAX_RATE_GAP_DAYS ? nearest : nil
+    valid_obs.min_by { |obs| (Date.parse(obs['date']) - target_date).abs }
   end
 end
 

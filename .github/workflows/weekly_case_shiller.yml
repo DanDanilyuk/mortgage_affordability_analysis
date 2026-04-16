@@ -20,20 +20,25 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Skip if already generated today
+      - name: Skip if already generated within last 6 hours
         id: skip_check
-        env:
-          TZ: 'America/New_York'
         run: |
           if [ -f weekly_case_shiller_output.json ]; then
-            generated_at=$(jq -r '.metadata.generated_at // ""' weekly_case_shiller_output.json)
-            today=$(date +%Y-%m-%d)
-            if [[ "$generated_at" == "${today}"* ]]; then
-              echo "skip=true" >> "$GITHUB_OUTPUT"
-              echo "⏭️ Already generated today ($generated_at) - skipping"
+            generated_at=$(python3 -c "import json,sys; d=json.load(open('weekly_case_shiller_output.json')); print(d.get('metadata',{}).get('generated_at',''))" 2>/dev/null || echo "")
+            if [ -n "$generated_at" ]; then
+              gen_epoch=$(date -d "$generated_at" +%s 2>/dev/null || echo 0)
+              now_epoch=$(date +%s)
+              age=$(( now_epoch - gen_epoch ))
+              if [ "$age" -lt 21600 ]; then
+                echo "skip=true" >> "$GITHUB_OUTPUT"
+                echo "⏭️ Already generated ${age}s ago ($generated_at) - skipping"
+              else
+                echo "skip=false" >> "$GITHUB_OUTPUT"
+                echo "✅ Last run was ${age}s ago - proceeding"
+              fi
             else
               echo "skip=false" >> "$GITHUB_OUTPUT"
-              echo "✅ Not yet generated today - proceeding"
+              echo "✅ No generated_at found - proceeding"
             fi
           else
             echo "skip=false" >> "$GITHUB_OUTPUT"
@@ -72,22 +77,24 @@ jobs:
       - name: Check freshness of generated JSON files
         if: steps.skip_check.outputs.skip != 'true'
         run: |
-          threshold=$(( $(date +%s) - 8 * 86400 ))
-          stale=0
-          for f in weekly_case_shiller_output.json data/*.json; do
-            ts=$(jq -r '.metadata.generated_at // ""' "$f" 2>/dev/null)
-            if [ -z "$ts" ]; then
-              echo "ERROR: No generated_at in $f"
-              stale=1
-              continue
-            fi
-            file_epoch=$(date -d "$ts" +%s)
-            if [ "$file_epoch" -lt "$threshold" ]; then
-              echo "ERROR: Stale data in $f (generated_at: $ts)"
-              stale=1
-            fi
-          done
-          [ "$stale" -eq 0 ] && echo "✅ All JSON files are fresh (within 8 days)" || exit 1
+          ruby -rjson -rdate -e '
+            threshold = Time.now - 8 * 86400
+            stale = []
+            Dir.glob(["weekly_case_shiller_output.json", "data/*.json"]).each do |f|
+              d = JSON.parse(File.read(f))
+              ts = d.dig("metadata", "generated_at")
+              if ts.nil? || ts.empty?
+                stale << "#{f}: missing generated_at"
+              elsif Time.parse(ts) < threshold
+                stale << "#{f}: stale (generated_at: #{ts})"
+              end
+            end
+            if stale.any?
+              stale.each { |msg| puts "ERROR: #{msg}" }
+              exit 1
+            end
+            puts "✅ All JSON files are fresh (within 8 days)"
+          '
 
       - name: Commit and push updated JSON
         if: steps.skip_check.outputs.skip != 'true'
