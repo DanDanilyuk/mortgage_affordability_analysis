@@ -10,6 +10,7 @@
   const state = {
     chartData: null,
     chartInstance: null,
+    chartColors: {},
     firstEstimatedIndex: -1,
     activePointIndex: -1,
     minDate: null,
@@ -230,6 +231,16 @@
     );
   };
 
+  const readChartTokens = () => {
+    const style = getComputedStyle(document.documentElement);
+    return {
+      primary: style.getPropertyValue('--accent-blue').trim() || '#3b82f6',
+      secondary: style.getPropertyValue('--accent-purple').trim() || '#8b5cf6',
+      gridColor: style.getPropertyValue('--border-color').trim() || '#e5e7eb',
+      textColor: style.getPropertyValue('--text-secondary').trim() || '#6b7280',
+    };
+  };
+
   const initChart = () => {
     const ctx = document.getElementById('mortgageChart').getContext('2d');
     state.activePointIndex = state.chartData.single_costs.length - 1;
@@ -240,15 +251,8 @@
       d => d.cost_to_income,
     );
 
-    const style = getComputedStyle(document.body);
-    const colorPrimary =
-      style.getPropertyValue('--accent-blue').trim() || '#3b82f6';
-    const colorSecondary =
-      style.getPropertyValue('--accent-purple').trim() || '#8b5cf6';
-    const gridColor =
-      style.getPropertyValue('--border-color').trim() || '#e5e7eb';
-    const textColor =
-      style.getPropertyValue('--text-secondary').trim() || '#6b7280';
+    state.chartColors = readChartTokens();
+    const { primary: colorPrimary, secondary: colorSecondary, gridColor, textColor } = state.chartColors;
 
     state.chartInstance = new Chart(ctx, {
       type: 'line',
@@ -272,8 +276,8 @@
               borderColor: ctx => {
                 const d = state.chartData.single_costs[ctx.p1DataIndex];
                 return d?.estimated || d?.interpolated
-                  ? `${colorPrimary}80`
-                  : colorPrimary;
+                  ? `${state.chartColors.primary}80`
+                  : state.chartColors.primary;
               },
             },
           },
@@ -294,8 +298,8 @@
               borderColor: ctx => {
                 const d = state.chartData.household_costs[ctx.p1DataIndex];
                 return d?.estimated || d?.interpolated
-                  ? `${colorSecondary}80`
-                  : colorSecondary;
+                  ? `${state.chartColors.secondary}80`
+                  : state.chartColors.secondary;
               },
             },
           },
@@ -648,6 +652,26 @@
       const next = current === 'dark' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', next);
       localStorage.setItem('theme', next);
+
+      if (state.chartInstance) {
+        const tokens = readChartTokens();
+        state.chartColors = tokens;
+        const chart = state.chartInstance;
+
+        chart.options.scales.x.ticks.color = tokens.textColor;
+        chart.options.scales.y.ticks.color = tokens.textColor;
+        chart.options.scales.y.grid.color = tokens.gridColor;
+        chart.options.scales.y.title.color = tokens.textColor;
+        chart.options.plugins.legend.labels.color = tokens.textColor;
+
+        const ds = chart.data.datasets;
+        ds[0].borderColor = tokens.primary;
+        ds[0].backgroundColor = `${tokens.primary}20`;
+        ds[1].borderColor = tokens.secondary;
+        ds[1].backgroundColor = `${tokens.secondary}20`;
+
+        chart.update('none');
+      }
     });
 
     loadData(params.state);
