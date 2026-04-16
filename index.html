@@ -209,7 +209,7 @@
                         <button class="btn btn-secondary" id="btnSingle">Single Earner</button>
                         <button class="btn btn-secondary" id="btnHousehold">Dual Income (1.4×)</button>
                     </div>
-                    <button class="btn btn-reset-filters" id="btnResetFilters" hidden>Reset filters</button>
+                    <button class="btn btn-secondary btn-reset-filters" id="btnResetFilters" hidden>Reset Filters</button>
                 </div>
 
                 <div class="chart-toolbar">
@@ -234,6 +234,7 @@
 
                 <div class="chart-container" tabindex="0">
                     <canvas id="mortgageChart" role="img" aria-label="Home affordability price-to-income ratio chart"></canvas>
+                    <div id="activePointMarkers" class="active-point-markers" aria-hidden="true"></div>
                     <div id="chartLiveRegion" aria-live="polite" aria-atomic="true" class="sr-only"></div>
                 </div>
 

@@ -460,23 +460,6 @@ h1 .header-accent {
   gap: 8px;
 }
 
-.btn-reset-filters {
-  background: transparent;
-  color: var(--text-muted);
-  border: none;
-  padding: 8px 14px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  text-decoration: underline;
-  text-decoration-color: var(--border-color);
-  text-underline-offset: 3px;
-}
-
-.btn-reset-filters:hover {
-  color: var(--text-primary);
-  text-decoration-color: var(--text-muted);
-}
-
 .btn-reset-filters[hidden] {
   display: none;
 }
@@ -577,6 +560,7 @@ h1 .header-accent {
 
 /* --- Chart Container --- */
 .chart-container {
+  position: relative;
   height: 520px;
   background: var(--bg-chart);
   border: 1px solid var(--border-color);
@@ -589,6 +573,29 @@ h1 .header-accent {
 .chart-container:focus {
   outline: none;
   box-shadow: 0 0 0 2px var(--accent-amber), 0 0 0 4px var(--accent-amber-glow);
+}
+
+.active-point-markers {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.active-point-marker {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  margin-top: -6px;
+  background: var(--accent-amber);
+  border: 3px solid var(--bg-container);
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+  pointer-events: none;
+  will-change: transform;
 }
 
 /* --- Zoom Tip --- */
@@ -790,9 +797,6 @@ footer a:hover {
     font-size: 0.8rem;
   }
 
-  .btn-reset-filters {
-    padding: 6px 10px;
-  }
 
   .controls select {
     padding: 7px 26px 7px 14px;

@@ -56,14 +56,11 @@
     dateRangeButtons: document.querySelectorAll('.date-range-buttons .btn'),
     controlsButtons: document.querySelectorAll('.controls-views .btn'),
     chartLiveRegion: document.getElementById('chartLiveRegion'),
+    activePointMarkers: document.getElementById('activePointMarkers'),
   };
 
   let fetchToken = 0;
   let currentFetchController = null;
-  let lastPointerPos = null;
-  document.addEventListener('pointermove', e => {
-    lastPointerPos = { clientX: e.clientX, clientY: e.clientY };
-  });
 
   // URL Parameter Management
   const resolveState = raw => {
@@ -144,33 +141,49 @@
     },
     activePoint: {
       id: 'activePoint',
-      afterDatasetsDraw: chart => {
-        if (state.activePointIndex === -1) return;
-        const { ctx, chartArea } = chart;
+      // Positions DOM-level markers (inside #activePointMarkers) on each
+      // visible dataset's active point. Using DOM elements instead of
+      // canvas drawing means the markers are always above the tooltip
+      // box (which draws inside the canvas) - no z-order fighting.
+      afterDraw: chart => {
+        const container = dom.activePointMarkers;
+        if (!container) return;
 
-        chart.data.datasets.forEach((dataset, i) => {
-          if (!chart.isDatasetVisible(i)) return;
-          const point = chart.getDatasetMeta(i).data[state.activePointIndex];
+        const datasets = chart.data.datasets;
+        while (container.children.length < datasets.length) {
+          const m = document.createElement('div');
+          m.className = 'active-point-marker';
+          m.style.display = 'none';
+          container.appendChild(m);
+        }
 
-          if (
-            point &&
-            point.x >= chartArea.left &&
-            point.x <= chartArea.right &&
-            point.y >= chartArea.top &&
-            point.y <= chartArea.bottom
-          ) {
-            ctx.save();
-            ctx.shadowColor = `${state.chartColors.amber}66`;
-            ctx.shadowBlur = 10;
-            ctx.beginPath();
-            ctx.arc(point.x, point.y, 6, 0, 2 * Math.PI);
-            ctx.fillStyle = state.chartColors.amber;
-            ctx.strokeStyle = state.chartColors.bgContainer;
-            ctx.lineWidth = 3;
-            ctx.fill();
-            ctx.stroke();
-            ctx.restore();
+        // Chart.js gives point.x / point.y in canvas-local coordinates.
+        // The marker container covers the chart-container padding box,
+        // so shift by the canvas's offset inside its padded parent.
+        const canvas = chart.canvas;
+        const offsetX = canvas.offsetLeft;
+        const offsetY = canvas.offsetTop;
+        const { chartArea } = chart;
+
+        datasets.forEach((_, i) => {
+          const marker = container.children[i];
+          if (state.activePointIndex === -1 || !chart.isDatasetVisible(i)) {
+            marker.style.display = 'none';
+            return;
           }
+          const p = chart.getDatasetMeta(i).data[state.activePointIndex];
+          if (
+            !p ||
+            p.x < chartArea.left ||
+            p.x > chartArea.right ||
+            p.y < chartArea.top ||
+            p.y > chartArea.bottom
+          ) {
+            marker.style.display = 'none';
+            return;
+          }
+          marker.style.display = 'block';
+          marker.style.transform = `translate(${p.x + offsetX}px, ${p.y + offsetY}px)`;
         });
       },
     },
@@ -339,6 +352,8 @@
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        animation: false,
+        transitions: { active: { animation: { duration: 0 } } },
         interaction: { mode: 'index', intersect: false },
         onClick: (e, elements, chart) => {
           let index = -1;
@@ -436,27 +451,30 @@
     setDateRange(state.currentRange);
     applyCurrentView();
 
-    // If the pointer is already over the new canvas (common after a state
-    // switch), synthesize a mousemove so Chart.js starts tracking hover
-    // without waiting for the user to jiggle the mouse or click.
-    if (lastPointerPos) {
-      const canvas = state.chartInstance.canvas;
-      const rect = canvas.getBoundingClientRect();
-      if (
-        lastPointerPos.clientX >= rect.left &&
-        lastPointerPos.clientX <= rect.right &&
-        lastPointerPos.clientY >= rect.top &&
-        lastPointerPos.clientY <= rect.bottom
-      ) {
-        canvas.dispatchEvent(
-          new MouseEvent('mousemove', {
-            clientX: lastPointerPos.clientX,
-            clientY: lastPointerPos.clientY,
-            bubbles: true,
-          }),
-        );
-      }
-    }
+    // Ensure the DOM marker lands on its final position after the
+    // chart's initial animation and zoom/visibility updates settle,
+    // not on some intermediate animation frame.
+    state.chartInstance.update('none');
+  };
+
+  // Update the existing chart's data in place instead of destroy+rebuild.
+  // Preserves hover/interaction state across state switches so tooltips
+  // and point-hover-radius work immediately without waiting for a click.
+  const updateChartData = () => {
+    const chart = state.chartInstance;
+    state.activePointIndex = state.chartData.single_costs.length - 1;
+
+    chart.data.labels = state.chartData.single_costs.map(d => d.date);
+    chart.data.datasets[0].data = state.chartData.single_costs.map(d => d.cost_to_income);
+    chart.data.datasets[1].data = state.chartData.household_costs.map(d => d.cost_to_income);
+
+    chart.options.scales.y.beginAtZero = state.yAxisZero;
+    chart.resetZoom('none');
+    chart.update('none');
+
+    updateInfoCards(state.activePointIndex);
+    setDateRange(state.currentRange);
+    applyCurrentView();
   };
 
   // Event & UI Handlers
@@ -574,11 +592,6 @@
     }
 
     try {
-      if (state.chartInstance) {
-        state.chartInstance.destroy();
-        state.chartInstance = null;
-      }
-
       const url = getDataUrl(stateCode);
       const response = await fetch(url, { signal: controller.signal });
       if (!response.ok) {
@@ -627,7 +640,11 @@
       mainContent.style.display = 'block';
 
       updateHeaderForState(stateCode);
-      initChart();
+      if (state.chartInstance) {
+        updateChartData();
+      } else {
+        initChart();
+      }
       syncUrlParams();
     } catch (error) {
       if (error.name === 'AbortError') {
