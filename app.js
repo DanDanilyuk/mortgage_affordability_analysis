@@ -116,7 +116,7 @@
 
         const x = meta.data[state.firstEstimatedIndex].x;
         ctx.save();
-        ctx.fillStyle = 'rgba(245, 158, 11, 0.08)';
+        ctx.fillStyle = `${state.chartColors.amber}14`;
         ctx.fillRect(
           x,
           chartArea.top,
@@ -144,12 +144,12 @@
             point.y <= chartArea.bottom
           ) {
             ctx.save();
-            ctx.shadowColor = 'rgba(245, 158, 11, 0.4)';
+            ctx.shadowColor = `${state.chartColors.amber}66`;
             ctx.shadowBlur = 10;
             ctx.beginPath();
             ctx.arc(point.x, point.y, 6, 0, 2 * Math.PI);
-            ctx.fillStyle = '#f59e0b';
-            ctx.strokeStyle = '#ffffff';
+            ctx.fillStyle = state.chartColors.amber;
+            ctx.strokeStyle = state.chartColors.bgContainer;
             ctx.lineWidth = 3;
             ctx.fill();
             ctx.stroke();
@@ -242,6 +242,8 @@
       secondary: style.getPropertyValue('--accent-purple').trim() || '#8b5cf6',
       gridColor: style.getPropertyValue('--border-color').trim() || '#e5e7eb',
       textColor: style.getPropertyValue('--text-secondary').trim() || '#6b7280',
+      amber: style.getPropertyValue('--accent-amber').trim() || '#f59e0b',
+      bgContainer: style.getPropertyValue('--bg-container').trim() || '#ffffff',
     };
   };
 
