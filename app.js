@@ -42,7 +42,6 @@
   const dom = {
     updateInfo: document.getElementById('updateInfo'),
     selectedDate: document.getElementById('selectedDate'),
-    datasetIndicator: document.getElementById('datasetIndicator'),
     currentMultiplier: document.getElementById('currentMultiplier'),
     housePrice: document.getElementById('housePrice'),
     annualIncome: document.getElementById('annualIncome'),
@@ -54,7 +53,7 @@
     stateSelect: document.getElementById('stateSelect'),
     headerEyebrow: document.getElementById('headerEyebrow'),
     dateRangeButtons: document.querySelectorAll('.date-range-buttons .btn'),
-    controlsButtons: document.querySelectorAll('.controls .btn'),
+    controlsButtons: document.querySelectorAll('.controls-views .btn'),
     chartLiveRegion: document.getElementById('chartLiveRegion'),
   };
 
@@ -202,7 +201,6 @@
     const bothVisible = singleVisible && householdVisible;
 
     dom.selectedDate.textContent = formatDate(singleData.date);
-    dom.datasetIndicator.style.display = 'none';
     dom.housePrice.textContent = formatMoney(singleData.home_price);
     dom.mortgageRate.textContent = `${singleData.mortgage_rate}%`;
 
@@ -466,8 +464,6 @@
       );
       if (btn) btn.classList.add('active');
     }
-
-    syncUrlParams();
   };
 
   const applyCurrentView = () => {
@@ -491,7 +487,6 @@
       btn.classList.toggle('btn-secondary', btn.id !== btnId);
     });
     updateInfoCards(state.activePointIndex);
-    syncUrlParams();
   };
 
   // Features
@@ -508,7 +503,6 @@
     dom.btnToggleY.textContent = state.yAxisZero ? 'Y-Axis: Zero' : 'Y-Axis: Auto';
     dom.btnToggleY.classList.toggle('active', state.yAxisZero);
     state.chartInstance.update();
-    syncUrlParams();
   };
 
   const getDataUrl = stateCode => {
@@ -645,32 +639,36 @@
 
     document
       .getElementById('btnBoth')
-      .addEventListener('click', () =>
-        updateLineVisibility(true, true, 'btnBoth'),
-      );
+      .addEventListener('click', () => {
+        updateLineVisibility(true, true, 'btnBoth');
+        syncUrlParams();
+      });
     document
       .getElementById('btnSingle')
-      .addEventListener('click', () =>
-        updateLineVisibility(true, false, 'btnSingle'),
-      );
+      .addEventListener('click', () => {
+        updateLineVisibility(true, false, 'btnSingle');
+        syncUrlParams();
+      });
     document
       .getElementById('btnHousehold')
-      .addEventListener('click', () =>
-        updateLineVisibility(false, true, 'btnHousehold'),
-      );
+      .addEventListener('click', () => {
+        updateLineVisibility(false, true, 'btnHousehold');
+        syncUrlParams();
+      });
 
     document.querySelector('.date-range-buttons').addEventListener('click', e => {
       const btn = e.target.closest('.btn');
-      if (btn) setDateRange(btn.dataset.range);
+      if (btn) { setDateRange(btn.dataset.range); syncUrlParams(); }
     });
 
     document.getElementById('btnResetZoom').addEventListener('click', () => {
       setDateRange(initialRange);
+      syncUrlParams();
     });
     document
       .getElementById('btnDownload')
       .addEventListener('click', downloadChart);
-    dom.btnToggleY.addEventListener('click', toggleYAxis);
+    dom.btnToggleY.addEventListener('click', () => { toggleYAxis(); syncUrlParams(); });
 
     // State market selector
     const measureSpan = document.createElement('span');
