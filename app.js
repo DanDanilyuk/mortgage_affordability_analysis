@@ -99,6 +99,10 @@
       day: 'numeric',
     });
   };
+  const toIsoLocal = date => {
+    const pad = n => String(n).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  };
 
   // Chart Plugins
   const plugins = {
@@ -413,16 +417,20 @@
   const setDateRange = range => {
     state.currentRange = range;
 
-    const end = new Date(state.maxDate);
-    let start = new Date(state.maxDate);
+    const [ey, em, ed] = state.maxDate.split('-').map(Number);
+    const end = new Date(ey, em - 1, ed);
+    let start;
 
-    if (range === '1y') start.setFullYear(end.getFullYear() - 1);
-    else if (range === '2y') start.setFullYear(end.getFullYear() - 2);
-    else if (range === '5y') start.setFullYear(end.getFullYear() - 5);
-    else if (range === 'all') start = new Date(state.minDate);
+    if (range === '1y') start = new Date(ey - 1, em - 1, ed);
+    else if (range === '2y') start = new Date(ey - 2, em - 1, ed);
+    else if (range === '5y') start = new Date(ey - 5, em - 1, ed);
+    else {
+      const [sy, sm, sd] = state.minDate.split('-').map(Number);
+      start = new Date(sy, sm - 1, sd);
+    }
 
-    const startISO = start.toISOString().slice(0, 10);
-    const endISO = end.toISOString().slice(0, 10);
+    const startISO = toIsoLocal(start);
+    const endISO = toIsoLocal(end);
     const startIndex = state.chartData.single_costs.findIndex(
       d => d.date >= startISO,
     );
@@ -531,11 +539,9 @@
         i => i.estimated || i.interpolated,
       );
 
-      state.minDate = new Date(state.chartData.single_costs[0].date);
-      state.maxDate = new Date(
-        state.chartData.single_costs[state.chartData.single_costs.length - 1]
-          .date,
-      );
+      state.minDate = state.chartData.single_costs[0].date;
+      state.maxDate =
+        state.chartData.single_costs[state.chartData.single_costs.length - 1].date;
 
       // Metadata setup
       const genDate = new Date(
