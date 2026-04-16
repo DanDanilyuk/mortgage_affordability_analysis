@@ -59,6 +59,10 @@
 
   let fetchToken = 0;
   let currentFetchController = null;
+  let lastPointerPos = null;
+  document.addEventListener('pointermove', e => {
+    lastPointerPos = { clientX: e.clientX, clientY: e.clientY };
+  });
 
   // URL Parameter Management
   const resolveState = raw => {
@@ -422,6 +426,28 @@
     updateInfoCards(state.activePointIndex);
     setDateRange(state.currentRange);
     applyCurrentView();
+
+    // If the pointer is already over the new canvas (common after a state
+    // switch), synthesize a mousemove so Chart.js starts tracking hover
+    // without waiting for the user to jiggle the mouse or click.
+    if (lastPointerPos) {
+      const canvas = state.chartInstance.canvas;
+      const rect = canvas.getBoundingClientRect();
+      if (
+        lastPointerPos.clientX >= rect.left &&
+        lastPointerPos.clientX <= rect.right &&
+        lastPointerPos.clientY >= rect.top &&
+        lastPointerPos.clientY <= rect.bottom
+      ) {
+        canvas.dispatchEvent(
+          new MouseEvent('mousemove', {
+            clientX: lastPointerPos.clientX,
+            clientY: lastPointerPos.clientY,
+            bubbles: true,
+          }),
+        );
+      }
+    }
   };
 
   // Event & UI Handlers
