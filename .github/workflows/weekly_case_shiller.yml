@@ -77,7 +77,7 @@ jobs:
       - name: Check freshness of generated JSON files
         if: steps.skip_check.outputs.skip != 'true'
         run: |
-          ruby -rjson -rdate -e '
+          ruby -rjson -rtime -e '
             threshold = Time.now - 8 * 86400
             stale = []
             Dir.glob(["weekly_case_shiller_output.json", "data/*.json"]).each do |f|
