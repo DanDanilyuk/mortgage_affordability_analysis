@@ -2,41 +2,31 @@
   "single_costs": [
     {
       "type": "single",
-      "date": "2016-05-05",
-      "total_cost": 426603,
-      "single_income": 40338,
-      "cost_to_income": "10.58",
+      "date": "2016-05-12",
+      "total_cost": 424497,
+      "single_income": 40347,
+      "cost_to_income": "10.52",
       "home_price": 260322,
-      "mortgage_rate": "3.61",
+      "mortgage_rate": "3.57",
       "observed": true
     },
     {
       "type": "single",
-      "date": "2016-05-12",
-      "total_cost": 425654,
-      "single_income": 40347,
-      "cost_to_income": "10.55",
-      "home_price": 261032,
-      "mortgage_rate": "3.57",
-      "observed": false
-    },
-    {
-      "type": "single",
       "date": "2016-05-19",
-      "total_cost": 426943,
+      "total_cost": 426940,
       "single_income": 40356,
       "cost_to_income": "10.58",
-      "home_price": 261498,
+      "home_price": 261496,
       "mortgage_rate": "3.58",
       "observed": false
     },
     {
       "type": "single",
       "date": "2016-05-26",
-      "total_cost": 430879,
+      "total_cost": 430866,
       "single_income": 40370,
       "cost_to_income": "10.67",
-      "home_price": 261960,
+      "home_price": 261952,
       "mortgage_rate": "3.64",
       "observed": false
     },
@@ -5273,46 +5263,52 @@
         "rate_estimated": false,
         "income_estimated": true
       }
+    },
+    {
+      "type": "single",
+      "date": "2026-05-07",
+      "total_cost": 1214352,
+      "single_income": 58526,
+      "cost_to_income": "20.75",
+      "home_price": 540973,
+      "mortgage_rate": "6.37",
+      "observed": false,
+      "estimated": true,
+      "estimation_details": {
+        "price_estimated": true,
+        "rate_estimated": false,
+        "income_estimated": true
+      }
     }
   ],
   "household_costs": [
     {
       "type": "household",
-      "date": "2016-05-05",
-      "total_cost": 426603,
-      "household_income": 56473,
-      "cost_to_income": "7.55",
+      "date": "2016-05-12",
+      "total_cost": 424497,
+      "household_income": 56486,
+      "cost_to_income": "7.52",
       "home_price": 260322,
-      "mortgage_rate": "3.61",
+      "mortgage_rate": "3.57",
       "observed": true
     },
     {
       "type": "household",
-      "date": "2016-05-12",
-      "total_cost": 425654,
-      "household_income": 56486,
-      "cost_to_income": "7.54",
-      "home_price": 261032,
-      "mortgage_rate": "3.57",
-      "observed": false
-    },
-    {
-      "type": "household",
       "date": "2016-05-19",
-      "total_cost": 426943,
+      "total_cost": 426940,
       "household_income": 56498,
       "cost_to_income": "7.56",
-      "home_price": 261498,
+      "home_price": 261496,
       "mortgage_rate": "3.58",
       "observed": false
     },
     {
       "type": "household",
       "date": "2016-05-26",
-      "total_cost": 430879,
+      "total_cost": 430866,
       "household_income": 56519,
       "cost_to_income": "7.62",
-      "home_price": 261960,
+      "home_price": 261952,
       "mortgage_rate": "3.64",
       "observed": false
     },
@@ -10549,29 +10545,45 @@
         "rate_estimated": false,
         "income_estimated": true
       }
+    },
+    {
+      "type": "household",
+      "date": "2026-05-07",
+      "total_cost": 1214352,
+      "household_income": 81936,
+      "cost_to_income": "14.82",
+      "home_price": 540973,
+      "mortgage_rate": "6.37",
+      "observed": false,
+      "estimated": true,
+      "estimation_details": {
+        "price_estimated": true,
+        "rate_estimated": false,
+        "income_estimated": true
+      }
     }
   ],
   "metadata": {
-    "generated_at": "2026-04-30T13:38:34-04:00",
+    "generated_at": "2026-05-07T13:41:11-04:00",
     "state": "UT",
     "state_name": "Utah",
     "frequency": "weekly_thursday_aligned",
     "date_range": {
-      "start": "2016-05-05",
-      "end": "2026-04-30",
+      "start": "2016-05-12",
+      "end": "2026-05-07",
       "last_actual_home_price": "2026-03-01",
       "last_actual_income": "2026-03-01"
     },
     "counts": {
       "total": 522,
-      "actual": 513,
-      "estimated": 9,
-      "income_estimated": 9
+      "actual": 512,
+      "estimated": 10,
+      "income_estimated": 10
     },
     "series_quality": {
       "observed": 119,
-      "interpolated": 398,
-      "extrapolated": 5
+      "interpolated": 397,
+      "extrapolated": 6
     },
     "data_sources": {
       "bls_series": "CES0500000011",
