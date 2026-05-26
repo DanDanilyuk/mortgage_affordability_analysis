@@ -267,18 +267,6 @@ h1 .header-accent {
   margin-top: 1px;
 }
 
-/* --- Dataset Indicator --- */
-.dataset-indicator {
-  text-align: center;
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--accent-amber);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  margin-bottom: 20px;
-}
-
 /* --- Info Cards --- */
 .info-grid {
   display: grid;
