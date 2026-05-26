@@ -1186,6 +1186,12 @@ const state = {
 
   // Listeners bindings
   document.addEventListener('DOMContentLoaded', () => {
+    // Embed mode strips header/footer/methodology so the chart fills the iframe.
+    const isEmbed = new URLSearchParams(window.location.search).get('embed') === '1';
+    if (isEmbed) {
+      document.body.classList.add('is-embed');
+    }
+
     if (typeof Chart === 'undefined') {
       const lm = document.getElementById('loadingMessage');
       if (lm) {

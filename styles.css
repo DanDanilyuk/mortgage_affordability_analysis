@@ -854,6 +854,29 @@ h1 .header-accent {
   }
 }
 
+/* --- Embed mode (when URL has ?embed=1) --- */
+body.is-embed header,
+body.is-embed footer,
+body.is-embed .methodology,
+body.is-embed .state-grid-section,
+body.is-embed .sticky-summary,
+body.is-embed .skip-link {
+  display: none !important;
+}
+
+body.is-embed {
+  background: transparent;
+}
+
+body.is-embed .container {
+  max-width: none;
+  padding: 0;
+}
+
+body.is-embed .content {
+  padding: 8px;
+}
+
 /* --- All-states ranking grid --- */
 .state-grid-section {
   margin: 32px 0 24px;
