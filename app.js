@@ -1,13 +1,21 @@
-(() => {
-  // Defaults for URL params (non-default values are written to the URL)
-  const DEFAULTS = { state: 'ALL', range: '2y', view: 'both', yaxis: 'auto' };
-  const VALID_RANGES = ['1y', '2y', '5y', 'all'];
-  const VALID_VIEWS = ['both', 'single', 'household'];
-  const VIEW_TO_BTN = { both: 'btnBoth', single: 'btnSingle', household: 'btnHousehold' };
-  const BTN_TO_VIEW = { btnBoth: 'both', btnSingle: 'single', btnHousehold: 'household' };
+import {
+  DEFAULTS,
+  VALID_RANGES,
+  VALID_VIEWS,
+  VIEW_TO_BTN,
+  BTN_TO_VIEW,
+  STATE_NAMES,
+} from './modules/constants.js';
+import {
+  formatMoney,
+  formatSignedMoney,
+  formatDate,
+  toIsoLocal,
+  formatRelativeTime,
+} from './modules/format.js';
 
-  // Encapsulated Application State
-  const state = {
+// Encapsulated Application State
+const state = {
     chartData: null,
     chartInstance: null,
     chartColors: {},
@@ -21,22 +29,6 @@
     currentView: 'both',
   };
 
-  // State name lookup for display
-  const STATE_NAMES = {
-    ALL: 'U.S.', AL: 'Alabama', AK: 'Alaska', AZ: 'Arizona', AR: 'Arkansas',
-    CA: 'California', CO: 'Colorado', CT: 'Connecticut', DE: 'Delaware',
-    DC: 'District of Columbia', FL: 'Florida', GA: 'Georgia', HI: 'Hawaii',
-    ID: 'Idaho', IL: 'Illinois', IN: 'Indiana', IA: 'Iowa', KS: 'Kansas',
-    KY: 'Kentucky', LA: 'Louisiana', ME: 'Maine', MD: 'Maryland',
-    MA: 'Massachusetts', MI: 'Michigan', MN: 'Minnesota', MS: 'Mississippi',
-    MO: 'Missouri', MT: 'Montana', NE: 'Nebraska', NV: 'Nevada',
-    NH: 'New Hampshire', NJ: 'New Jersey', NM: 'New Mexico', NY: 'New York',
-    NC: 'North Carolina', ND: 'North Dakota', OH: 'Ohio', OK: 'Oklahoma',
-    OR: 'Oregon', PA: 'Pennsylvania', RI: 'Rhode Island', SC: 'South Carolina',
-    SD: 'South Dakota', TN: 'Tennessee', TX: 'Texas', UT: 'Utah',
-    VT: 'Vermont', VA: 'Virginia', WA: 'Washington', WV: 'West Virginia',
-    WI: 'Wisconsin', WY: 'Wyoming',
-  };
 
   // DOM Elements
   const dom = {
@@ -114,37 +106,6 @@
     history.replaceState(null, '', url);
 
     if (dom.btnResetFilters) dom.btnResetFilters.hidden = !isAnyFilterNonDefault();
-  };
-
-  // Formatting Utilities
-  const formatMoney = val => '$' + Math.round(val).toLocaleString();
-
-  const formatRelativeTime = date => {
-    const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
-    const diffSec = Math.round((date.getTime() - Date.now()) / 1000);
-    const abs = Math.abs(diffSec);
-    if (abs < 60) return rtf.format(diffSec, 'second');
-    const diffMin = Math.round(diffSec / 60);
-    if (Math.abs(diffMin) < 60) return rtf.format(diffMin, 'minute');
-    const diffHr = Math.round(diffSec / 3600);
-    if (Math.abs(diffHr) < 24) return rtf.format(diffHr, 'hour');
-    const diffDay = Math.round(diffSec / 86400);
-    if (Math.abs(diffDay) < 30) return rtf.format(diffDay, 'day');
-    const diffMonth = Math.round(diffDay / 30);
-    if (Math.abs(diffMonth) < 12) return rtf.format(diffMonth, 'month');
-    return rtf.format(Math.round(diffMonth / 12), 'year');
-  };
-  const formatDate = dateStr => {
-    const [y, m, d] = dateStr.split('-');
-    return new Date(y, m - 1, d).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
-  const toIsoLocal = date => {
-    const pad = n => String(n).padStart(2, '0');
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
   };
 
   // Chart Plugins
@@ -327,11 +288,6 @@
         : singleData.cost_to_income;
       dom.stickySummaryRatio.textContent = `${stickyRatio}x`;
     }
-  };
-
-  const formatSignedMoney = val => {
-    const abs = Math.abs(Math.round(val));
-    return `${val < 0 ? '-' : '+'}$${abs.toLocaleString()}`;
   };
 
   const renderDelta = (el, diff, formatted, betterDirection) => {
@@ -1104,4 +1060,3 @@
 
     loadData(params.state);
   });
-})();
