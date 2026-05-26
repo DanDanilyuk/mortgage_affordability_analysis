@@ -6,7 +6,7 @@ export const VIEW_TO_BTN = { both: 'btnBoth', single: 'btnSingle', household: 'b
 export const BTN_TO_VIEW = { btnBoth: 'both', btnSingle: 'single', btnHousehold: 'household' };
 
 export const STATE_NAMES = {
-  ALL: 'U.S.', AL: 'Alabama', AK: 'Alaska', AZ: 'Arizona', AR: 'Arkansas',
+  ALL: 'U.S.A', AL: 'Alabama', AK: 'Alaska', AZ: 'Arizona', AR: 'Arkansas',
   CA: 'California', CO: 'Colorado', CT: 'Connecticut', DE: 'Delaware',
   DC: 'District of Columbia', FL: 'Florida', GA: 'Georgia', HI: 'Hawaii',
   ID: 'Idaho', IL: 'Illinois', IN: 'Indiana', IA: 'Iowa', KS: 'Kansas',

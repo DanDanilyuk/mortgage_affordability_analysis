@@ -886,7 +886,7 @@ const state = {
     let filtered = items.slice();
     let activeIdx = -1;
 
-    const stateNameFor = code => STATE_NAMES[code] || code || 'All U.S.';
+    const stateNameFor = code => STATE_NAMES[code] || code || 'U.S.A';
     const setInputToCurrent = () => { input.value = stateNameFor(dom.stateSelect.value); };
     setInputToCurrent();
 
