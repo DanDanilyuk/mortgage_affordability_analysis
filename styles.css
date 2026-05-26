@@ -588,7 +588,7 @@ h1 .header-accent {
   background: var(--accent-amber);
   border: 3px solid var(--bg-container);
   border-radius: 50%;
-  box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--accent-amber) 40%, transparent);
   pointer-events: none;
   will-change: transform;
 }
