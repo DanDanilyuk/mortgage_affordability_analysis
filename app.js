@@ -705,12 +705,7 @@
         return;
       }
       console.error(error);
-      if (state.chartInstance) {
-        dom.updateInfo.textContent = `Error: ${error.message}`;
-      } else {
-        document.getElementById('loadingMessage').innerHTML =
-          `<div class="error-message"><strong>Error:</strong> ${error.message}</div>`;
-      }
+      renderRetry(stateCode, isSwitch, error.message);
     } finally {
       clearTimeout(timeoutId);
       if (myToken === fetchToken) mainContent.classList.remove('is-loading');
