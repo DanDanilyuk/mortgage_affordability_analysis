@@ -10,8 +10,10 @@
 /test/version_tmp/
 /tmp/
 
-# Used by dotenv library to load environment variables.
-# .env
+# Local-only secrets (API keys etc.) - production values live in GitHub Actions secrets
+.env
+.env.local
+.env.*.local
 
 # Ignore Byebug command history file.
 .byebug_history
@@ -57,6 +59,10 @@ build-iPhoneSimulator/
 
 # Local-only task tracking for in-flight review cycle
 TASK_LIST.md
+
+# Local-only dev scratch notes (may contain API keys, personal lists, etc.)
+notes.md
+suggested_domains.md
 
 # Playwright MCP artifacts from local verification runs
 .playwright-mcp/
