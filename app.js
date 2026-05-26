@@ -982,6 +982,21 @@ const state = {
       .addEventListener('click', downloadChart);
     const btnCsv = document.getElementById('btnDownloadCsv');
     if (btnCsv) btnCsv.addEventListener('click', downloadCsv);
+    const btnCopyLink = document.getElementById('btnCopyLink');
+    const btnCopyLinkLabel = document.getElementById('btnCopyLinkLabel');
+    if (btnCopyLink && btnCopyLinkLabel) {
+      btnCopyLink.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(window.location.href);
+          const prev = btnCopyLinkLabel.textContent;
+          btnCopyLinkLabel.textContent = 'Copied!';
+          setTimeout(() => { btnCopyLinkLabel.textContent = prev; }, 1600);
+        } catch {
+          btnCopyLinkLabel.textContent = 'Copy failed';
+          setTimeout(() => { btnCopyLinkLabel.textContent = 'Copy Link'; }, 1600);
+        }
+      });
+    }
     dom.btnToggleY.addEventListener('click', () => { toggleYAxis(); syncUrlParams(); });
 
     dom.btnResetFilters.addEventListener('click', () => {
