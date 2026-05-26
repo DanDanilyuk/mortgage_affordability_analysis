@@ -812,6 +812,68 @@ const state = {
     dom.dataTableBody.innerHTML = rows.join('');
   };
 
+  const setupStateGrid = async () => {
+    const grid = document.getElementById('stateGrid');
+    if (!grid) return;
+    try {
+      const resp = await fetch('data/index.json');
+      if (!resp.ok) {
+        grid.parentElement.hidden = true;
+        return;
+      }
+      const idx = await resp.json();
+      const items = (idx.states || []).filter(s => s.latest_ratio_single != null);
+      if (!items.length) {
+        grid.parentElement.hidden = true;
+        return;
+      }
+      items.sort((a, b) => b.latest_ratio_single - a.latest_ratio_single);
+      const min = items[items.length - 1].latest_ratio_single;
+      const max = items[0].latest_ratio_single;
+      const span = Math.max(0.001, max - min);
+
+      grid.replaceChildren();
+      items.forEach(s => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'state-tile';
+        btn.dataset.code = s.state;
+        btn.setAttribute('role', 'listitem');
+        btn.setAttribute(
+          'aria-label',
+          `${s.state_name}, ratio ${s.latest_ratio_single.toFixed(2)}x. Click to load.`,
+        );
+        const intensity = Math.round(((s.latest_ratio_single - min) / span) * 80) + 10;
+        btn.style.background = `color-mix(in srgb, var(--accent-amber) ${intensity}%, var(--bg-card))`;
+        if (intensity > 55) btn.style.color = 'var(--text-on-dark)';
+        const code = document.createElement('span');
+        code.className = 'state-tile-code';
+        code.textContent = s.state;
+        const ratio = document.createElement('span');
+        ratio.className = 'state-tile-ratio';
+        ratio.textContent = `${s.latest_ratio_single.toFixed(1)}x`;
+        btn.append(code, ratio);
+        btn.addEventListener('click', () => {
+          if (dom.stateSelect.value !== s.state) {
+            dom.stateSelect.value = s.state;
+            dom.stateSelect.dispatchEvent(new Event('change'));
+          }
+        });
+        grid.appendChild(btn);
+      });
+
+      const highlightCurrent = () => {
+        grid.querySelectorAll('.state-tile').forEach(t => {
+          t.setAttribute('aria-current', t.dataset.code === state.currentState ? 'true' : 'false');
+        });
+      };
+      highlightCurrent();
+      dom.stateSelect.addEventListener('change', highlightCurrent);
+    } catch {
+      grid.parentElement.hidden = true;
+    }
+  };
+
   const setupStateCombobox = () => {
     const input = document.getElementById('stateComboboxInput');
     const list = document.getElementById('stateComboboxList');
@@ -1246,6 +1308,9 @@ const state = {
 
     // Searchable state combobox (desktop only - mobile uses the native select)
     setupStateCombobox();
+
+    // All-states ranking grid
+    setupStateGrid();
 
     // Keyboard shortcut help: press `?` anywhere outside a text input.
     const shortcutDialog = document.getElementById('shortcutDialog');
