@@ -563,6 +563,31 @@
     return `data/${stateCode}.json`;
   };
 
+  const buildRetryButton = stateCode => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn btn-secondary btn-small retry-btn';
+    btn.textContent = 'Retry';
+    btn.addEventListener('click', () => loadData(stateCode), { once: true });
+    return btn;
+  };
+
+  const renderRetry = (stateCode, isSwitch, message) => {
+    const wrapper = document.createElement('span');
+    wrapper.append(`${message} `);
+    wrapper.appendChild(buildRetryButton(stateCode));
+    if (isSwitch) {
+      dom.updateInfo.replaceChildren(wrapper);
+    } else {
+      const lm = document.getElementById('loadingMessage');
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'error-message';
+      errorDiv.appendChild(wrapper);
+      lm.replaceChildren(errorDiv);
+      lm.style.display = '';
+    }
+  };
+
   const updateHeaderForState = stateCode => {
     const name = STATE_NAMES[stateCode] || stateCode;
     dom.headerEyebrow.textContent =
@@ -649,15 +674,7 @@
     } catch (error) {
       if (error.name === 'AbortError') {
         if (timedOut) {
-          const retryHTML = `Couldn't load data - network timeout. <button class="btn btn-secondary btn-small" id="retryBtn">Retry</button>`;
-          if (isSwitch) {
-            dom.updateInfo.innerHTML = retryHTML;
-          } else {
-            const lm = document.getElementById('loadingMessage');
-            lm.innerHTML = `<div class="error-message">${retryHTML}</div>`;
-            lm.style.display = '';
-          }
-          document.getElementById('retryBtn').addEventListener('click', () => loadData(stateCode));
+          renderRetry(stateCode, isSwitch, "Couldn't load data - network timeout.");
         }
         return;
       }
