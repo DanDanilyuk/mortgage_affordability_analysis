@@ -1184,6 +1184,13 @@ const state = {
     }
   };
 
+  // Service worker registration (off in dev / non-https).
+  if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    });
+  }
+
   // Listeners bindings
   document.addEventListener('DOMContentLoaded', () => {
     // Embed mode strips header/footer/methodology so the chart fills the iframe.
