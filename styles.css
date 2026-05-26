@@ -597,6 +597,52 @@ h1 .header-accent {
   flex-shrink: 0;
 }
 
+/* --- Sticky mobile summary --- */
+.sticky-summary {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .sticky-summary {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: var(--bg-container);
+    border-bottom: 1px solid var(--border-color);
+    padding: 8px 16px;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--text-primary);
+    transform: translateY(-100%);
+    box-shadow: var(--shadow-md);
+  }
+
+  .sticky-summary.visible {
+    transform: translateY(0);
+  }
+
+  .sticky-summary-sep {
+    color: var(--text-muted);
+  }
+
+  .sticky-summary-ratio {
+    color: var(--accent-amber);
+    font-weight: 600;
+  }
+}
+
+@media (max-width: 768px) and (prefers-reduced-motion: no-preference) {
+  .sticky-summary {
+    transition: transform 0.2s var(--ease-out);
+  }
+}
+
 /* --- Chart Container --- */
 .chart-container {
   position: relative;

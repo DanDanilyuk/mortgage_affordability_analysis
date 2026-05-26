@@ -62,6 +62,9 @@
     controlsButtons: document.querySelectorAll('.controls-views .btn'),
     chartLiveRegion: document.getElementById('chartLiveRegion'),
     activePointMarkers: document.getElementById('activePointMarkers'),
+    stickySummary: document.getElementById('stickySummary'),
+    stickySummaryDate: document.getElementById('stickySummaryDate'),
+    stickySummaryRatio: document.getElementById('stickySummaryRatio'),
   };
 
   let fetchToken = 0;
@@ -309,6 +312,14 @@
           ? `Price-to-Income ${householdData.cost_to_income}x`
           : `Price-to-Income ${singleData.cost_to_income}x`;
       dom.chartLiveRegion.textContent = `${formatDate(singleData.date)} - ${stateName}: ${multiplierPart}, Median Home Price ${formatMoney(singleData.home_price)}, Mortgage ${singleData.mortgage_rate}%`;
+    }
+
+    if (dom.stickySummaryDate && dom.stickySummaryRatio) {
+      dom.stickySummaryDate.textContent = formatDate(singleData.date);
+      const stickyRatio = householdVisible && !bothVisible
+        ? householdData.cost_to_income
+        : singleData.cost_to_income;
+      dom.stickySummaryRatio.textContent = `${stickyRatio}x`;
     }
   };
 
@@ -908,6 +919,22 @@
       resizeSelect();
       loadData(dom.stateSelect.value);
     });
+
+    // Sticky mobile summary: visible only while the chart is in viewport.
+    if (dom.stickySummary && 'IntersectionObserver' in window) {
+      const chartContainer = document.querySelector('.chart-container');
+      if (chartContainer) {
+        const obs = new IntersectionObserver(
+          entries => {
+            entries.forEach(entry => {
+              dom.stickySummary.classList.toggle('visible', entry.isIntersecting);
+            });
+          },
+          { threshold: 0.1 },
+        );
+        obs.observe(chartContainer);
+      }
+    }
 
     // Keyboard arrows navigation
     document
