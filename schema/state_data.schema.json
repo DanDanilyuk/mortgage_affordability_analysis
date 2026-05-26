@@ -75,7 +75,8 @@
             "income_estimated": { "type": "boolean" }
           }
         },
-        "rate_gap_days": { "type": "integer", "minimum": 0 }
+        "rate_gap_days": { "type": "integer", "minimum": 0 },
+        "cpi": { "type": "number", "minimum": 0 }
       }
     }
   }

@@ -599,7 +599,7 @@ class MortgageCalculator
     end
   end
 
-  def self.calculate_costs(home_price_data, mortgage_data, income_data, income_multiplier: 1.0)
+  def self.calculate_costs(home_price_data, mortgage_data, income_data, income_multiplier: 1.0, cpi_observations: [])
     single_costs, household_costs = [], []
     last_income_date = Date.parse(income_data.last[:date])
 
@@ -630,8 +630,11 @@ class MortgageCalculator
       single_income = weekly_income * 52 * income_multiplier
       household_income = single_income * HOUSEHOLD_MULTIPLIER
 
+      cpi_at = nearest_cpi(cpi_observations, date)
+
       metadata = {}
       metadata[:observed] = home_price_obs['observed'] == true
+      metadata[:cpi] = cpi_at if cpi_at
 
       if home_price_obs['estimated'] || mortgage_obs['estimated'] || income_estimated
         metadata[:estimated] = true
@@ -647,6 +650,12 @@ class MortgageCalculator
     end
 
     [single_costs, household_costs]
+  end
+
+  def self.nearest_cpi(cpi_observations, target_date)
+    return nil if cpi_observations.empty?
+    match = cpi_observations.select { |o| o[:date] <= target_date }.last
+    match&.dig(:value)
   end
 
   private
@@ -710,6 +719,18 @@ class WeeklyCaseShiller
     )
     puts "✓ Mortgage rates (Thursday-aligned): #{mortgage_aligned.length} observations"
 
+    # Fetch CPI-U (CPIAUCSL) for inflation-adjusted display - monthly series.
+    # Each Thursday entry will carry the most recent CPI value as of that date.
+    cpi_monthly = fetcher.fetch_fred_data('CPIAUCSL')
+    cpi_observations = (cpi_monthly['observations'] || []).filter_map do |obs|
+      next unless obs['value'] && obs['value'] != '.' && !obs['value'].empty?
+      value = strict_float(obs['value'], 'CPI')
+      next unless value
+      { date: Date.parse(obs['date']), value: value }
+    end.sort_by { |o| o[:date] }
+    cpi_latest = cpi_observations.last&.dig(:value)
+    puts "✓ CPI-U: #{cpi_observations.length} monthly observations, latest #{cpi_latest}"
+
     # Fetch QCEW state income multipliers
     puts "\n💰 Fetching state income multipliers from BLS QCEW..."
     income_multipliers, qcew_year = QCEWFetcher.fetch_state_multipliers
@@ -733,7 +754,7 @@ class WeeklyCaseShiller
       multiplier = entry[:value]
       multiplier_source = entry[:source]
       begin
-        generate_state_data(fetcher, state_code, income_data, thursday_dates, mortgage_aligned, multiplier, qcew_year, multiplier_source)
+        generate_state_data(fetcher, state_code, income_data, thursday_dates, mortgage_aligned, multiplier, qcew_year, multiplier_source, cpi_observations)
       rescue => e
         puts "❌ Failed to generate data for #{state_code}: #{sanitize_for_log(e.message)}"
         failed_states << state_code
@@ -785,7 +806,7 @@ class WeeklyCaseShiller
 
   private
 
-  def generate_state_data(fetcher, state_code, income_data, thursday_dates, mortgage_aligned, income_multiplier, qcew_year, multiplier_source)
+  def generate_state_data(fetcher, state_code, income_data, thursday_dates, mortgage_aligned, income_multiplier, qcew_year, multiplier_source, cpi_observations = [])
     series_id = STATE_FRED_SERIES[state_code]
     state_name = STATE_NAMES[state_code]
     puts "\n" + "=" * 60
@@ -831,7 +852,8 @@ class WeeklyCaseShiller
       home_price_aligned,
       mortgage_aligned,
       income_data,
-      income_multiplier: income_multiplier
+      income_multiplier: income_multiplier,
+      cpi_observations: cpi_observations
     )
 
     estimated_count = single_costs.count { |c| c[:estimated] }
