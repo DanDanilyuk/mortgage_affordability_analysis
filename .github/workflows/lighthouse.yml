@@ -1,0 +1,24 @@
+name: Lighthouse
+
+on:
+  schedule:
+    - cron: '15 18 * * 4'  # Weekly Thursday, after the data run
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run Lighthouse on the deployed site
+        uses: treosh/lighthouse-ci-action@v11
+        with:
+          urls: |
+            https://homeaffordabilitytracker.com/
+            https://homeaffordabilitytracker.com/?state=ca
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+          runs: 3
