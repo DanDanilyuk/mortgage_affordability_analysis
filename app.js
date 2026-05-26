@@ -575,6 +575,11 @@
       ],
     });
 
+    const chartContainer = document.querySelector('.chart-container');
+    if (chartContainer && chartContainer.tabIndex !== 0) {
+      chartContainer.tabIndex = 0;
+    }
+
     updateInfoCards(state.activePointIndex);
     setDateRange(state.currentRange);
     applyCurrentView();
