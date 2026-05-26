@@ -478,7 +478,10 @@ class HomePriceEnhancer
 
     last_actual = monthly_obs.last
     last_actual_date = Date.parse(last_actual['date'])
-    last_actual_value = strict_float(last_actual['value'], 'home price') || 0.0
+    last_actual_value = strict_float(last_actual['value'], 'home price')
+    unless last_actual_value
+      raise "Last home-price observation has invalid value (#{last_actual['value'].inspect}) for #{last_actual_date}"
+    end
     last_actual_year = last_actual_date.year
     last_actual_month = last_actual_date.month
     last_actual_end = Date.new(last_actual_year, last_actual_month, -1)
@@ -489,10 +492,12 @@ class HomePriceEnhancer
       six_months_ago = monthly_obs[-6]
       current = monthly_obs[-1]
       months_diff = 5
-      six_ago_value = strict_float(six_months_ago['value'], 'home price') || 0.0
-      current_value = strict_float(current['value'], 'home price') || 0.0
-      total_growth = six_ago_value.zero? ? 0.0 : (current_value - six_ago_value) / six_ago_value
-      monthly_growth_rate = ((1 + total_growth) ** (1.0 / months_diff)) - 1
+      six_ago_value = strict_float(six_months_ago['value'], 'home price')
+      current_value = strict_float(current['value'], 'home price')
+      if six_ago_value && current_value && !six_ago_value.zero?
+        total_growth = (current_value - six_ago_value) / six_ago_value
+        monthly_growth_rate = ((1 + total_growth) ** (1.0 / months_diff)) - 1
+      end
     end
 
     # Prepare control points for interpolation (use first day of each month)
@@ -500,10 +505,15 @@ class HomePriceEnhancer
     control_values = []
 
     monthly_obs.each do |obs|
+      value = strict_float(obs['value'], 'home price')
+      unless value
+        puts "⚠️  Skipping home-price observation with invalid value: date=#{obs['date']} value=#{obs['value'].inspect}"
+        next
+      end
       obs_date = Date.parse(obs['date'])
       control_point = Date.new(obs_date.year, obs_date.month, 1)
       control_dates << control_point
-      control_values << (strict_float(obs['value'], 'home price') || 0.0)
+      control_values << value
     end
 
     # For each monthly control point, find the closest Thursday - that Thursday is
