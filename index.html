@@ -233,6 +233,12 @@
                                 <button class="btn btn-secondary btn-small" data-range="all">All</button>
                             </div>
                             <div class="action-buttons">
+                                <button class="btn btn-secondary btn-small btn-action" id="btnToggleTable"
+                                    aria-label="View data as a table"
+                                    aria-pressed="false">
+                                    <svg class="btn-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+                                    <span class="btn-label" id="btnToggleTableLabel">View as Table</span>
+                                </button>
                                 <button class="btn btn-secondary btn-small btn-action" id="btnToggleY"
                                     aria-label="Toggle Y-Axis origin">
                                     <svg class="btn-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3v18M4 21h17M9 17V8m5 9v-5m5 5V5"/></svg>
@@ -257,6 +263,25 @@
                     <canvas id="mortgageChart" role="img" aria-label="Home affordability price-to-income ratio chart"></canvas>
                     <div id="activePointMarkers" class="active-point-markers" aria-hidden="true"></div>
                     <div id="chartLiveRegion" aria-live="polite" aria-atomic="true" class="sr-only"></div>
+                </div>
+
+                <div class="data-table-wrapper" id="dataTableWrapper" hidden>
+                    <table class="data-table" id="dataTable">
+                        <caption id="dataTableCaption">Home affordability metrics by Thursday for the selected range</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Date</th>
+                                <th scope="col">Single Ratio</th>
+                                <th scope="col">Dual Ratio</th>
+                                <th scope="col">Home Price</th>
+                                <th scope="col">Single Income</th>
+                                <th scope="col">Dual Income</th>
+                                <th scope="col">Rate</th>
+                                <th scope="col">Quality</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataTableBody"></tbody>
+                    </table>
                 </div>
 
                 <div class="zoom-info" id="zoomTip">

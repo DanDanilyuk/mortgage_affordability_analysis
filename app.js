@@ -65,6 +65,12 @@
     stickySummary: document.getElementById('stickySummary'),
     stickySummaryDate: document.getElementById('stickySummaryDate'),
     stickySummaryRatio: document.getElementById('stickySummaryRatio'),
+    btnToggleTable: document.getElementById('btnToggleTable'),
+    btnToggleTableLabel: document.getElementById('btnToggleTableLabel'),
+    chartContainer: document.getElementById('chartContainer'),
+    dataTableWrapper: document.getElementById('dataTableWrapper'),
+    dataTableBody: document.getElementById('dataTableBody'),
+    dataTableCaption: document.getElementById('dataTableCaption'),
   };
 
   let fetchToken = 0;
@@ -650,6 +656,9 @@
       );
       if (btn) btn.classList.add('active');
     }
+    if (dom.dataTableWrapper && !dom.dataTableWrapper.hidden) {
+      renderDataTable();
+    }
   };
 
   const applyCurrentView = () => {
@@ -686,6 +695,83 @@
   const setYAxisLabel = () => {
     dom.btnToggleYLabel.textContent = state.yAxisZero ? 'Y-Axis: Zero' : 'Y-Axis: Auto';
     dom.btnToggleY.classList.toggle('active', state.yAxisZero);
+  };
+
+  const computeRangeIndices = () => {
+    if (!state.chartData) return null;
+    const items = state.chartData.single_costs;
+    const [ey, em, ed] = state.maxDate.split('-').map(Number);
+    const end = new Date(ey, em - 1, ed);
+    let start;
+    if (state.currentRange === '1y') start = new Date(ey - 1, em - 1, ed);
+    else if (state.currentRange === '2y') start = new Date(ey - 2, em - 1, ed);
+    else if (state.currentRange === '5y') start = new Date(ey - 5, em - 1, ed);
+    else {
+      const [sy, sm, sd] = state.minDate.split('-').map(Number);
+      start = new Date(sy, sm - 1, sd);
+    }
+    const startIso = toIsoLocal(start);
+    const endIso = toIsoLocal(end);
+    let s = items.findIndex(d => d.date >= startIso);
+    let e = items.findIndex(d => d.date >= endIso);
+    if (s === -1) s = 0;
+    if (e === -1) e = items.length - 1;
+    return { start: s, end: e };
+  };
+
+  const qualityLabel = entry => {
+    if (entry.estimated) return { text: 'Estimated', cls: 'quality-estimated' };
+    if (entry.observed) return { text: 'Observed', cls: 'quality-observed' };
+    return { text: 'Interpolated', cls: 'quality-interpolated' };
+  };
+
+  const renderDataTable = () => {
+    if (!state.chartData || !dom.dataTableBody) return;
+    const range = computeRangeIndices();
+    if (!range) return;
+    const single = state.chartData.single_costs;
+    const household = state.chartData.household_costs;
+    const stateName = STATE_NAMES[state.currentState] || state.currentState;
+    if (dom.dataTableCaption) {
+      dom.dataTableCaption.textContent =
+        `Home affordability metrics for ${stateName}, ${formatDate(single[range.start].date)} to ${formatDate(single[range.end].date)}.`;
+    }
+    const rows = [];
+    for (let i = range.start; i <= range.end; i++) {
+      const s = single[i];
+      const h = household[i];
+      const q = qualityLabel(s);
+      rows.push(
+        `<tr>` +
+        `<td>${formatDate(s.date)}</td>` +
+        `<td>${s.cost_to_income}x</td>` +
+        `<td>${h.cost_to_income}x</td>` +
+        `<td>${formatMoney(s.home_price)}</td>` +
+        `<td>${formatMoney(s.single_income)}</td>` +
+        `<td>${formatMoney(h.household_income)}</td>` +
+        `<td>${s.mortgage_rate}%</td>` +
+        `<td class="${q.cls}">${q.text}</td>` +
+        `</tr>`,
+      );
+    }
+    dom.dataTableBody.innerHTML = rows.join('');
+  };
+
+  const toggleTableView = () => {
+    if (!dom.dataTableWrapper || !dom.chartContainer) return;
+    const showingTable = !dom.dataTableWrapper.hidden;
+    if (showingTable) {
+      dom.dataTableWrapper.hidden = true;
+      dom.chartContainer.hidden = false;
+      dom.btnToggleTable.setAttribute('aria-pressed', 'false');
+      dom.btnToggleTableLabel.textContent = 'View as Table';
+    } else {
+      renderDataTable();
+      dom.dataTableWrapper.hidden = false;
+      dom.chartContainer.hidden = true;
+      dom.btnToggleTable.setAttribute('aria-pressed', 'true');
+      dom.btnToggleTableLabel.textContent = 'View as Chart';
+    }
   };
 
   const toggleYAxis = () => {
@@ -924,6 +1010,11 @@
       resizeSelect();
       loadData(dom.stateSelect.value);
     });
+
+    // Table view toggle
+    if (dom.btnToggleTable) {
+      dom.btnToggleTable.addEventListener('click', toggleTableView);
+    }
 
     // Keyboard shortcut help: press `?` anywhere outside a text input.
     const shortcutDialog = document.getElementById('shortcutDialog');
