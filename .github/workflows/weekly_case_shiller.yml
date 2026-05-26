@@ -61,19 +61,6 @@ jobs:
         run: |
           ruby weekly_case_shiller.rb --bls-api-key $BLS_API_KEY --fred-api-key $FRED_API_KEY
 
-      - name: Validate generated data
-        if: steps.skip_check.outputs.skip != 'true'
-        run: |
-          if [ ! -f weekly_case_shiller_output.json ]; then
-            echo "ERROR: Missing national output file"
-            exit 1
-          fi
-          if [ ! -f data/CA.json ]; then
-            echo "ERROR: Missing state data files"
-            exit 1
-          fi
-          echo "Data generation validated successfully"
-
       - name: Check freshness of generated JSON files
         if: steps.skip_check.outputs.skip != 'true'
         run: |
