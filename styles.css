@@ -92,6 +92,28 @@
   box-sizing: border-box;
 }
 
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 0;
+  background: var(--bg-container);
+  color: var(--text-primary);
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  z-index: 200;
+}
+
+.skip-link:focus {
+  top: 8px;
+  left: 8px;
+  outline: 2px solid var(--accent-amber);
+  outline-offset: 2px;
+}
+
 body {
   font-family: var(--font-body);
   background-color: var(--bg-body);
