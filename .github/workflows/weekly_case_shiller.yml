@@ -65,6 +65,16 @@ jobs:
         run: |
           ruby weekly_case_shiller.rb --bls-api-key $BLS_API_KEY --fred-api-key $FRED_API_KEY
 
+      - name: Set up Node (for schema validation)
+        if: steps.skip_check.outputs.skip != 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Validate JSON against schema
+        if: steps.skip_check.outputs.skip != 'true'
+        run: npx --yes ajv-cli@5 validate -s schema/state_data.schema.json -d "data/*.json" -d "weekly_case_shiller_output.json" --strict=false
+
       - name: Check freshness of generated JSON files
         if: steps.skip_check.outputs.skip != 'true'
         run: |

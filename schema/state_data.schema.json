@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Home Affordability State Data",
+  "description": "Per-state (or national) weekly mortgage affordability data with metadata.",
+  "type": "object",
+  "required": ["single_costs", "household_costs", "metadata"],
+  "additionalProperties": false,
+  "properties": {
+    "single_costs": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/costEntry" }
+    },
+    "household_costs": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/costEntry" }
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["generated_at", "state", "state_name", "frequency", "date_range"],
+      "properties": {
+        "generated_at": { "type": "string" },
+        "state": { "type": "string", "pattern": "^[A-Z]{2}$" },
+        "state_name": { "type": "string" },
+        "frequency": { "type": "string" },
+        "date_range": {
+          "type": "object",
+          "required": ["start", "end"],
+          "properties": {
+            "start": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+            "end": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" }
+          }
+        },
+        "series_quality": {
+          "type": "object",
+          "properties": {
+            "observed": { "type": "integer", "minimum": 0 },
+            "interpolated": { "type": "integer", "minimum": 0 },
+            "extrapolated": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "data_sources": {
+          "type": "object",
+          "properties": {
+            "qcew_multiplier_source": {
+              "type": "string",
+              "pattern": "^(qcew_\\d{4}|fallback_missing|fallback_unavailable|fallback_all_states_missing)$"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "costEntry": {
+      "type": "object",
+      "required": ["type", "date", "total_cost", "cost_to_income", "home_price", "mortgage_rate"],
+      "properties": {
+        "type": { "type": "string", "enum": ["single", "household"] },
+        "date": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+        "total_cost": { "type": "integer", "minimum": 0 },
+        "single_income": { "type": "integer", "minimum": 0 },
+        "household_income": { "type": "integer", "minimum": 0 },
+        "cost_to_income": { "type": "string", "pattern": "^\\d+\\.\\d{2}$" },
+        "home_price": { "type": "integer", "minimum": 0 },
+        "mortgage_rate": { "type": "string", "pattern": "^\\d+\\.\\d{2}$" },
+        "observed": { "type": "boolean" },
+        "estimated": { "type": "boolean" },
+        "estimation_details": {
+          "type": "object",
+          "properties": {
+            "price_estimated": { "type": "boolean" },
+            "rate_estimated": { "type": "boolean" },
+            "income_estimated": { "type": "boolean" }
+          }
+        },
+        "rate_gap_days": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}
