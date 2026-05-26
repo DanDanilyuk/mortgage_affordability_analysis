@@ -608,8 +608,13 @@
 
   const updateHeaderForState = stateCode => {
     const name = STATE_NAMES[stateCode] || stateCode;
-    dom.headerEyebrow.textContent =
-      stateCode === 'ALL' ? 'U.S. Housing Market' : `${name} Housing Market`;
+    const label = stateCode === 'ALL' ? 'U.S. Housing Market' : `${name} Housing Market`;
+    const latest = state.chartData && state.chartData.single_costs
+      ? state.chartData.single_costs[state.chartData.single_costs.length - 1]
+      : null;
+    dom.headerEyebrow.textContent = latest
+      ? `${label} · ${latest.cost_to_income}x`
+      : label;
   };
 
   // Bootstrapping
