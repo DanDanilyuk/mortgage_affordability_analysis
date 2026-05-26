@@ -18,6 +18,7 @@
   --text-secondary: #475569;
   --text-muted: #94a3b8;
   --text-on-dark: #f1f5f9;
+  --text-on-dark-muted: #cbd5e1;
 
   /* Accents */
   --accent-amber: #d97706;
@@ -182,7 +183,7 @@ h1 .header-accent {
   margin-top: 16px;
   font-family: var(--font-mono);
   font-size: 0.75rem;
-  color: #64748b;
+  color: var(--text-on-dark-muted);
   letter-spacing: 0.02em;
 }
 
