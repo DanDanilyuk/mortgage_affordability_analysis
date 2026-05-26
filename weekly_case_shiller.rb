@@ -681,6 +681,11 @@ class WeeklyCaseShiller
     income_data = MortgageCalculator.normalize_income_data(bls_data)
     puts "✓ BLS Income data: #{income_data.length} months"
 
+    if income_data.length < 2
+      puts "❌ BLS income data has fewer than 2 valid months (#{income_data.length}); cannot compute affordability. Aborting."
+      exit 1
+    end
+
     if income_data.length >= 2
       last_two = income_data[-2..-1]
       growth = last_two[0][:value].zero? ? 0.0 : ((last_two[1][:value] - last_two[0][:value]) / last_two[0][:value] * 100)
