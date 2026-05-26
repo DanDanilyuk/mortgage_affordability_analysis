@@ -49,6 +49,10 @@
     multiplierCard: document.getElementById('multiplierCard'),
     priceCard: document.getElementById('priceCard'),
     incomeCard: document.getElementById('incomeCard'),
+    multiplierDelta: document.getElementById('multiplierDelta'),
+    priceDelta: document.getElementById('priceDelta'),
+    incomeDelta: document.getElementById('incomeDelta'),
+    rateDelta: document.getElementById('rateDelta'),
     btnToggleY: document.getElementById('btnToggleY'),
     btnResetFilters: document.getElementById('btnResetFilters'),
     stateSelect: document.getElementById('stateSelect'),
@@ -272,8 +276,12 @@
       dom.annualIncome.textContent = formatMoney(singleData.single_income);
     }
 
-    [dom.selectedDate, dom.currentMultiplier, dom.housePrice, dom.annualIncome, dom.mortgageRate]
-      .forEach(triggerValueFlip);
+    updateDeltas(index, householdVisible, bothVisible);
+
+    [
+      dom.selectedDate, dom.currentMultiplier, dom.housePrice, dom.annualIncome, dom.mortgageRate,
+      dom.multiplierDelta, dom.priceDelta, dom.incomeDelta, dom.rateDelta,
+    ].forEach(triggerValueFlip);
 
     const details = singleData.estimation_details || {};
     const isInterpolated = !singleData.observed && !singleData.estimated;
@@ -301,6 +309,80 @@
           : `Price-to-Income ${singleData.cost_to_income}x`;
       dom.chartLiveRegion.textContent = `${formatDate(singleData.date)} - ${stateName}: ${multiplierPart}, Median Home Price ${formatMoney(singleData.home_price)}, Mortgage ${singleData.mortgage_rate}%`;
     }
+  };
+
+  const formatSignedMoney = val => {
+    const abs = Math.abs(Math.round(val));
+    return `${val < 0 ? '-' : '+'}$${abs.toLocaleString()}`;
+  };
+
+  const renderDelta = (el, diff, formatted, betterDirection) => {
+    if (!el) return;
+    if (diff === null) {
+      el.textContent = '';
+      el.className = 'info-delta';
+      return;
+    }
+    if (Math.abs(diff) < 0.001) {
+      el.textContent = 'flat vs 1Y';
+      el.className = 'info-delta';
+      return;
+    }
+    const isBetter =
+      (diff < 0 && betterDirection === 'down') ||
+      (diff > 0 && betterDirection === 'up');
+    const arrow = diff > 0 ? '▲' : '▼';
+    el.textContent = `${arrow} ${formatted} vs 1Y`;
+    el.className = `info-delta ${isBetter ? 'better' : 'worse'}`;
+  };
+
+  const updateDeltas = (index, householdVisible, bothVisible) => {
+    const yearAgoIdx = index - 52;
+    const deltaEls = [dom.multiplierDelta, dom.priceDelta, dom.incomeDelta, dom.rateDelta];
+    if (yearAgoIdx < 0) {
+      deltaEls.forEach(el => {
+        if (!el) return;
+        el.textContent = '';
+        el.className = 'info-delta';
+      });
+      return;
+    }
+
+    const currSingle = state.chartData.single_costs[index];
+    const prevSingle = state.chartData.single_costs[yearAgoIdx];
+    const currHousehold = state.chartData.household_costs[index];
+    const prevHousehold = state.chartData.household_costs[yearAgoIdx];
+
+    // Ratio (lower is better). In both-view, anchor on single to match the eyebrow.
+    const useHousehold = householdVisible && !bothVisible;
+    const ratioDiff = useHousehold
+      ? parseFloat(currHousehold.cost_to_income) - parseFloat(prevHousehold.cost_to_income)
+      : parseFloat(currSingle.cost_to_income) - parseFloat(prevSingle.cost_to_income);
+    renderDelta(
+      dom.multiplierDelta,
+      ratioDiff,
+      `${ratioDiff >= 0 ? '+' : '-'}${Math.abs(ratioDiff).toFixed(2)}x`,
+      'down',
+    );
+
+    // Price (lower is better - more affordable).
+    const priceDiff = currSingle.home_price - prevSingle.home_price;
+    renderDelta(dom.priceDelta, priceDiff, formatSignedMoney(priceDiff), 'down');
+
+    // Income (higher is better).
+    const incomeCurr = useHousehold ? currHousehold.household_income : currSingle.single_income;
+    const incomePrev = useHousehold ? prevHousehold.household_income : prevSingle.single_income;
+    const incomeDiff = incomeCurr - incomePrev;
+    renderDelta(dom.incomeDelta, incomeDiff, formatSignedMoney(incomeDiff), 'up');
+
+    // Mortgage rate (lower is better).
+    const rateDiff = parseFloat(currSingle.mortgage_rate) - parseFloat(prevSingle.mortgage_rate);
+    renderDelta(
+      dom.rateDelta,
+      rateDiff,
+      `${rateDiff >= 0 ? '+' : '-'}${Math.abs(rateDiff).toFixed(2)}%`,
+      'down',
+    );
   };
 
   const readChartTokens = () => {
