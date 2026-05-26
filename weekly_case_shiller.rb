@@ -744,6 +744,43 @@ class WeeklyCaseShiller
       puts "\n❌ #{failed_states.length} state(s) failed: #{failed_states.join(', ')}"
       exit 1
     end
+
+    # Build a small index file with the latest ratio per state - powers the
+    # choropleth map and any future rankings UI without fanning out 51 fetches.
+    build_state_index(states_to_generate)
+  end
+
+  def build_state_index(states_to_generate)
+    rows = []
+    states_to_generate.each do |state_code|
+      next if state_code == 'US'  # national output lives at the repo root, not data/
+      path = File.join(STATE_DATA_DIR, "#{state_code}.json")
+      next unless File.exist?(path)
+      data = JSON.parse(File.read(path))
+      latest_single = data.dig('single_costs', -1) or next
+      latest_household = data.dig('household_costs', -1)
+      rows << {
+        state: state_code,
+        state_name: STATE_NAMES[state_code],
+        date: latest_single['date'],
+        latest_ratio_single: strict_float(latest_single['cost_to_income'], 'latest ratio single'),
+        latest_ratio_household: latest_household ? strict_float(latest_household['cost_to_income'], 'latest ratio household') : nil,
+        latest_home_price: latest_single['home_price'],
+        latest_mortgage_rate: strict_float(latest_single['mortgage_rate'], 'latest mortgage rate')
+      }
+    end
+
+    return if rows.empty?
+
+    output = {
+      generated_at: Time.now.utc.iso8601,
+      states: rows.sort_by { |r| r[:state] }
+    }
+    path = File.join(STATE_DATA_DIR, 'index.json')
+    tmp = "#{path}.tmp"
+    File.write(tmp, JSON.pretty_generate(output))
+    File.rename(tmp, path)
+    puts "\n📇 Wrote state index with #{rows.length} states to #{path}"
   end
 
   private
