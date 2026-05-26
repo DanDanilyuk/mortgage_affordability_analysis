@@ -246,21 +246,21 @@
     }
 
     const details = singleData.estimation_details || {};
-    updateCardBadge(
-      dom.multiplierCard,
-      singleData.estimated || singleData.interpolated,
-      singleData.estimated ? 'Estimated' : 'Interpolated',
-    );
-    updateCardBadge(
-      dom.priceCard,
-      details.price_estimated,
-      singleData.estimated ? 'Estimated' : 'Interpolated',
-    );
-    updateCardBadge(
-      dom.incomeCard,
-      details.income_estimated,
-      singleData.estimated ? 'Estimated' : 'Interpolated',
-    );
+    const isInterpolated = !singleData.observed && !singleData.estimated;
+
+    const setEstimationBadge = (cardEl, isFieldEstimated) => {
+      if (isFieldEstimated) {
+        updateCardBadge(cardEl, true, 'Estimated');
+      } else if (isInterpolated) {
+        updateCardBadge(cardEl, true, 'Interpolated');
+      } else {
+        updateCardBadge(cardEl, false, '');
+      }
+    };
+
+    setEstimationBadge(dom.multiplierCard, !!singleData.estimated);
+    setEstimationBadge(dom.priceCard, !!details.price_estimated);
+    setEstimationBadge(dom.incomeCard, !!details.income_estimated);
 
     if (dom.chartLiveRegion) {
       const stateName = STATE_NAMES[state.currentState] || state.currentState;
