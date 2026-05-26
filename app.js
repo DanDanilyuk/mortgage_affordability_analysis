@@ -220,6 +220,9 @@
   };
 
   const updateInfoCards = index => {
+    if (!state.chartData || index < 0 || index >= state.chartData.single_costs.length) {
+      return;
+    }
     const singleData = state.chartData.single_costs[index];
     const householdData = state.chartData.household_costs[index];
     const singleVisible = state.chartInstance.isDatasetVisible(0);
