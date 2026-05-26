@@ -219,6 +219,14 @@
     }
   };
 
+  const triggerValueFlip = el => {
+    if (!el) return;
+    el.classList.remove('value-flip');
+    // force reflow so the animation restarts on consecutive arrow-key presses
+    void el.offsetWidth;
+    el.classList.add('value-flip');
+  };
+
   const updateInfoCards = index => {
     if (!state.chartData || index < 0 || index >= state.chartData.single_costs.length) {
       return;
@@ -247,6 +255,9 @@
       dom.currentMultiplier.textContent = `${singleData.cost_to_income}x`;
       dom.annualIncome.textContent = formatMoney(singleData.single_income);
     }
+
+    [dom.selectedDate, dom.currentMultiplier, dom.housePrice, dom.annualIncome, dom.mortgageRate]
+      .forEach(triggerValueFlip);
 
     const details = singleData.estimation_details || {};
     const isInterpolated = !singleData.observed && !singleData.estimated;
