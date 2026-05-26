@@ -285,6 +285,8 @@
       textColor: style.getPropertyValue('--text-secondary').trim() || '#6b7280',
       amber: style.getPropertyValue('--accent-amber').trim() || '#f59e0b',
       bgContainer: style.getPropertyValue('--bg-container').trim() || '#ffffff',
+      tooltipBg: style.getPropertyValue('--tooltip-bg').trim() || 'rgba(17, 24, 39, 0.95)',
+      tooltipText: style.getPropertyValue('--tooltip-text').trim() || '#f1f5f9',
     };
   };
 
@@ -385,7 +387,9 @@
             },
           },
           tooltip: {
-            backgroundColor: 'rgba(17, 24, 39, 0.9)',
+            backgroundColor: state.chartColors.tooltipBg,
+            titleColor: state.chartColors.tooltipText,
+            bodyColor: state.chartColors.tooltipText,
             padding: 15,
             callbacks: {
               title: ctx => {
@@ -829,6 +833,9 @@
         chart.options.scales.y.grid.color = tokens.gridColor;
         chart.options.scales.y.title.color = tokens.textColor;
         chart.options.plugins.legend.labels.color = tokens.textColor;
+        chart.options.plugins.tooltip.backgroundColor = tokens.tooltipBg;
+        chart.options.plugins.tooltip.titleColor = tokens.tooltipText;
+        chart.options.plugins.tooltip.bodyColor = tokens.tooltipText;
 
         const ds = chart.data.datasets;
         ds[0].borderColor = tokens.primary;

@@ -35,6 +35,10 @@
   --shadow-lg: 0 12px 40px rgba(15, 23, 42, 0.08);
   --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.04), 0 0 0 1px rgba(15, 23, 42, 0.02);
 
+  /* Chart tooltip */
+  --tooltip-bg: rgba(17, 24, 39, 0.95);
+  --tooltip-text: #f1f5f9;
+
   /* Radii */
   --radius-sm: 6px;
   --radius-md: 10px;
@@ -75,6 +79,9 @@
     --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
     --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.4);
     --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.03);
+
+    --tooltip-bg: rgba(241, 245, 249, 0.96);
+    --tooltip-text: #0f172a;
 }
 
 /* --- Reset & Base --- */
