@@ -628,7 +628,14 @@
         throw new Error('Failed to load data file. Run the Ruby script first.');
       }
 
-      const json = await response.json();
+      let json;
+      try {
+        json = await response.json();
+      } catch (parseError) {
+        throw new Error(
+          `Data file for ${STATE_NAMES[stateCode] || stateCode} is not valid JSON. It may be truncated or corrupted.`,
+        );
+      }
       if (myToken !== fetchToken) return;
 
       state.chartData = json;
