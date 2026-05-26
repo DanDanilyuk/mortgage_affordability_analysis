@@ -227,11 +227,21 @@
                                 <button class="btn btn-secondary btn-small" data-range="all">All</button>
                             </div>
                             <div class="action-buttons">
-                                <button class="btn btn-secondary btn-small" id="btnToggleY"
-                                    aria-label="Toggle Y-Axis origin">Y-Axis: Auto</button>
-                                <button class="btn btn-secondary btn-small" id="btnDownload"
-                                    aria-label="Download Chart as PNG">Export PNG</button>
-                                <button class="btn btn-secondary btn-small" id="btnResetZoom">Reset View</button>
+                                <button class="btn btn-secondary btn-small btn-action" id="btnToggleY"
+                                    aria-label="Toggle Y-Axis origin">
+                                    <svg class="btn-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3v18M4 21h17M9 17V8m5 9v-5m5 5V5"/></svg>
+                                    <span class="btn-label" id="btnToggleYLabel">Y-Axis: Auto</span>
+                                </button>
+                                <button class="btn btn-secondary btn-small btn-action" id="btnDownload"
+                                    aria-label="Download chart as PNG">
+                                    <svg class="btn-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"/></svg>
+                                    <span class="btn-label">Export PNG</span>
+                                </button>
+                                <button class="btn btn-secondary btn-small btn-action" id="btnResetZoom"
+                                    aria-label="Reset chart view">
+                                    <svg class="btn-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 1 3 6.7M3 21v-6h6"/></svg>
+                                    <span class="btn-label">Reset View</span>
+                                </button>
                             </div>
                         </div>
                     </div>

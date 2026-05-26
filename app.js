@@ -54,6 +54,7 @@
     incomeDelta: document.getElementById('incomeDelta'),
     rateDelta: document.getElementById('rateDelta'),
     btnToggleY: document.getElementById('btnToggleY'),
+    btnToggleYLabel: document.getElementById('btnToggleYLabel'),
     btnResetFilters: document.getElementById('btnResetFilters'),
     stateSelect: document.getElementById('stateSelect'),
     headerEyebrow: document.getElementById('headerEyebrow'),
@@ -666,11 +667,15 @@
     link.click();
   };
 
+  const setYAxisLabel = () => {
+    dom.btnToggleYLabel.textContent = state.yAxisZero ? 'Y-Axis: Zero' : 'Y-Axis: Auto';
+    dom.btnToggleY.classList.toggle('active', state.yAxisZero);
+  };
+
   const toggleYAxis = () => {
     state.yAxisZero = !state.yAxisZero;
     state.chartInstance.options.scales.y.beginAtZero = state.yAxisZero;
-    dom.btnToggleY.textContent = state.yAxisZero ? 'Y-Axis: Zero' : 'Y-Axis: Auto';
-    dom.btnToggleY.classList.toggle('active', state.yAxisZero);
+    setYAxisLabel();
     state.chartInstance.update();
   };
 
@@ -840,7 +845,7 @@
     dom.stateSelect.value = params.state;
 
     if (state.yAxisZero) {
-      dom.btnToggleY.textContent = 'Y-Axis: Zero';
+      dom.btnToggleYLabel.textContent = 'Y-Axis: Zero';
       dom.btnToggleY.classList.add('active');
     }
 
@@ -882,8 +887,7 @@
       state.currentView = DEFAULTS.view;
       state.yAxisZero = DEFAULTS.yaxis === 'zero';
       dom.stateSelect.value = DEFAULTS.state;
-      dom.btnToggleY.textContent = `Y-Axis: ${state.yAxisZero ? 'Zero' : 'Auto'}`;
-      dom.btnToggleY.classList.toggle('active', state.yAxisZero);
+      setYAxisLabel();
       resizeSelect();
       loadData(DEFAULTS.state);
     });
