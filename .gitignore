@@ -15,6 +15,10 @@
 .env.local
 .env.*.local
 
+# JS tooling
+node_modules/
+package-lock.json
+
 # Ignore Byebug command history file.
 .byebug_history
 

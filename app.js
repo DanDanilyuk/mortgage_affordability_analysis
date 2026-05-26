@@ -816,7 +816,7 @@ const state = {
       let json;
       try {
         json = await response.json();
-      } catch (parseError) {
+      } catch {
         throw new Error(
           `Data file for ${STATE_NAMES[stateCode] || stateCode} is not valid JSON. It may be truncated or corrupted.`,
         );

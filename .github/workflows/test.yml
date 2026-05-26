@@ -31,3 +31,5 @@ jobs:
           node-version: '22'
       - name: Run JS tests
         run: node --test test/js/*.test.js
+      - name: Lint
+        run: npx --yes oxlint@0.16 app.js modules/ test/js/
