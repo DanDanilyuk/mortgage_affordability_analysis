@@ -59,6 +59,46 @@
         }
     }
     </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Dataset",
+        "name": "U.S. Home Affordability Weekly Dataset",
+        "description": "Weekly Thursday-aligned price-to-income ratio derived from BLS average weekly earnings, Zillow Home Value Index (via FRED), and Freddie Mac 30-year mortgage rate, for the U.S. and all 50 states + DC.",
+        "url": "https://homeaffordabilitytracker.com/",
+        "license": "https://opensource.org/licenses/MIT",
+        "creator": {
+            "@type": "Person",
+            "name": "Dan Danilyuk",
+            "url": "https://www.dandanilyuk.com"
+        },
+        "temporalCoverage": "2016-05/..",
+        "spatialCoverage": {
+            "@type": "Place",
+            "name": "United States"
+        },
+        "variableMeasured": [
+            { "@type": "PropertyValue", "name": "Price-to-Income Ratio" },
+            { "@type": "PropertyValue", "name": "Median Home Price (USD)" },
+            { "@type": "PropertyValue", "name": "Average Weekly Earnings (USD)" },
+            { "@type": "PropertyValue", "name": "30-Year Fixed Mortgage Rate (%)" }
+        ],
+        "distribution": [
+            {
+                "@type": "DataDownload",
+                "encodingFormat": "application/json",
+                "contentUrl": "https://homeaffordabilitytracker.com/weekly_case_shiller_output.json",
+                "description": "National (U.S.) weekly affordability data"
+            },
+            {
+                "@type": "DataDownload",
+                "encodingFormat": "application/json",
+                "contentUrl": "https://homeaffordabilitytracker.com/data/index.json",
+                "description": "Per-state latest snapshot index"
+            }
+        ]
+    }
+    </script>
 
     <!-- Theme (prevent flash of wrong theme) -->
     <script>
@@ -139,22 +179,26 @@
                         <div class="info-value" id="selectedDate">-</div>
                         <div class="info-delta" id="dateDelta" aria-hidden="true"></div>
                     </div>
-                    <div class="info-card" id="multiplierCard" data-accent="amber">
+                    <div class="info-card" id="multiplierCard" data-accent="amber"
+                        title="Total cost of a 30-year mortgage (principal + interest) divided by annual earnings. Higher means less affordable - a ratio of 10x means a home costs ten years of income.">
                         <div class="info-label">Price-to-Income Ratio</div>
                         <div class="info-value" id="currentMultiplier">-</div>
                         <div class="info-delta" id="multiplierDelta" aria-hidden="true"></div>
                     </div>
-                    <div class="info-card" id="priceCard" data-accent="blue">
+                    <div class="info-card" id="priceCard" data-accent="blue"
+                        title="Median home value from Zillow Home Value Index (ZHVI), state-specific when a state is selected, smoothed through monthly observations.">
                         <div class="info-label">Median Home Price</div>
                         <div class="info-value" id="housePrice">-</div>
                         <div class="info-delta" id="priceDelta" aria-hidden="true"></div>
                     </div>
-                    <div class="info-card" id="incomeCard" data-accent="emerald">
+                    <div class="info-card" id="incomeCard" data-accent="emerald"
+                        title="BLS Average Weekly Earnings scaled by a state-specific QCEW multiplier and annualized. Dual income view applies a 1.4x household multiplier.">
                         <div class="info-label">Avg. Annual Earnings</div>
                         <div class="info-value" id="annualIncome">-</div>
                         <div class="info-delta" id="incomeDelta" aria-hidden="true"></div>
                     </div>
-                    <div class="info-card" id="rateCard" data-accent="rose">
+                    <div class="info-card" id="rateCard" data-accent="rose"
+                        title="Freddie Mac 30-year fixed mortgage rate (national). Rates are not state-specific.">
                         <div class="info-label">30-Yr Fixed Rate</div>
                         <div class="info-value" id="mortgageRate">-</div>
                         <div class="info-delta" id="rateDelta" aria-hidden="true"></div>
