@@ -648,6 +648,48 @@ const state = {
     link.click();
   };
 
+  const csvCell = value => {
+    const s = value == null ? '' : String(value);
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+
+  const downloadCsv = () => {
+    if (!state.chartData) return;
+    const range = computeRangeIndices();
+    if (!range) return;
+    const single = state.chartData.single_costs;
+    const household = state.chartData.household_costs;
+    const header = [
+      'date', 'observed', 'estimated',
+      'single_ratio', 'household_ratio',
+      'home_price', 'single_income', 'household_income',
+      'mortgage_rate',
+    ];
+    const lines = [header.join(',')];
+    for (let i = range.start; i <= range.end; i++) {
+      const s = single[i];
+      const h = household[i];
+      lines.push([
+        s.date,
+        s.observed ? 'true' : 'false',
+        s.estimated ? 'true' : 'false',
+        s.cost_to_income,
+        h.cost_to_income,
+        s.home_price,
+        s.single_income,
+        h.household_income,
+        s.mortgage_rate,
+      ].map(csvCell).join(','));
+    }
+    const blob = new Blob([lines.join('\n') + '\n'], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.download = `home-affordability-${state.currentState}-${toIsoLocal(new Date())}.csv`;
+    link.href = url;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   const setYAxisLabel = () => {
     dom.btnToggleYLabel.textContent = state.yAxisZero ? 'Y-Axis: Zero' : 'Y-Axis: Auto';
     dom.btnToggleY.classList.toggle('active', state.yAxisZero);
@@ -938,6 +980,8 @@ const state = {
     document
       .getElementById('btnDownload')
       .addEventListener('click', downloadChart);
+    const btnCsv = document.getElementById('btnDownloadCsv');
+    if (btnCsv) btnCsv.addEventListener('click', downloadCsv);
     dom.btnToggleY.addEventListener('click', () => { toggleYAxis(); syncUrlParams(); });
 
     dom.btnResetFilters.addEventListener('click', () => {
