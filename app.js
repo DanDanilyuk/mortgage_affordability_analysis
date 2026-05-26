@@ -925,6 +925,26 @@
       loadData(dom.stateSelect.value);
     });
 
+    // Keyboard shortcut help: press `?` anywhere outside a text input.
+    const shortcutDialog = document.getElementById('shortcutDialog');
+    if (shortcutDialog && typeof shortcutDialog.showModal === 'function') {
+      const isEditable = el => {
+        if (!el) return false;
+        const tag = el.tagName;
+        return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || el.isContentEditable;
+      };
+      document.addEventListener('keydown', e => {
+        if (e.key === '?' && !shortcutDialog.open && !isEditable(e.target)) {
+          e.preventDefault();
+          shortcutDialog.showModal();
+        }
+      });
+      const closeBtn = document.getElementById('shortcutClose');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', () => shortcutDialog.close());
+      }
+    }
+
     // Sticky mobile summary: visible only while the chart is in viewport.
     if (dom.stickySummary && 'IntersectionObserver' in window) {
       const chartContainer = document.querySelector('.chart-container');

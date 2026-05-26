@@ -284,6 +284,23 @@
             </div>
         </main>
 
+        <dialog class="shortcut-dialog" id="shortcutDialog" aria-labelledby="shortcutHeading">
+            <div class="shortcut-dialog-inner">
+                <header class="shortcut-dialog-header">
+                    <h2 id="shortcutHeading">Keyboard shortcuts</h2>
+                    <button type="button" class="shortcut-close" id="shortcutClose" aria-label="Close keyboard shortcuts">×</button>
+                </header>
+                <dl class="shortcut-list">
+                    <dt><kbd>?</kbd></dt><dd>Open this help</dd>
+                    <dt><kbd>Esc</kbd></dt><dd>Close any overlay</dd>
+                    <dt><kbd>←</kbd> <kbd>→</kbd></dt><dd>Step through dates (focus the chart first)</dd>
+                    <dt><kbd>Scroll</kbd></dt><dd>Zoom the chart in or out</dd>
+                    <dt><kbd>Drag</kbd></dt><dd>Pan the chart timeline</dd>
+                    <dt><kbd>Click</kbd></dt><dd>Inspect any data point</dd>
+                </dl>
+            </div>
+        </dialog>
+
         <footer>
             <div class="footer-inner">
                 <p>Inspired by <a href="https://www.calculatedriskblog.com/p/weekly-schedule.html"
