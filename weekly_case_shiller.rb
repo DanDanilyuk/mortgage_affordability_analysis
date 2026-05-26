@@ -584,12 +584,14 @@ class MortgageCalculator
     cutoff_date = Date.new(Date.today.year - DEFAULT_YEARS_BACK, 1, 1)
 
     data.filter_map do |entry|
-      begin
-        date = Date.parse("#{entry['year']}-#{entry['periodName']}-01")
-      rescue Date::Error, TypeError, ArgumentError => e
-        puts "⚠️  Skipping BLS entry with invalid period: year=#{entry['year']} period=#{entry['periodName'].inspect} (#{sanitize_for_log(e.message)})"
+      year = entry['year'].to_s
+      period = entry['period'].to_s
+      period_match = period.match(/^M(0[1-9]|1[0-2])$/)
+      if !period_match || year !~ /^\d{4}$/
+        puts "⚠️  Skipping BLS entry with invalid period: year=#{entry['year'].inspect} period=#{entry['period'].inspect}"
         next
       end
+      date = Date.new(year.to_i, period_match[1].to_i, 1)
       next if date < cutoff_date
       value = strict_float(entry['value'], 'BLS income')
       next unless value

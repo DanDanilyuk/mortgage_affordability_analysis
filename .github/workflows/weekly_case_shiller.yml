@@ -52,6 +52,10 @@ jobs:
           ruby-version: '3.4.4'
           bundler-cache: true
 
+      - name: Run unit tests
+        if: steps.skip_check.outputs.skip != 'true'
+        run: bundle exec ruby test/all.rb
+
       - name: Run weekly Case-Shiller script (national + all states)
         if: steps.skip_check.outputs.skip != 'true'
         env:

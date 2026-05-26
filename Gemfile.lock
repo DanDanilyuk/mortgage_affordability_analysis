@@ -4,6 +4,7 @@ GEM
     csv (3.3.5)
     date (3.4.1)
     json (2.15.1)
+    minitest (5.27.0)
     optparse (0.6.0)
     uri (1.0.4)
 
@@ -15,6 +16,7 @@ DEPENDENCIES
   csv
   date
   json
+  minitest (~> 5.0)
   optparse
   uri
 
