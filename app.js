@@ -18,6 +18,7 @@ import { HOUSING_EVENTS } from './modules/events.js';
 // Encapsulated Application State
 const state = {
     chartData: null,
+    nationalCache: null,
     chartInstance: null,
     chartColors: {},
     firstEstimatedIndex: -1,
@@ -26,6 +27,7 @@ const state = {
     maxDate: null,
     yAxisZero: false,
     showEvents: true,
+    showNationalOverlay: true,
     currentState: 'ALL',
     currentRange: '2y',
     currentView: 'both',
@@ -472,6 +474,19 @@ const state = {
               },
             },
           },
+          {
+            label: 'U.S. Single (compare)',
+            data: nationalOverlayData(state.chartData.single_costs.length),
+            borderColor: state.chartColors.textColor || '#94a3b8',
+            backgroundColor: 'transparent',
+            borderWidth: 1.5,
+            borderDash: [4, 4],
+            tension: 0.4,
+            pointRadius: 0,
+            pointHoverRadius: 0,
+            spanGaps: true,
+            hidden: !shouldShowNationalOverlay(),
+          },
         ],
       },
       options: {
@@ -600,6 +615,10 @@ const state = {
     chart.data.labels = state.chartData.single_costs.map(d => d.date);
     chart.data.datasets[0].data = state.chartData.single_costs.map(d => d.cost_to_income);
     chart.data.datasets[1].data = state.chartData.household_costs.map(d => d.cost_to_income);
+    if (chart.data.datasets[2]) {
+      chart.data.datasets[2].data = nationalOverlayData(state.chartData.single_costs.length);
+      chart.data.datasets[2].hidden = !shouldShowNationalOverlay();
+    }
 
     chart.options.scales.y.beginAtZero = state.yAxisZero;
     chart.resetZoom('none');
@@ -822,6 +841,41 @@ const state = {
     return `data/${stateCode}.json`;
   };
 
+  const shouldShowNationalOverlay = () =>
+    state.currentState !== 'ALL' && state.showNationalOverlay && !!state.nationalCache;
+
+  const nationalOverlayData = length => {
+    if (!state.nationalCache || state.currentState === 'ALL') return Array(length).fill(null);
+    // Build a date -> ratio map so missing dates fall through as nulls (spanGaps handles).
+    const map = new Map(
+      state.nationalCache.single_costs.map(d => [d.date, parseFloat(d.cost_to_income)]),
+    );
+    return state.chartData.single_costs.map(d => map.has(d.date) ? map.get(d.date) : null);
+  };
+
+  const fetchNationalIfNeeded = async () => {
+    if (state.nationalCache || state.currentState === 'ALL') return;
+    try {
+      const resp = await fetch('weekly_case_shiller_output.json');
+      if (!resp.ok) return;
+      state.nationalCache = await resp.json();
+      if (state.chartInstance && state.chartData) {
+        applyNationalOverlay();
+      }
+    } catch {
+      // Silent: overlay is a non-critical enhancement.
+    }
+  };
+
+  const applyNationalOverlay = () => {
+    if (!state.chartInstance || !state.chartData) return;
+    const ds = state.chartInstance.data.datasets[2];
+    if (!ds) return;
+    ds.data = nationalOverlayData(state.chartData.single_costs.length);
+    ds.hidden = !shouldShowNationalOverlay();
+    state.chartInstance.update('none');
+  };
+
   const buildRetryButton = stateCode => {
     const btn = document.createElement('button');
     btn.type = 'button';
@@ -942,6 +996,8 @@ const state = {
         initChart();
       }
       syncUrlParams();
+      // Fire the national overlay fetch after the main chart is up (non-blocking).
+      fetchNationalIfNeeded();
     } catch (error) {
       if (error.name === 'AbortError') {
         if (timedOut) {
