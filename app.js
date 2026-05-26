@@ -815,16 +815,17 @@ const state = {
   const setupStateGrid = async () => {
     const grid = document.getElementById('stateGrid');
     if (!grid) return;
+    const section = grid.closest('.state-grid-section');
     try {
       const resp = await fetch('data/index.json');
       if (!resp.ok) {
-        grid.parentElement.hidden = true;
+        if (section) section.hidden = true;
         return;
       }
       const idx = await resp.json();
       const items = (idx.states || []).filter(s => s.latest_ratio_single != null);
       if (!items.length) {
-        grid.parentElement.hidden = true;
+        if (section) section.hidden = true;
         return;
       }
       items.sort((a, b) => b.latest_ratio_single - a.latest_ratio_single);

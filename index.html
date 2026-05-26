@@ -362,17 +362,17 @@
                     </table>
                 </div>
 
-                <section class="state-grid-section" aria-labelledby="stateGridHeading">
-                    <header class="state-grid-header">
-                        <h2 id="stateGridHeading">All states, ranked</h2>
-                        <p class="state-grid-sub">Latest price-to-income ratio, single earner. Darker = less affordable. Click a state to load.</p>
-                    </header>
-                    <div class="state-grid" id="stateGrid" role="list" aria-label="States sorted by current price-to-income ratio"></div>
-                </section>
-
                 <div class="zoom-info" id="zoomTip">
                     Scroll to zoom, drag to pan, click any point for details, or use arrow keys to step through dates.
                 </div>
+
+                <details class="state-grid-section">
+                    <summary><h2 id="stateGridHeading">All states, ranked</h2></summary>
+                    <div class="state-grid-content">
+                        <p class="state-grid-sub">Latest price-to-income ratio, single earner. Darker = less affordable. Click a state to load.</p>
+                        <div class="state-grid" id="stateGrid" role="list" aria-label="States sorted by current price-to-income ratio"></div>
+                    </div>
+                </details>
 
                 <details class="methodology">
                     <summary><h2>How It Works</h2></summary>

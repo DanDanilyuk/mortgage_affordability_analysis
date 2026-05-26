@@ -878,27 +878,11 @@ body.is-embed .content {
 }
 
 /* --- All-states ranking grid --- */
-.state-grid-section {
-  margin: 32px 0 24px;
-}
-
-.state-grid-header {
-  margin-bottom: 12px;
-}
-
-.state-grid-header h2 {
-  font-family: var(--font-display);
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0 0 4px;
-}
-
 .state-grid-sub {
   font-family: var(--font-body);
   font-size: 0.85rem;
   color: var(--text-secondary);
-  margin: 0;
+  margin: 0 0 12px;
 }
 
 .state-grid {
@@ -1058,13 +1042,15 @@ body.is-embed .content {
   margin-bottom: 32px;
 }
 
-/* --- Methodology (Collapsible) --- */
-.methodology {
+/* --- Collapsible sections (methodology + state-grid) --- */
+.methodology,
+.state-grid-section {
   border-top: 1px solid var(--border-color);
   padding-top: 0;
 }
 
-.methodology summary {
+.methodology summary,
+.state-grid-section summary {
   padding: 24px 0;
   cursor: pointer;
   list-style: none;
@@ -1073,11 +1059,13 @@ body.is-embed .content {
   gap: 8px;
 }
 
-.methodology summary::-webkit-details-marker {
+.methodology summary::-webkit-details-marker,
+.state-grid-section summary::-webkit-details-marker {
   display: none;
 }
 
-.methodology summary::after {
+.methodology summary::after,
+.state-grid-section summary::after {
   content: '+';
   font-family: var(--font-mono);
   font-size: 1.1rem;
@@ -1086,15 +1074,18 @@ body.is-embed .content {
   transition: transform 0.2s var(--ease-out);
 }
 
-.methodology[open] summary::after {
+.methodology[open] summary::after,
+.state-grid-section[open] summary::after {
   content: '−';
 }
 
-.methodology summary:hover {
+.methodology summary:hover,
+.state-grid-section summary:hover {
   color: var(--accent-amber);
 }
 
-.methodology summary h2 {
+.methodology summary h2,
+.state-grid-section summary h2 {
   font-family: var(--font-body);
   font-size: 0.85rem;
   font-weight: 600;
@@ -1104,7 +1095,8 @@ body.is-embed .content {
   margin: 0;
 }
 
-.methodology-content {
+.methodology-content,
+.state-grid-content {
   padding-bottom: 28px;
   color: var(--text-secondary);
   font-size: 0.9rem;
