@@ -104,6 +104,22 @@
 
   // Formatting Utilities
   const formatMoney = val => '$' + Math.round(val).toLocaleString();
+
+  const formatRelativeTime = date => {
+    const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+    const diffSec = Math.round((date.getTime() - Date.now()) / 1000);
+    const abs = Math.abs(diffSec);
+    if (abs < 60) return rtf.format(diffSec, 'second');
+    const diffMin = Math.round(diffSec / 60);
+    if (Math.abs(diffMin) < 60) return rtf.format(diffMin, 'minute');
+    const diffHr = Math.round(diffSec / 3600);
+    if (Math.abs(diffHr) < 24) return rtf.format(diffHr, 'hour');
+    const diffDay = Math.round(diffSec / 86400);
+    if (Math.abs(diffDay) < 30) return rtf.format(diffDay, 'day');
+    const diffMonth = Math.round(diffDay / 30);
+    if (Math.abs(diffMonth) < 12) return rtf.format(diffMonth, 'month');
+    return rtf.format(Math.round(diffMonth / 12), 'year');
+  };
   const formatDate = dateStr => {
     const [y, m, d] = dateStr.split('-');
     return new Date(y, m - 1, d).toLocaleDateString('en-US', {
@@ -672,9 +688,7 @@
         state.chartData.single_costs[state.chartData.single_costs.length - 1].date;
 
       // Metadata setup
-      const genDate = new Date(
-        state.chartData.metadata.generated_at,
-      ).toLocaleString();
+      const gen = new Date(state.chartData.metadata.generated_at);
       const sq = state.chartData.metadata.series_quality;
       let countsText;
       if (sq) {
@@ -690,7 +704,8 @@
         const estCount = state.chartData.single_costs.length - actCount;
         countsText = `${actCount} actual${estCount > 0 ? ' + ' + estCount + ' estimated' : ''} data points`;
       }
-      dom.updateInfo.textContent = `Last updated: ${genDate} | ${countsText}`;
+      dom.updateInfo.textContent = `Updated ${formatRelativeTime(gen)} | ${countsText}`;
+      dom.updateInfo.title = `Generated at ${gen.toLocaleString()}`;
 
       document.getElementById('loadingMessage').style.display = 'none';
       mainContent.style.display = 'block';
