@@ -698,6 +698,78 @@ h1 .header-accent {
   flex-shrink: 0;
 }
 
+/* --- Searchable state combobox (desktop only) --- */
+.state-combobox {
+  position: relative;
+  display: none;
+  font-family: var(--font-body);
+}
+
+.state-combobox-input {
+  width: 240px;
+  padding: 9px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-container);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-family: inherit;
+}
+
+.state-combobox-input:focus {
+  outline: 2px solid var(--accent-amber);
+  outline-offset: 1px;
+}
+
+.state-combobox-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 280px;
+  overflow-y: auto;
+  background: var(--bg-container);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  list-style: none;
+  padding: 4px 0;
+  margin: 0;
+  z-index: 20;
+}
+
+.state-combobox-list li {
+  padding: 8px 14px;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.state-combobox-list li[aria-selected="true"],
+.state-combobox-list li:hover {
+  background: var(--bg-card);
+}
+
+.state-combobox-list .state-code {
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.03em;
+}
+
+@media (min-width: 769px) {
+  .state-combobox {
+    display: block;
+  }
+  .state-native {
+    display: none;
+  }
+}
+
 /* --- Data table view --- */
 .data-table-wrapper {
   max-height: 520px;

@@ -812,6 +812,115 @@ const state = {
     dom.dataTableBody.innerHTML = rows.join('');
   };
 
+  const setupStateCombobox = () => {
+    const input = document.getElementById('stateComboboxInput');
+    const list = document.getElementById('stateComboboxList');
+    if (!input || !list || !dom.stateSelect) return;
+
+    const items = Array.from(dom.stateSelect.options).map(opt => ({
+      code: opt.value,
+      name: opt.textContent.trim(),
+    }));
+    let filtered = items.slice();
+    let activeIdx = -1;
+
+    const stateNameFor = code => STATE_NAMES[code] || code || 'All U.S.';
+    const setInputToCurrent = () => { input.value = stateNameFor(dom.stateSelect.value); };
+    setInputToCurrent();
+
+    const renderList = filter => {
+      const q = filter.trim().toLowerCase();
+      filtered = q
+        ? items.filter(it => it.name.toLowerCase().includes(q) || it.code.toLowerCase().includes(q))
+        : items.slice();
+      list.innerHTML = filtered
+        .map((it, i) =>
+          `<li role="option" data-code="${it.code}" id="state-combo-opt-${i}" aria-selected="false">` +
+          `<span>${it.name}</span><span class="state-code">${it.code === 'ALL' ? 'US' : it.code}</span>` +
+          `</li>`)
+        .join('');
+      activeIdx = -1;
+      input.removeAttribute('aria-activedescendant');
+    };
+
+    const openList = () => {
+      list.hidden = false;
+      input.setAttribute('aria-expanded', 'true');
+    };
+
+    const closeList = () => {
+      list.hidden = true;
+      input.setAttribute('aria-expanded', 'false');
+    };
+
+    const setActive = i => {
+      const lis = list.querySelectorAll('li');
+      lis.forEach(li => li.setAttribute('aria-selected', 'false'));
+      if (i >= 0 && i < lis.length) {
+        lis[i].setAttribute('aria-selected', 'true');
+        lis[i].scrollIntoView({ block: 'nearest' });
+        input.setAttribute('aria-activedescendant', lis[i].id);
+      } else {
+        input.removeAttribute('aria-activedescendant');
+      }
+      activeIdx = i;
+    };
+
+    const commit = code => {
+      if (!code) return;
+      input.value = stateNameFor(code);
+      closeList();
+      if (dom.stateSelect.value !== code) {
+        dom.stateSelect.value = code;
+        dom.stateSelect.dispatchEvent(new Event('change'));
+      }
+    };
+
+    input.addEventListener('focus', () => {
+      input.select();
+      renderList('');
+      openList();
+    });
+
+    input.addEventListener('input', () => {
+      renderList(input.value);
+      openList();
+    });
+
+    input.addEventListener('keydown', e => {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (list.hidden) { renderList(''); openList(); }
+        if (filtered.length) setActive(Math.min(activeIdx + 1, filtered.length - 1));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (filtered.length) setActive(Math.max(activeIdx - 1, 0));
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (activeIdx >= 0) commit(filtered[activeIdx].code);
+        else if (filtered.length === 1) commit(filtered[0].code);
+      } else if (e.key === 'Escape') {
+        closeList();
+        setInputToCurrent();
+        input.blur();
+      }
+    });
+
+    list.addEventListener('mousedown', e => {
+      const li = e.target.closest('li');
+      if (li) commit(li.dataset.code);
+    });
+
+    document.addEventListener('click', e => {
+      if (!input.contains(e.target) && !list.contains(e.target)) {
+        closeList();
+        setInputToCurrent();
+      }
+    });
+
+    dom.stateSelect.addEventListener('change', setInputToCurrent);
+  };
+
   const toggleTableView = () => {
     if (!dom.dataTableWrapper || !dom.chartContainer) return;
     const showingTable = !dom.dataTableWrapper.hidden;
@@ -1134,6 +1243,9 @@ const state = {
     if (dom.btnToggleTable) {
       dom.btnToggleTable.addEventListener('click', toggleTableView);
     }
+
+    // Searchable state combobox (desktop only - mobile uses the native select)
+    setupStateCombobox();
 
     // Keyboard shortcut help: press `?` anywhere outside a text input.
     const shortcutDialog = document.getElementById('shortcutDialog');
