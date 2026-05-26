@@ -13,6 +13,7 @@ import {
   toIsoLocal,
   formatRelativeTime,
 } from './modules/format.js';
+import { HOUSING_EVENTS } from './modules/events.js';
 
 // Encapsulated Application State
 const state = {
@@ -24,6 +25,7 @@ const state = {
     minDate: null,
     maxDate: null,
     yAxisZero: false,
+    showEvents: true,
     currentState: 'ALL',
     currentRange: '2y',
     currentView: 'both',
@@ -189,6 +191,41 @@ const state = {
             .getPropertyValue('--bg-container')
             .trim() || '#ffffff';
         ctx.fillRect(0, 0, chart.width, chart.height);
+        ctx.restore();
+      },
+    },
+    eventMarkers: {
+      id: 'eventMarkers',
+      afterDatasetsDraw: chart => {
+        if (!state.showEvents || !state.chartData) return;
+        const { ctx, chartArea, scales: { x } } = chart;
+        const labels = chart.data.labels;
+        ctx.save();
+        HOUSING_EVENTS.forEach(evt => {
+          const idx = labels.indexOf(evt.date) !== -1
+            ? labels.indexOf(evt.date)
+            : labels.findIndex(d => d >= evt.date);
+          if (idx === -1) return;
+          const xPos = x.getPixelForValue(idx);
+          if (xPos < chartArea.left || xPos > chartArea.right) return;
+
+          ctx.strokeStyle = state.chartColors.textColor || '#94a3b8';
+          ctx.globalAlpha = 0.35;
+          ctx.lineWidth = 1;
+          ctx.setLineDash([4, 4]);
+          ctx.beginPath();
+          ctx.moveTo(xPos, chartArea.top);
+          ctx.lineTo(xPos, chartArea.bottom);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          ctx.globalAlpha = 1;
+          ctx.font = '600 10px var(--font-mono), monospace';
+          ctx.fillStyle = state.chartColors.amber || '#d97706';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'top';
+          ctx.fillText(evt.short, xPos, chartArea.top + 4);
+        });
         ctx.restore();
       },
     },
@@ -534,6 +571,7 @@ const state = {
         plugins.estimatedRegion,
         plugins.activePoint,
         plugins.customCanvasBackgroundColor,
+        plugins.eventMarkers,
       ],
     });
 
@@ -982,6 +1020,16 @@ const state = {
       .addEventListener('click', downloadChart);
     const btnCsv = document.getElementById('btnDownloadCsv');
     if (btnCsv) btnCsv.addEventListener('click', downloadCsv);
+    const btnToggleEvents = document.getElementById('btnToggleEvents');
+    if (btnToggleEvents) {
+      btnToggleEvents.addEventListener('click', () => {
+        state.showEvents = !state.showEvents;
+        btnToggleEvents.classList.toggle('active', state.showEvents);
+        btnToggleEvents.setAttribute('aria-pressed', state.showEvents ? 'true' : 'false');
+        if (state.chartInstance) state.chartInstance.update('none');
+      });
+    }
+
     const btnCopyLink = document.getElementById('btnCopyLink');
     const btnCopyLinkLabel = document.getElementById('btnCopyLinkLabel');
     if (btnCopyLink && btnCopyLinkLabel) {
