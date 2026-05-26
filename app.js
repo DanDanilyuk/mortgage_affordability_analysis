@@ -607,10 +607,11 @@
     const controller = currentFetchController;
 
     let timedOut = false;
+    const FETCH_TIMEOUT_MS = 30000;
     const timeoutId = setTimeout(() => {
       timedOut = true;
       controller.abort();
-    }, 15000);
+    }, FETCH_TIMEOUT_MS);
 
     const mainContent = document.getElementById('mainContent');
     const isSwitch = state.chartInstance !== null;
