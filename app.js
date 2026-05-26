@@ -703,6 +703,21 @@
 
   // Listeners bindings
   document.addEventListener('DOMContentLoaded', () => {
+    if (typeof Chart === 'undefined') {
+      const lm = document.getElementById('loadingMessage');
+      if (lm) {
+        lm.replaceChildren();
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        const strong = document.createElement('strong');
+        strong.textContent = 'Failed to load chart library.';
+        errorDiv.append(strong, ' The CDN may be unreachable. Check your connection and refresh the page.');
+        lm.appendChild(errorDiv);
+        lm.style.display = '';
+      }
+      return;
+    }
+
     // Read URL params and apply initial state
     const params = readUrlParams();
     const initialRange = params.range;
