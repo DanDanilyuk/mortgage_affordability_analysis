@@ -1,7 +1,5 @@
 import {
   DEFAULTS,
-  VALID_RANGES,
-  VALID_VIEWS,
   VIEW_TO_BTN,
   BTN_TO_VIEW,
   STATE_NAMES,
@@ -14,6 +12,11 @@ import {
   formatRelativeTime,
 } from './modules/format.js';
 import { HOUSING_EVENTS } from './modules/events.js';
+import { parseUrlParams, anyFilterNonDefault } from './modules/urlState.js';
+import { rangeEdgeIndices, clampedRangeIndices } from './modules/range.js';
+import { computeDelta } from './modules/deltas.js';
+import { isOverlayVisible, buildOverlayData } from './modules/overlay.js';
+import { qualityLabel, estimationBadge } from './modules/quality.js';
 
 // Encapsulated Application State
 const state = {
@@ -76,32 +79,16 @@ const state = {
   // ring tracks the rendered state instead of lagging a selection behind.
   let highlightStateGrid = null;
 
-  // URL Parameter Management
-  const resolveState = raw => {
-    if (!raw) return DEFAULTS.state;
-    const upper = raw.toUpperCase();
-    if (upper === 'US' || upper === 'ALL') return 'ALL';
-    return STATE_NAMES[upper] ? upper : DEFAULTS.state;
-  };
-
-  const readUrlParams = () => {
-    const params = new URLSearchParams(window.location.search);
-    const range = (params.get('range') || '').toLowerCase();
-    const view = (params.get('view') || '').toLowerCase();
-    const yaxis = (params.get('yaxis') || '').toLowerCase();
-    return {
-      state: resolveState(params.get('state')),
-      range: VALID_RANGES.includes(range) ? range : DEFAULTS.range,
-      view: VALID_VIEWS.includes(view) ? view : DEFAULTS.view,
-      yaxis: yaxis === 'zero' ? 'zero' : DEFAULTS.yaxis,
-    };
-  };
+  // URL Parameter Management - thin wrappers over the pure modules/urlState.js
+  const readUrlParams = () => parseUrlParams(window.location.search);
 
   const isAnyFilterNonDefault = () =>
-    state.currentState !== DEFAULTS.state ||
-    state.currentRange !== DEFAULTS.range ||
-    state.currentView !== DEFAULTS.view ||
-    state.yAxisZero !== (DEFAULTS.yaxis === 'zero');
+    anyFilterNonDefault({
+      state: state.currentState,
+      range: state.currentRange,
+      view: state.currentView,
+      yAxisZero: state.yAxisZero,
+    });
 
   const syncUrlParams = () => {
     const params = new URLSearchParams();
@@ -303,13 +290,8 @@ const state = {
     const isInterpolated = !singleData.observed && !singleData.estimated;
 
     const setEstimationBadge = (cardEl, isFieldEstimated) => {
-      if (isFieldEstimated) {
-        updateCardBadge(cardEl, true, 'Estimated');
-      } else if (isInterpolated) {
-        updateCardBadge(cardEl, true, 'Interpolated');
-      } else {
-        updateCardBadge(cardEl, false, '');
-      }
+      const { active, label } = estimationBadge(isFieldEstimated, isInterpolated);
+      updateCardBadge(cardEl, active, label);
     };
 
     setEstimationBadge(dom.multiplierCard, !!singleData.estimated);
@@ -339,22 +321,9 @@ const state = {
 
   const renderDelta = (el, diff, formatted, betterDirection) => {
     if (!el) return;
-    if (diff === null) {
-      el.textContent = '';
-      el.className = 'info-delta';
-      return;
-    }
-    if (Math.abs(diff) < 0.001) {
-      el.textContent = 'flat vs 1Y';
-      el.className = 'info-delta';
-      return;
-    }
-    const isBetter =
-      (diff < 0 && betterDirection === 'down') ||
-      (diff > 0 && betterDirection === 'up');
-    const arrow = diff > 0 ? '▲' : '▼';
-    el.textContent = `${arrow} ${formatted} vs 1Y`;
-    el.className = `info-delta ${isBetter ? 'better' : 'worse'}`;
+    const { text, className } = computeDelta(diff, formatted, betterDirection);
+    el.textContent = text;
+    el.className = className;
   };
 
   const updateDeltas = (index, householdVisible, bothVisible) => {
@@ -651,32 +620,15 @@ const state = {
   const setDateRange = range => {
     state.currentRange = range;
 
-    const [ey, em, ed] = state.maxDate.split('-').map(Number);
-    const end = new Date(ey, em - 1, ed);
-    let start;
-
-    if (range === '1y') start = new Date(ey - 1, em - 1, ed);
-    else if (range === '2y') start = new Date(ey - 2, em - 1, ed);
-    else if (range === '5y') start = new Date(ey - 5, em - 1, ed);
-    else {
-      const [sy, sm, sd] = state.minDate.split('-').map(Number);
-      start = new Date(sy, sm - 1, sd);
-    }
-
-    const startISO = toIsoLocal(start);
-    const endISO = toIsoLocal(end);
-    const startIndex = state.chartData.single_costs.findIndex(
-      d => d.date >= startISO,
-    );
-    const endIndex = state.chartData.single_costs.findIndex(
-      d => d.date >= endISO,
+    const items = state.chartData.single_costs;
+    const { startIndex, endIndex } = rangeEdgeIndices(
+      items, range, state.minDate, state.maxDate,
     );
 
     if (startIndex !== -1) {
       state.chartInstance.zoomScale('x', {
         min: startIndex,
-        max:
-          endIndex !== -1 ? endIndex : state.chartData.single_costs.length - 1,
+        max: endIndex !== -1 ? endIndex : items.length - 1,
       });
       clearDateButtons();
       const btn = document.querySelector(
@@ -780,30 +732,9 @@ const state = {
 
   const computeRangeIndices = () => {
     if (!state.chartData) return null;
-    const items = state.chartData.single_costs;
-    const [ey, em, ed] = state.maxDate.split('-').map(Number);
-    const end = new Date(ey, em - 1, ed);
-    let start;
-    if (state.currentRange === '1y') start = new Date(ey - 1, em - 1, ed);
-    else if (state.currentRange === '2y') start = new Date(ey - 2, em - 1, ed);
-    else if (state.currentRange === '5y') start = new Date(ey - 5, em - 1, ed);
-    else {
-      const [sy, sm, sd] = state.minDate.split('-').map(Number);
-      start = new Date(sy, sm - 1, sd);
-    }
-    const startIso = toIsoLocal(start);
-    const endIso = toIsoLocal(end);
-    let s = items.findIndex(d => d.date >= startIso);
-    let e = items.findIndex(d => d.date >= endIso);
-    if (s === -1) s = 0;
-    if (e === -1) e = items.length - 1;
-    return { start: s, end: e };
-  };
-
-  const qualityLabel = entry => {
-    if (entry.estimated) return { text: 'Estimated', cls: 'quality-estimated' };
-    if (entry.observed) return { text: 'Observed', cls: 'quality-observed' };
-    return { text: 'Interpolated', cls: 'quality-interpolated' };
+    return clampedRangeIndices(
+      state.chartData.single_costs, state.currentRange, state.minDate, state.maxDate,
+    );
   };
 
   const renderDataTable = () => {
@@ -1058,16 +989,10 @@ const state = {
   };
 
   const shouldShowNationalOverlay = () =>
-    state.currentState !== 'ALL' && state.showNationalOverlay && !!state.nationalCache;
+    isOverlayVisible(state.currentState, state.showNationalOverlay, state.nationalCache);
 
-  const nationalOverlayData = length => {
-    if (!state.nationalCache || state.currentState === 'ALL') return Array(length).fill(null);
-    // Build a date -> ratio map so missing dates fall through as nulls (spanGaps handles).
-    const map = new Map(
-      state.nationalCache.single_costs.map(d => [d.date, parseFloat(d.cost_to_income)]),
-    );
-    return state.chartData.single_costs.map(d => map.has(d.date) ? map.get(d.date) : null);
-  };
+  const nationalOverlayData = length =>
+    buildOverlayData(length, state.currentState, state.nationalCache, state.chartData);
 
   const fetchNationalIfNeeded = async () => {
     if (state.nationalCache || state.currentState === 'ALL') return;
