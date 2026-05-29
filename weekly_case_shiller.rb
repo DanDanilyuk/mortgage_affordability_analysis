@@ -83,7 +83,7 @@ STATE_FIPS        = STATES.transform_values { |v| v[:fips] }.freeze
 def sanitize_for_log(str)
   str.to_s
      .gsub(/([?&]api_key=)[^&\s"]+/i, '\1[REDACTED]')
-     .gsub(/"registrationkey"\s*=>\s*"[^"]+"/, '"registrationkey"=>"[REDACTED]"')
+     .gsub(/("registrationkey"\s*(?:=>|:)\s*)"[^"]+"/i, '\1"[REDACTED]"')
 end
 
 def strict_float(str, field_name = nil)
@@ -424,7 +424,7 @@ class MortgageRateEnhancer
   def self.extract_thursday_dates(mortgage_weekly)
     valid_dates = []
     mortgage_weekly['observations'].each do |obs|
-      next if obs['value'].empty? || obs['value'] == '.'
+      next if obs['value'].nil? || obs['value'].empty? || obs['value'] == '.'
       valid_dates << Date.parse(obs['date'])
     end
     valid_dates.sort
@@ -437,7 +437,7 @@ class MortgageRateEnhancer
         Date.parse(obs['date']) == thursday
       end
 
-      if rate_obs && !rate_obs['value'].empty? && rate_obs['value'] != '.'
+      if rate_obs && rate_obs['value'] && !rate_obs['value'].empty? && rate_obs['value'] != '.'
         rates << {
           'date' => thursday.strftime('%Y-%m-%d'),
           'value' => rate_obs['value'],
@@ -467,7 +467,7 @@ class MortgageRateEnhancer
   end
 
   def self.find_nearest_rate(observations, target_date)
-    valid_obs = observations.select { |o| !o['value'].empty? && o['value'] != '.' }
+    valid_obs = observations.select { |o| o['value'] && !o['value'].empty? && o['value'] != '.' }
     valid_obs.min_by { |obs| (Date.parse(obs['date']) - target_date).abs }
   end
 end
@@ -620,8 +620,8 @@ class MortgageCalculator
       end
 
       rate_pct = strict_float(mortgage_obs['value'], 'mortgage rate')
-      if rate_pct.nil?
-        puts "⚠️  Warning: Invalid mortgage rate for #{date}, skipping"
+      if rate_pct.nil? || rate_pct <= 0
+        puts "⚠️  Warning: Invalid mortgage rate (nil or <= 0) for #{date}, skipping"
         next
       end
       rate = rate_pct / 100.0
@@ -629,6 +629,11 @@ class MortgageCalculator
 
       single_income = weekly_income * 52 * income_multiplier
       household_income = single_income * HOUSEHOLD_MULTIPLIER
+
+      if !single_income.finite? || single_income <= 0 || !household_income.finite? || household_income <= 0
+        puts "⚠️  Warning: Invalid income (<= 0) for #{date}, skipping"
+        next
+      end
 
       cpi_at = nearest_cpi(cpi_observations, date)
 
@@ -662,17 +667,20 @@ class MortgageCalculator
 
   def self.calculate_total_mortgage_cost(price, annual_rate)
     monthly_rate = annual_rate / 12.0
+    return price.to_f if monthly_rate.zero?   # 0% loan: total repaid == principal, avoids 0/0 NaN
     monthly_payment = (price * monthly_rate) / (1 - (1 + monthly_rate)**(-LOAN_TERM_MONTHS))
     monthly_payment * LOAN_TERM_MONTHS
   end
 
   def self.build_cost_entry(type, date, total_cost, income, price, rate, metadata = {})
+    ratio = total_cost.to_f / income
+    ratio = 0.0 unless ratio.finite?
     entry = {
       type: type,
       date: date,
       total_cost: total_cost.to_i,
       "#{type}_income": income.to_i,
-      cost_to_income: format('%.2f', (total_cost / income).round(2)),
+      cost_to_income: format('%.2f', ratio.round(2)),
       home_price: price.to_i,
       mortgage_rate: format('%.2f', rate.round(2))
     }
@@ -777,8 +785,17 @@ class WeeklyCaseShiller
       next if state_code == 'US'  # national output lives at the repo root, not data/
       path = File.join(STATE_DATA_DIR, "#{state_code}.json")
       next unless File.exist?(path)
-      data = JSON.parse(File.read(path))
-      latest_single = data.dig('single_costs', -1) or next
+      begin
+        data = JSON.parse(File.read(path))
+      rescue JSON::ParserError => e
+        puts "⚠️  Warning: could not parse #{path} for index (#{e.message}); skipping #{state_code}"
+        next
+      end
+      latest_single = data.dig('single_costs', -1)
+      if latest_single.nil?
+        puts "⚠️  Warning: #{state_code} has empty single_costs; omitting from index"
+        next
+      end
       latest_household = data.dig('household_costs', -1)
       rows << {
         state: state_code,
@@ -833,11 +850,13 @@ class WeeklyCaseShiller
 
     if valid_observations.length >= 6
       last_six = valid_observations[-6..-1]
-      first_val = last_six[0]['value'].to_f
-      last_val = last_six[-1]['value'].to_f
-      growth = first_val.zero? ? 0.0 : ((last_val - first_val) / first_val * 100)
-      avg_monthly = ((1 + growth/100) ** (1.0/5) - 1) * 100
-      puts "  Last 6 months growth: #{growth.round(3)}% total, #{avg_monthly.round(3)}% avg/month"
+      first_val = strict_float(last_six[0]['value'], 'growth first month')
+      last_val  = strict_float(last_six[-1]['value'], 'growth last month')
+      if first_val && last_val
+        growth = first_val.zero? ? 0.0 : ((last_val - first_val) / first_val * 100)
+        avg_monthly = ((1 + growth/100) ** (1.0/5) - 1) * 100
+        puts "  Last 6 months growth: #{growth.round(3)}% total, #{avg_monthly.round(3)}% avg/month"
+      end
     end
 
     home_price_aligned = HomePriceEnhancer.match_thursday_dates(
@@ -859,6 +878,13 @@ class WeeklyCaseShiller
     estimated_count = single_costs.count { |c| c[:estimated] }
     actual_count = single_costs.length - estimated_count
     income_estimated_count = single_costs.count { |c| c.dig(:estimation_details, :income_estimated) }
+    # series_quality classifies each Thursday by the HOME-PRICE series only (the primary signal):
+    #   observed     = real monthly ZHVI release matched to this Thursday
+    #   extrapolated = price projected beyond the last monthly release (price_estimated)
+    #   interpolated = Hermite-interpolated between two monthly releases (the remainder)
+    # The three buckets are mutually exclusive and sum to total. Income/rate estimation is tracked
+    # SEPARATELY via counts.income_estimated and per-entry estimation_details, so an observed point
+    # may still carry income_estimated:true. No behavior change - this comment documents intent.
     sq_observed_count = single_costs.count { |c| c[:observed] == true }
     sq_extrapolated_count = single_costs.count { |c| c.dig(:estimation_details, :price_estimated) == true }
     sq_interpolated_count = single_costs.length - sq_observed_count - sq_extrapolated_count
