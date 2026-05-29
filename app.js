@@ -71,6 +71,10 @@ const state = {
 
   let fetchToken = 0;
   let currentFetchController = null;
+  // Assigned by setupStateGrid once the ranking grid is built; loadData calls it after the
+  // displayed state is actually committed (success) or reverted (failure) so the aria-current
+  // ring tracks the rendered state instead of lagging a selection behind.
+  let highlightStateGrid = null;
 
   // URL Parameter Management
   const resolveState = raw => {
@@ -259,7 +263,7 @@ const state = {
     el.classList.add('value-flip');
   };
 
-  const updateInfoCards = index => {
+  const updateInfoCards = (index, announce = false) => {
     if (!state.chartData || index < 0 || index >= state.chartData.single_costs.length) {
       return;
     }
@@ -312,7 +316,9 @@ const state = {
     setEstimationBadge(dom.priceCard, !!details.price_estimated);
     setEstimationBadge(dom.incomeCard, !!details.income_estimated);
 
-    if (dom.chartLiveRegion) {
+    // Only announce on actual point navigation (arrow/click) and the initial/deep-link render.
+    // View-toggle and theme re-renders pass announce=false to avoid re-reading the full sentence.
+    if (announce && dom.chartLiveRegion) {
       const stateName = STATE_NAMES[state.currentState] || state.currentState;
       const multiplierPart = bothVisible
         ? `Price-to-Income ${singleData.cost_to_income}x (single) / ${householdData.cost_to_income}x (dual)`
@@ -511,7 +517,7 @@ const state = {
           }
           if (index !== -1) {
             state.activePointIndex = index;
-            updateInfoCards(index);
+            updateInfoCards(index, true);
             // 'none' skips the full re-render/animation pass; the activePoint plugin still
             // repositions the DOM marker in its afterDraw hook on a 'none' update.
             chart.update('none');
@@ -602,6 +608,9 @@ const state = {
     updateInfoCards(state.activePointIndex);
     setDateRange(state.currentRange);
     applyCurrentView();
+    // Announce the initial/deep-link point once, after the view is applied so the sentence
+    // reflects the correct single/dual/both visibility.
+    updateInfoCards(state.activePointIndex, true);
 
     // Ensure the DOM marker lands on its final position after the
     // chart's initial animation and zoom/visibility updates settle,
@@ -631,6 +640,8 @@ const state = {
     updateInfoCards(state.activePointIndex);
     setDateRange(state.currentRange);
     applyCurrentView();
+    // Announce the most-recent point once after a state switch (view visibility now applied).
+    updateInfoCards(state.activePointIndex, true);
   };
 
   // Event & UI Handlers
@@ -854,10 +865,11 @@ const state = {
         btn.type = 'button';
         btn.className = 'state-tile';
         btn.dataset.code = s.state;
-        btn.setAttribute('role', 'listitem');
+        // No role override: a role="listitem" here would clobber the implicit button role,
+        // so AT would announce a non-actionable list item instead of a button.
         btn.setAttribute(
           'aria-label',
-          `${s.state_name}, ratio ${s.latest_ratio_single.toFixed(2)}x. Click to load.`,
+          `${s.state_name}, ratio ${s.latest_ratio_single.toFixed(2)}x. Press to load.`,
         );
         const intensity = Math.round(((s.latest_ratio_single - min) / span) * 80) + 10;
         // Solid fallback first; the color-mix assignment is ignored on browsers
@@ -887,7 +899,10 @@ const state = {
         });
       };
       highlightCurrent();
-      dom.stateSelect.addEventListener('change', highlightCurrent);
+      // loadData drives subsequent highlights once state.currentState is committed/reverted.
+      // The old #stateSelect 'change' wiring read currentState before commit (J1), so the
+      // ring lagged one selection behind - don't re-add it here.
+      highlightStateGrid = highlightCurrent;
     } catch {
       // Hide the whole section (header + grid), not just the inner wrapper, so a thrown
       // error doesn't leave an orphaned "All states, ranked" heading above empty space.
@@ -916,9 +931,12 @@ const state = {
       filtered = q
         ? items.filter(it => it.name.toLowerCase().includes(q) || it.code.toLowerCase().includes(q))
         : items.slice();
+      // APG: aria-selected marks the COMMITTED value option (not the keyboard-highlighted
+      // one - that's conveyed via aria-activedescendant + the .active class in setActive).
+      const selectedCode = dom.stateSelect.value;
       list.innerHTML = filtered
         .map((it, i) =>
-          `<li role="option" data-code="${it.code}" id="state-combo-opt-${i}" aria-selected="false">` +
+          `<li role="option" data-code="${it.code}" id="state-combo-opt-${i}" aria-selected="${it.code === selectedCode ? 'true' : 'false'}">` +
           `<span>${it.name}</span><span class="state-code">${it.code === 'ALL' ? 'US' : it.code}</span>` +
           `</li>`)
         .join('');
@@ -934,13 +952,18 @@ const state = {
     const closeList = () => {
       list.hidden = true;
       input.setAttribute('aria-expanded', 'false');
+      // Popup is hidden: drop the active-option pointer so AT doesn't reference a stale id.
+      input.removeAttribute('aria-activedescendant');
+      activeIdx = -1;
     };
 
     const setActive = i => {
       const lis = list.querySelectorAll('li');
-      lis.forEach(li => li.setAttribute('aria-selected', 'false'));
+      // Keyboard highlight is a visual-only .active class; the active option is conveyed to
+      // AT via aria-activedescendant. aria-selected stays on the committed option (renderList).
+      lis.forEach(li => li.classList.remove('active'));
       if (i >= 0 && i < lis.length) {
-        lis[i].setAttribute('aria-selected', 'true');
+        lis[i].classList.add('active');
         lis[i].scrollIntoView({ block: 'nearest' });
         input.setAttribute('aria-activedescendant', lis[i].id);
       } else {
@@ -985,7 +1008,8 @@ const state = {
       } else if (e.key === 'Escape') {
         closeList();
         setInputToCurrent();
-        input.blur();
+        // APG: keep focus in the textbox rather than dropping it to <body> on close.
+        input.focus();
       }
     });
 
@@ -1196,6 +1220,8 @@ const state = {
         initChart();
       }
       syncUrlParams();
+      // Sync the ranking-grid ring now that state.currentState holds the committed state.
+      if (highlightStateGrid) highlightStateGrid();
       // Fire the national overlay fetch after the main chart is up (non-blocking).
       fetchNationalIfNeeded();
     } catch (error) {
@@ -1211,6 +1237,9 @@ const state = {
       if (dom.stateSelect.value !== prevState) dom.stateSelect.value = prevState;
       const comboInput = document.getElementById('stateComboboxInput');
       if (comboInput) comboInput.value = STATE_NAMES[prevState] || prevState || 'U.S.A';
+      // Failed switch reverted to prevState: move the ring back so it never sits on a state
+      // we never rendered.
+      if (highlightStateGrid) highlightStateGrid();
 
       if (error.name === 'AbortError') {
         // Survived the supersede guard above, so this AbortError is our own 30s timeout.
@@ -1374,11 +1403,19 @@ const state = {
         const tag = el.tagName;
         return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || el.isContentEditable;
       };
+      // Stash the element that opened the dialog so focus can return to it on close.
+      let dialogOpener = null;
       document.addEventListener('keydown', e => {
         if (e.key === '?' && !shortcutDialog.open && !isEditable(e.target)) {
           e.preventDefault();
+          dialogOpener = document.activeElement;
           shortcutDialog.showModal();
         }
+      });
+      // Restores focus for Escape, the close button, and backdrop dismissal alike.
+      shortcutDialog.addEventListener('close', () => {
+        if (dialogOpener && typeof dialogOpener.focus === 'function') dialogOpener.focus();
+        dialogOpener = null;
       });
       const closeBtn = document.getElementById('shortcutClose');
       if (closeBtn) {
@@ -1412,20 +1449,27 @@ const state = {
           state.activePointIndex < state.chartData.single_costs.length - 1
         ) {
           e.preventDefault();
-          updateInfoCards(++state.activePointIndex);
+          updateInfoCards(++state.activePointIndex, true);
           state.chartInstance.update('none');
         } else if (e.key === 'ArrowLeft' && state.activePointIndex > 0) {
           e.preventDefault();
-          updateInfoCards(--state.activePointIndex);
+          updateInfoCards(--state.activePointIndex, true);
           state.chartInstance.update('none');
         }
       });
 
     // Theme toggle
-    document.getElementById('themeToggle').addEventListener('click', () => {
+    const themeToggle = document.getElementById('themeToggle');
+    // Reflect the bootstrap theme (localStorage / system preference) on the toggle's pressed state.
+    themeToggle.setAttribute(
+      'aria-pressed',
+      String(document.documentElement.getAttribute('data-theme') === 'dark'),
+    );
+    themeToggle.addEventListener('click', () => {
       const current = document.documentElement.getAttribute('data-theme');
       const next = current === 'dark' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', next);
+      themeToggle.setAttribute('aria-pressed', String(next === 'dark'));
       localStorage.setItem('theme', next);
 
       if (state.chartInstance) {

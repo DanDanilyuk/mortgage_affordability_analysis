@@ -752,7 +752,7 @@ h1 .header-accent {
   gap: 12px;
 }
 
-.state-combobox-list li[aria-selected="true"],
+.state-combobox-list li.active,
 .state-combobox-list li:hover {
   background: var(--bg-card);
 }
@@ -1009,7 +1009,10 @@ body.is-embed .content {
 }
 
 .chart-container:focus {
-  outline: none;
+  /* box-shadow is the normal-mode ring; the transparent outline is repainted as a visible
+     ring in forced-colors / Windows High Contrast (where box-shadow is dropped). */
+  outline: 2px solid transparent;
+  outline-offset: 2px;
   box-shadow: 0 0 0 2px var(--accent-amber), 0 0 0 4px var(--accent-amber-glow);
 }
 

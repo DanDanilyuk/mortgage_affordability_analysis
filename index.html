@@ -137,7 +137,7 @@
     </div>
     <div class="container">
         <header>
-            <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+            <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode" aria-pressed="false">
                 <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
                 </svg>
@@ -220,7 +220,7 @@
                             placeholder="Search states..."
                             autocomplete="off"
                         >
-                        <ul class="state-combobox-list" id="stateComboboxList" role="listbox" hidden></ul>
+                        <ul class="state-combobox-list" id="stateComboboxList" role="listbox" aria-label="States" hidden></ul>
                     </div>
                     <select id="stateSelect" class="state-native" aria-label="Select state for housing market data">
                         <option value="ALL" selected>U.S.A</option>
