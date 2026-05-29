@@ -204,9 +204,11 @@ const state = {
         const labels = chart.data.labels;
         ctx.save();
         HOUSING_EVENTS.forEach(evt => {
-          const idx = labels.indexOf(evt.date) !== -1
-            ? labels.indexOf(evt.date)
-            : labels.findIndex(d => d >= evt.date);
+          // Skip events that predate every data point; otherwise findIndex(d => d >= evt.date)
+          // would snap the marker onto index 0 (the first label).
+          if (!labels.length || evt.date < labels[0]) return;
+          const exact = labels.indexOf(evt.date);
+          const idx = exact !== -1 ? exact : labels.findIndex(d => d >= evt.date);
           if (idx === -1) return;
           const xPos = x.getPixelForValue(idx);
           if (xPos < chartArea.left || xPos > chartArea.right) return;
@@ -510,7 +512,9 @@ const state = {
           if (index !== -1) {
             state.activePointIndex = index;
             updateInfoCards(index);
-            chart.update();
+            // 'none' skips the full re-render/animation pass; the activePoint plugin still
+            // repositions the DOM marker in its afterDraw hook on a 'none' update.
+            chart.update('none');
           }
         },
         plugins: {
@@ -699,10 +703,21 @@ const state = {
 
   // Features
   const downloadChart = () => {
+    // In table view the chart container is hidden (display:none), which collapses the canvas to
+    // 0x0 and yields a blank PNG. Un-hide + resize to restore the backing buffer, snapshot, then
+    // re-hide - all synchronous, so the browser never paints the intermediate chart (no flicker).
+    const tableActive = dom.dataTableWrapper && !dom.dataTableWrapper.hidden;
+    if (tableActive) {
+      dom.chartContainer.hidden = false;
+      state.chartInstance.resize();
+    }
     const link = document.createElement('a');
     link.download = `home-affordability-${state.currentState}-${new Date().toISOString().split('T')[0]}.png`;
     link.href = state.chartInstance.toBase64Image();
     link.click();
+    if (tableActive) {
+      dom.chartContainer.hidden = true;
+    }
   };
 
   const csvCell = value => {
@@ -874,7 +889,9 @@ const state = {
       highlightCurrent();
       dom.stateSelect.addEventListener('change', highlightCurrent);
     } catch {
-      grid.parentElement.hidden = true;
+      // Hide the whole section (header + grid), not just the inner wrapper, so a thrown
+      // error doesn't leave an orphaned "All states, ranked" heading above empty space.
+      if (section) section.hidden = true;
     }
   };
 
@@ -1030,19 +1047,23 @@ const state = {
 
   const fetchNationalIfNeeded = async () => {
     if (state.nationalCache || state.currentState === 'ALL') return;
+    // Pin the load that triggered this fetch; a late response must not paint onto a newer state.
+    const myToken = fetchToken;
     try {
       const resp = await fetch('weekly_case_shiller_output.json');
       if (!resp.ok) return;
       state.nationalCache = await resp.json();
       if (state.chartInstance && state.chartData) {
-        applyNationalOverlay();
+        applyNationalOverlay(myToken);
       }
     } catch {
       // Silent: overlay is a non-critical enhancement.
     }
   };
 
-  const applyNationalOverlay = () => {
+  const applyNationalOverlay = myToken => {
+    // Bail if a newer state load has superseded the one that requested this overlay.
+    if (myToken !== undefined && myToken !== fetchToken) return;
     if (!state.chartInstance || !state.chartData) return;
     const ds = state.chartInstance.data.datasets[2];
     if (!ds) return;
@@ -1089,7 +1110,9 @@ const state = {
 
   // Bootstrapping
   const loadData = async stateCode => {
-    state.currentState = stateCode;
+    // Don't commit currentState yet: a failed/timed-out load must leave the UI on the
+    // previously-rendered state, so we only switch on the success path below.
+    const prevState = state.currentState;
 
     const myToken = ++fetchToken;
     if (currentFetchController) currentFetchController.abort();
@@ -1132,6 +1155,8 @@ const state = {
       }
       if (myToken !== fetchToken) return;
 
+      // Load succeeded and is still the latest request: commit the new state now.
+      state.currentState = stateCode;
       state.chartData = json;
       state.firstEstimatedIndex = state.chartData.single_costs.findIndex(
         i => i.estimated || i.interpolated,
@@ -1174,10 +1199,22 @@ const state = {
       // Fire the national overlay fetch after the main chart is up (non-blocking).
       fetchNationalIfNeeded();
     } catch (error) {
+      // Aborted by a newer load (supersede), not our own timeout: that load now owns currentState
+      // + the picker, so bail silently without restoring or surfacing an error.
+      if (error.name === 'AbortError' && !timedOut) return;
+      // A newer load took over after this one resolved its fetch: likewise leave its state intact.
+      if (myToken !== fetchToken) return;
+
+      // Genuine failure of the current load. Restore the previously-shown state so currentState,
+      // the native <select>, and the desktop combobox don't claim data we never rendered.
+      state.currentState = prevState;
+      if (dom.stateSelect.value !== prevState) dom.stateSelect.value = prevState;
+      const comboInput = document.getElementById('stateComboboxInput');
+      if (comboInput) comboInput.value = STATE_NAMES[prevState] || prevState || 'U.S.A';
+
       if (error.name === 'AbortError') {
-        if (timedOut) {
-          renderRetry(stateCode, isSwitch, "Couldn't load data - network timeout.");
-        }
+        // Survived the supersede guard above, so this AbortError is our own 30s timeout.
+        renderRetry(stateCode, isSwitch, "Couldn't load data - network timeout.");
         return;
       }
       console.error(error);
@@ -1376,11 +1413,11 @@ const state = {
         ) {
           e.preventDefault();
           updateInfoCards(++state.activePointIndex);
-          state.chartInstance.update();
+          state.chartInstance.update('none');
         } else if (e.key === 'ArrowLeft' && state.activePointIndex > 0) {
           e.preventDefault();
           updateInfoCards(--state.activePointIndex);
-          state.chartInstance.update();
+          state.chartInstance.update('none');
         }
       });
 
