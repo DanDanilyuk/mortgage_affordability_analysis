@@ -1,7 +1,14 @@
-// Service worker: cache-first for the shell, stale-while-revalidate for JSON data.
+// Service worker caching strategy:
+//   - install precaches the shell bypassing the HTTP cache (Request cache: 'reload')
+//     so a deploy that forgets to bump CACHE_VERSION still fetches fresh shell assets.
+//   - navigations (HTML): network-first, fall back to cache offline.
+//   - JSON data: stale-while-revalidate into DATA_CACHE.
+//   - everything else (CSS, JS, fonts): stale-while-revalidate into SHELL_CACHE.
+//   - skipWaiting() + clients.claim() activate the new SW immediately; the app.js
+//     controllerchange handler reloads any open tab once so it can't run mixed assets.
 // Bump CACHE_VERSION on any breaking change so old caches are evicted on activate.
 
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const SHELL_CACHE = `shell-${CACHE_VERSION}`;
 const DATA_CACHE = `data-${CACHE_VERSION}`;
 
@@ -19,7 +26,7 @@ const SHELL_ASSETS = [
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(SHELL_CACHE)
-      .then(cache => cache.addAll(SHELL_ASSETS))
+      .then(cache => cache.addAll(SHELL_ASSETS.map(u => new Request(u, { cache: 'reload' }))))
       .catch(() => {})
   );
   self.skipWaiting();
@@ -78,17 +85,19 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Cache-first for everything else (CSS, JS, fonts).
+  // Stale-while-revalidate for everything else (CSS, JS, fonts).
   event.respondWith(
-    caches.match(request).then(cached =>
-      cached ||
-      fetch(request).then(resp => {
-        if (resp.ok) {
-          const copy = resp.clone();
-          caches.open(SHELL_CACHE).then(c => c.put(request, copy));
-        }
-        return resp;
-      })
-    )
+    caches.match(request).then(cached => {
+      const network = fetch(request)
+        .then(resp => {
+          if (resp.ok) {
+            const copy = resp.clone();
+            caches.open(SHELL_CACHE).then(c => c.put(request, copy));
+          }
+          return resp;
+        })
+        .catch(() => cached);
+      return cached || network;
+    })
   );
 });

@@ -1256,6 +1256,17 @@ const state = {
 
   // Service worker registration (off in dev / non-https).
   if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
+    // Capture controller state BEFORE register: a new SW that claims an already-
+    // controlled tab fires controllerchange, and we reload once so the page can't
+    // run mixed old/new assets. hadController is false on first install, so the
+    // very first SW activation does not trigger a reload.
+    const hadController = !!navigator.serviceWorker.controller;
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (refreshing || !hadController) return;
+      refreshing = true;
+      window.location.reload();
+    });
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/sw.js').catch(() => {});
     });
