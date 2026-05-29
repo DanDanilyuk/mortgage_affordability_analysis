@@ -73,7 +73,13 @@ jobs:
 
       - name: Validate JSON against schema
         if: steps.skip_check.outputs.skip != 'true'
-        run: npx --yes ajv-cli@5 validate -s schema/state_data.schema.json -d "data/*.json" -d "weekly_case_shiller_output.json" --strict=false
+        run: |
+          # Per-state files + the national file validate against the per-state schema.
+          # "data/??.json" matches the 51 two-character state codes (AL, AK, ... DC) and excludes
+          # data/index.json, a roll-up with a different shape that has its own schema below.
+          # (ajv-cli's glob accepts "??" but not "[A-Z][A-Z]" character classes.)
+          npx --yes ajv-cli@5 validate -s schema/state_data.schema.json -d "data/??.json" -d "weekly_case_shiller_output.json" --strict=false
+          npx --yes ajv-cli@5 validate -s schema/state_index.schema.json -d "data/index.json" --strict=false
 
       - name: Check freshness of generated JSON files
         if: steps.skip_check.outputs.skip != 'true'
@@ -83,7 +89,8 @@ jobs:
             stale = []
             Dir.glob(["weekly_case_shiller_output.json", "data/*.json"]).each do |f|
               d = JSON.parse(File.read(f))
-              ts = d.dig("metadata", "generated_at")
+              # State/national files carry metadata.generated_at; data/index.json carries it top-level.
+              ts = d.dig("metadata", "generated_at") || d["generated_at"]
               if ts.nil? || ts.empty?
                 stale << "#{f}: missing generated_at"
               elsif Time.parse(ts) < threshold
