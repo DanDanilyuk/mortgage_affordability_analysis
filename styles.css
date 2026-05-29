@@ -210,6 +210,7 @@ body {
   background: var(--bg-container);
   min-height: 100vh;
   box-shadow: var(--shadow-lg);
+  overflow-x: clip;
 }
 
 @media (min-width: 1400px) {
@@ -586,6 +587,8 @@ h1 .header-accent {
 .controls-views {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .btn-reset-filters[hidden] {
@@ -939,6 +942,8 @@ body.is-embed .content {
   }
   .state-tile {
     padding: 6px 4px;
+    min-height: 44px;
+    justify-content: center;
   }
   .state-tile-ratio {
     font-size: 0.85rem;
@@ -963,7 +968,7 @@ body.is-embed .content {
     gap: 10px;
     background: var(--bg-container);
     border-bottom: 1px solid var(--border-color);
-    padding: 8px 16px;
+    padding: max(8px, env(safe-area-inset-top)) 16px 8px;
     font-family: var(--font-mono);
     font-size: 0.8rem;
     color: var(--text-primary);
@@ -1211,6 +1216,14 @@ footer a:hover {
     font-size: 1.15rem;
   }
 
+  .info-label {
+    font-size: 0.7rem;
+  }
+
+  .estimated-badge {
+    font-size: 0.625rem;
+  }
+
   .chart-container {
     height: 360px;
     padding: 12px;
@@ -1228,6 +1241,28 @@ footer a:hover {
 
   .btn-action {
     padding: 8px 10px;
+    min-height: 44px;
+    min-width: 44px;
+    justify-content: center;
+  }
+
+  .date-range-buttons .btn-small {
+    min-height: 44px;
+  }
+
+  .theme-toggle {
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .controls-views .btn {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 
   footer {
@@ -1267,12 +1302,17 @@ footer a:hover {
     grid-template-columns: 1fr;
   }
 
+  .info-card:has(.estimated-badge) .info-label,
+  .info-card:has(.estimated-badge) .info-value {
+    padding-right: 56px;
+  }
+
   h1 {
     font-size: 1.5rem;
   }
 
   .chart-container {
-    height: 300px;
+    height: clamp(300px, 45vh, 420px);
     padding: 8px;
   }
 

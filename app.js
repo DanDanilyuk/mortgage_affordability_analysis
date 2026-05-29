@@ -845,6 +845,9 @@ const state = {
           `${s.state_name}, ratio ${s.latest_ratio_single.toFixed(2)}x. Click to load.`,
         );
         const intensity = Math.round(((s.latest_ratio_single - min) / span) * 80) + 10;
+        // Solid fallback first; the color-mix assignment is ignored on browsers
+        // that don't support it (e.g. iOS 16.0-16.3), leaving the fallback in place.
+        btn.style.background = 'var(--bg-card)';
         btn.style.background = `color-mix(in srgb, var(--accent-amber) ${intensity}%, var(--bg-card))`;
         if (intensity > 55) btn.style.color = 'var(--text-on-dark)';
         const code = document.createElement('span');
