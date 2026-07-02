@@ -2,33 +2,22 @@
   "single_costs": [
     {
       "type": "single",
-      "date": "2016-06-30",
-      "total_cost": 235243,
-      "single_income": 39210,
-      "cost_to_income": "6.00",
-      "home_price": 145883,
-      "mortgage_rate": "3.48",
-      "observed": true,
-      "cpi": 240.222
-    },
-    {
-      "type": "single",
       "date": "2016-07-07",
-      "total_cost": 233323,
+      "total_cost": 233198,
       "single_income": 39194,
       "cost_to_income": "5.95",
-      "home_price": 145961,
+      "home_price": 145883,
       "mortgage_rate": "3.41",
-      "observed": false,
+      "observed": true,
       "cpi": 240.101
     },
     {
       "type": "single",
       "date": "2016-07-14",
-      "total_cost": 233745,
+      "total_cost": 233732,
       "single_income": 39138,
       "cost_to_income": "5.97",
-      "home_price": 146042,
+      "home_price": 146034,
       "mortgage_rate": "3.42",
       "observed": false,
       "cpi": 240.101
@@ -36,10 +25,10 @@
     {
       "type": "single",
       "date": "2016-07-21",
-      "total_cost": 234744,
+      "total_cost": 234740,
       "single_income": 39072,
       "cost_to_income": "6.01",
-      "home_price": 146119,
+      "home_price": 146116,
       "mortgage_rate": "3.45",
       "observed": false,
       "cpi": 240.101
@@ -47,10 +36,10 @@
     {
       "type": "single",
       "date": "2016-07-28",
-      "total_cost": 235749,
+      "total_cost": 235750,
       "single_income": 39023,
       "cost_to_income": "6.04",
-      "home_price": 146196,
+      "home_price": 146197,
       "mortgage_rate": "3.48",
       "observed": false,
       "cpi": 240.101
@@ -5570,7 +5559,7 @@
       "type": "single",
       "date": "2026-03-12",
       "total_cost": 585249,
-      "single_income": 56584,
+      "single_income": 56585,
       "cost_to_income": "10.34",
       "home_price": 267982,
       "mortgage_rate": "6.11",
@@ -5581,7 +5570,7 @@
       "type": "single",
       "date": "2026-03-19",
       "total_cost": 592334,
-      "single_income": 56650,
+      "single_income": 56653,
       "cost_to_income": "10.46",
       "home_price": 268077,
       "mortgage_rate": "6.22",
@@ -5592,7 +5581,7 @@
       "type": "single",
       "date": "2026-03-26",
       "total_cost": 602582,
-      "single_income": 56719,
+      "single_income": 56721,
       "cost_to_income": "10.62",
       "home_price": 268159,
       "mortgage_rate": "6.38",
@@ -5614,7 +5603,7 @@
       "type": "single",
       "date": "2026-04-09",
       "total_cost": 602213,
-      "single_income": 56817,
+      "single_income": 56815,
       "cost_to_income": "10.60",
       "home_price": 268275,
       "mortgage_rate": "6.37",
@@ -5625,7 +5614,7 @@
       "type": "single",
       "date": "2026-04-16",
       "total_cost": 597903,
-      "single_income": 56860,
+      "single_income": 56848,
       "cost_to_income": "10.52",
       "home_price": 268322,
       "mortgage_rate": "6.30",
@@ -5636,8 +5625,8 @@
       "type": "single",
       "date": "2026-04-23",
       "total_cost": 593606,
-      "single_income": 56902,
-      "cost_to_income": "10.43",
+      "single_income": 56880,
+      "cost_to_income": "10.44",
       "home_price": 268369,
       "mortgage_rate": "6.23",
       "observed": false,
@@ -5647,8 +5636,8 @@
       "type": "single",
       "date": "2026-04-30",
       "total_cost": 598126,
-      "single_income": 56945,
-      "cost_to_income": "10.50",
+      "single_income": 56915,
+      "cost_to_income": "10.51",
       "home_price": 268422,
       "mortgage_rate": "6.30",
       "observed": true,
@@ -5658,75 +5647,51 @@
       "type": "single",
       "date": "2026-05-07",
       "total_cost": 602542,
-      "single_income": 56987,
-      "cost_to_income": "10.57",
+      "single_income": 56958,
+      "cost_to_income": "10.58",
       "home_price": 268422,
       "mortgage_rate": "6.37",
       "observed": false,
-      "cpi": 333.979,
-      "estimated": true,
-      "estimation_details": {
-        "price_estimated": false,
-        "rate_estimated": false,
-        "income_estimated": true
-      }
+      "cpi": 333.979
     },
     {
       "type": "single",
       "date": "2026-05-14",
       "total_cost": 601911,
-      "single_income": 57030,
-      "cost_to_income": "10.55",
+      "single_income": 57003,
+      "cost_to_income": "10.56",
       "home_price": 268422,
       "mortgage_rate": "6.36",
       "observed": false,
-      "cpi": 333.979,
-      "estimated": true,
-      "estimation_details": {
-        "price_estimated": false,
-        "rate_estimated": false,
-        "income_estimated": true
-      }
+      "cpi": 333.979
     },
     {
       "type": "single",
       "date": "2026-05-21",
       "total_cost": 611416,
-      "single_income": 57073,
-      "cost_to_income": "10.71",
+      "single_income": 57048,
+      "cost_to_income": "10.72",
       "home_price": 268422,
       "mortgage_rate": "6.51",
       "observed": false,
-      "cpi": 333.979,
-      "estimated": true,
-      "estimation_details": {
-        "price_estimated": false,
-        "rate_estimated": false,
-        "income_estimated": true
-      }
+      "cpi": 333.979
     },
     {
       "type": "single",
       "date": "2026-05-28",
       "total_cost": 612688,
-      "single_income": 57115,
+      "single_income": 57092,
       "cost_to_income": "10.73",
       "home_price": 268422,
       "mortgage_rate": "6.53",
       "observed": false,
-      "cpi": 333.979,
-      "estimated": true,
-      "estimation_details": {
-        "price_estimated": false,
-        "rate_estimated": false,
-        "income_estimated": true
-      }
+      "cpi": 333.979
     },
     {
       "type": "single",
       "date": "2026-06-04",
       "total_cost": 611363,
-      "single_income": 57158,
+      "single_income": 57137,
       "cost_to_income": "10.70",
       "home_price": 269238,
       "mortgage_rate": "6.48",
@@ -5743,7 +5708,7 @@
       "type": "single",
       "date": "2026-06-11",
       "total_cost": 614296,
-      "single_income": 57201,
+      "single_income": 57184,
       "cost_to_income": "10.74",
       "home_price": 269406,
       "mortgage_rate": "6.52",
@@ -5760,7 +5725,7 @@
       "type": "single",
       "date": "2026-06-18",
       "total_cost": 611490,
-      "single_income": 57244,
+      "single_income": 57230,
       "cost_to_income": "10.68",
       "home_price": 269575,
       "mortgage_rate": "6.47",
@@ -5777,10 +5742,27 @@
       "type": "single",
       "date": "2026-06-25",
       "total_cost": 613148,
-      "single_income": 57287,
-      "cost_to_income": "10.70",
+      "single_income": 57276,
+      "cost_to_income": "10.71",
       "home_price": 269743,
       "mortgage_rate": "6.49",
+      "observed": false,
+      "cpi": 333.979,
+      "estimated": true,
+      "estimation_details": {
+        "price_estimated": true,
+        "rate_estimated": false,
+        "income_estimated": true
+      }
+    },
+    {
+      "type": "single",
+      "date": "2026-07-02",
+      "total_cost": 609704,
+      "single_income": 57322,
+      "cost_to_income": "10.64",
+      "home_price": 269912,
+      "mortgage_rate": "6.43",
       "observed": false,
       "cpi": 333.979,
       "estimated": true,
@@ -5794,33 +5776,22 @@
   "household_costs": [
     {
       "type": "household",
-      "date": "2016-06-30",
-      "total_cost": 235243,
-      "household_income": 54895,
-      "cost_to_income": "4.29",
-      "home_price": 145883,
-      "mortgage_rate": "3.48",
-      "observed": true,
-      "cpi": 240.222
-    },
-    {
-      "type": "household",
       "date": "2016-07-07",
-      "total_cost": 233323,
+      "total_cost": 233198,
       "household_income": 54871,
       "cost_to_income": "4.25",
-      "home_price": 145961,
+      "home_price": 145883,
       "mortgage_rate": "3.41",
-      "observed": false,
+      "observed": true,
       "cpi": 240.101
     },
     {
       "type": "household",
       "date": "2016-07-14",
-      "total_cost": 233745,
+      "total_cost": 233732,
       "household_income": 54793,
       "cost_to_income": "4.27",
-      "home_price": 146042,
+      "home_price": 146034,
       "mortgage_rate": "3.42",
       "observed": false,
       "cpi": 240.101
@@ -5828,10 +5799,10 @@
     {
       "type": "household",
       "date": "2016-07-21",
-      "total_cost": 234744,
+      "total_cost": 234740,
       "household_income": 54700,
       "cost_to_income": "4.29",
-      "home_price": 146119,
+      "home_price": 146116,
       "mortgage_rate": "3.45",
       "observed": false,
       "cpi": 240.101
@@ -5839,10 +5810,10 @@
     {
       "type": "household",
       "date": "2016-07-28",
-      "total_cost": 235749,
+      "total_cost": 235750,
       "household_income": 54632,
       "cost_to_income": "4.32",
-      "home_price": 146196,
+      "home_price": 146197,
       "mortgage_rate": "3.48",
       "observed": false,
       "cpi": 240.101
@@ -11362,7 +11333,7 @@
       "type": "household",
       "date": "2026-03-12",
       "total_cost": 585249,
-      "household_income": 79217,
+      "household_income": 79219,
       "cost_to_income": "7.39",
       "home_price": 267982,
       "mortgage_rate": "6.11",
@@ -11373,7 +11344,7 @@
       "type": "household",
       "date": "2026-03-19",
       "total_cost": 592334,
-      "household_income": 79311,
+      "household_income": 79314,
       "cost_to_income": "7.47",
       "home_price": 268077,
       "mortgage_rate": "6.22",
@@ -11384,7 +11355,7 @@
       "type": "household",
       "date": "2026-03-26",
       "total_cost": 602582,
-      "household_income": 79406,
+      "household_income": 79409,
       "cost_to_income": "7.59",
       "home_price": 268159,
       "mortgage_rate": "6.38",
@@ -11406,7 +11377,7 @@
       "type": "household",
       "date": "2026-04-09",
       "total_cost": 602213,
-      "household_income": 79544,
+      "household_income": 79541,
       "cost_to_income": "7.57",
       "home_price": 268275,
       "mortgage_rate": "6.37",
@@ -11417,7 +11388,7 @@
       "type": "household",
       "date": "2026-04-16",
       "total_cost": 597903,
-      "household_income": 79604,
+      "household_income": 79587,
       "cost_to_income": "7.51",
       "home_price": 268322,
       "mortgage_rate": "6.30",
@@ -11428,7 +11399,7 @@
       "type": "household",
       "date": "2026-04-23",
       "total_cost": 593606,
-      "household_income": 79663,
+      "household_income": 79632,
       "cost_to_income": "7.45",
       "home_price": 268369,
       "mortgage_rate": "6.23",
@@ -11439,8 +11410,8 @@
       "type": "household",
       "date": "2026-04-30",
       "total_cost": 598126,
-      "household_income": 79723,
-      "cost_to_income": "7.50",
+      "household_income": 79681,
+      "cost_to_income": "7.51",
       "home_price": 268422,
       "mortgage_rate": "6.30",
       "observed": true,
@@ -11450,75 +11421,51 @@
       "type": "household",
       "date": "2026-05-07",
       "total_cost": 602542,
-      "household_income": 79782,
-      "cost_to_income": "7.55",
+      "household_income": 79742,
+      "cost_to_income": "7.56",
       "home_price": 268422,
       "mortgage_rate": "6.37",
       "observed": false,
-      "cpi": 333.979,
-      "estimated": true,
-      "estimation_details": {
-        "price_estimated": false,
-        "rate_estimated": false,
-        "income_estimated": true
-      }
+      "cpi": 333.979
     },
     {
       "type": "household",
       "date": "2026-05-14",
       "total_cost": 601911,
-      "household_income": 79842,
+      "household_income": 79804,
       "cost_to_income": "7.54",
       "home_price": 268422,
       "mortgage_rate": "6.36",
       "observed": false,
-      "cpi": 333.979,
-      "estimated": true,
-      "estimation_details": {
-        "price_estimated": false,
-        "rate_estimated": false,
-        "income_estimated": true
-      }
+      "cpi": 333.979
     },
     {
       "type": "household",
       "date": "2026-05-21",
       "total_cost": 611416,
-      "household_income": 79902,
-      "cost_to_income": "7.65",
+      "household_income": 79867,
+      "cost_to_income": "7.66",
       "home_price": 268422,
       "mortgage_rate": "6.51",
       "observed": false,
-      "cpi": 333.979,
-      "estimated": true,
-      "estimation_details": {
-        "price_estimated": false,
-        "rate_estimated": false,
-        "income_estimated": true
-      }
+      "cpi": 333.979
     },
     {
       "type": "household",
       "date": "2026-05-28",
       "total_cost": 612688,
-      "household_income": 79962,
-      "cost_to_income": "7.66",
+      "household_income": 79929,
+      "cost_to_income": "7.67",
       "home_price": 268422,
       "mortgage_rate": "6.53",
       "observed": false,
-      "cpi": 333.979,
-      "estimated": true,
-      "estimation_details": {
-        "price_estimated": false,
-        "rate_estimated": false,
-        "income_estimated": true
-      }
+      "cpi": 333.979
     },
     {
       "type": "household",
       "date": "2026-06-04",
       "total_cost": 611363,
-      "household_income": 80022,
+      "household_income": 79993,
       "cost_to_income": "7.64",
       "home_price": 269238,
       "mortgage_rate": "6.48",
@@ -11535,7 +11482,7 @@
       "type": "household",
       "date": "2026-06-11",
       "total_cost": 614296,
-      "household_income": 80081,
+      "household_income": 80057,
       "cost_to_income": "7.67",
       "home_price": 269406,
       "mortgage_rate": "6.52",
@@ -11552,7 +11499,7 @@
       "type": "household",
       "date": "2026-06-18",
       "total_cost": 611490,
-      "household_income": 80141,
+      "household_income": 80122,
       "cost_to_income": "7.63",
       "home_price": 269575,
       "mortgage_rate": "6.47",
@@ -11569,7 +11516,7 @@
       "type": "household",
       "date": "2026-06-25",
       "total_cost": 613148,
-      "household_income": 80201,
+      "household_income": 80187,
       "cost_to_income": "7.65",
       "home_price": 269743,
       "mortgage_rate": "6.49",
@@ -11581,29 +11528,46 @@
         "rate_estimated": false,
         "income_estimated": true
       }
+    },
+    {
+      "type": "household",
+      "date": "2026-07-02",
+      "total_cost": 609704,
+      "household_income": 80251,
+      "cost_to_income": "7.60",
+      "home_price": 269912,
+      "mortgage_rate": "6.43",
+      "observed": false,
+      "cpi": 333.979,
+      "estimated": true,
+      "estimation_details": {
+        "price_estimated": true,
+        "rate_estimated": false,
+        "income_estimated": true
+      }
     }
   ],
   "metadata": {
-    "generated_at": "2026-06-25T13:53:55-04:00",
+    "generated_at": "2026-07-02T13:40:08-04:00",
     "state": "MO",
     "state_name": "Missouri",
     "frequency": "weekly_thursday_aligned",
     "date_range": {
-      "start": "2016-06-30",
-      "end": "2026-06-25",
+      "start": "2016-07-07",
+      "end": "2026-07-02",
       "last_actual_home_price": "2026-05-01",
-      "last_actual_income": "2026-05-01"
+      "last_actual_income": "2026-06-01"
     },
     "counts": {
       "total": 522,
-      "actual": 514,
-      "estimated": 8,
-      "income_estimated": 8
+      "actual": 517,
+      "estimated": 5,
+      "income_estimated": 5
     },
     "series_quality": {
       "observed": 119,
-      "interpolated": 399,
-      "extrapolated": 4
+      "interpolated": 398,
+      "extrapolated": 5
     },
     "data_sources": {
       "bls_series": "CES0500000011",
