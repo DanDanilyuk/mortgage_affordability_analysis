@@ -2,24 +2,13 @@
   "single_costs": [
     {
       "type": "single",
-      "date": "2016-07-07",
-      "total_cost": 865257,
-      "single_income": 39406,
-      "cost_to_income": "21.96",
-      "home_price": 541283,
-      "mortgage_rate": "3.41",
-      "observed": true,
-      "cpi": 240.101
-    },
-    {
-      "type": "single",
       "date": "2016-07-14",
-      "total_cost": 868270,
+      "total_cost": 866338,
       "single_income": 39350,
-      "cost_to_income": "22.07",
-      "home_price": 542490,
+      "cost_to_income": "22.02",
+      "home_price": 541283,
       "mortgage_rate": "3.42",
-      "observed": false,
+      "observed": true,
       "cpi": 240.101
     },
     {
@@ -5771,29 +5760,35 @@
         "rate_estimated": false,
         "income_estimated": true
       }
+    },
+    {
+      "type": "single",
+      "date": "2026-07-09",
+      "total_cost": 1892216,
+      "single_income": 57679,
+      "cost_to_income": "32.81",
+      "home_price": 832446,
+      "mortgage_rate": "6.49",
+      "observed": false,
+      "cpi": 333.979,
+      "estimated": true,
+      "estimation_details": {
+        "price_estimated": true,
+        "rate_estimated": false,
+        "income_estimated": true
+      }
     }
   ],
   "household_costs": [
     {
       "type": "household",
-      "date": "2016-07-07",
-      "total_cost": 865257,
-      "household_income": 55168,
-      "cost_to_income": "15.68",
-      "home_price": 541283,
-      "mortgage_rate": "3.41",
-      "observed": true,
-      "cpi": 240.101
-    },
-    {
-      "type": "household",
       "date": "2016-07-14",
-      "total_cost": 868270,
+      "total_cost": 866338,
       "household_income": 55090,
-      "cost_to_income": "15.76",
-      "home_price": 542490,
+      "cost_to_income": "15.73",
+      "home_price": 541283,
       "mortgage_rate": "3.42",
-      "observed": false,
+      "observed": true,
       "cpi": 240.101
     },
     {
@@ -11545,29 +11540,46 @@
         "rate_estimated": false,
         "income_estimated": true
       }
+    },
+    {
+      "type": "household",
+      "date": "2026-07-09",
+      "total_cost": 1892216,
+      "household_income": 80750,
+      "cost_to_income": "23.43",
+      "home_price": 832446,
+      "mortgage_rate": "6.49",
+      "observed": false,
+      "cpi": 333.979,
+      "estimated": true,
+      "estimation_details": {
+        "price_estimated": true,
+        "rate_estimated": false,
+        "income_estimated": true
+      }
     }
   ],
   "metadata": {
-    "generated_at": "2026-07-02T13:39:54-04:00",
+    "generated_at": "2026-07-09T14:55:02-04:00",
     "state": "HI",
     "state_name": "Hawaii",
     "frequency": "weekly_thursday_aligned",
     "date_range": {
-      "start": "2016-07-07",
-      "end": "2026-07-02",
+      "start": "2016-07-14",
+      "end": "2026-07-09",
       "last_actual_home_price": "2026-05-01",
       "last_actual_income": "2026-06-01"
     },
     "counts": {
       "total": 522,
-      "actual": 517,
-      "estimated": 5,
-      "income_estimated": 5
+      "actual": 516,
+      "estimated": 6,
+      "income_estimated": 6
     },
     "series_quality": {
       "observed": 119,
-      "interpolated": 398,
-      "extrapolated": 5
+      "interpolated": 397,
+      "extrapolated": 6
     },
     "data_sources": {
       "bls_series": "CES0500000011",
