@@ -1,464 +1,464 @@
 {
-  "generated_at": "2026-07-16T18:13:50Z",
+  "generated_at": "2026-07-23T18:18:57Z",
   "states": [
     {
       "state": "AK",
       "state_name": "Alaska",
-      "date": "2026-07-16",
-      "latest_ratio_single": 14.39,
-      "latest_ratio_household": 10.28,
-      "latest_home_price": 403457,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 14.44,
+      "latest_ratio_household": 10.32,
+      "latest_home_price": 403894,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "AL",
       "state_name": "Alabama",
-      "date": "2026-07-16",
-      "latest_ratio_single": 10.2,
-      "latest_ratio_household": 7.28,
-      "latest_home_price": 242289,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 10.22,
+      "latest_ratio_household": 7.3,
+      "latest_home_price": 242409,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "AR",
       "state_name": "Arkansas",
-      "date": "2026-07-16",
-      "latest_ratio_single": 9.99,
-      "latest_ratio_household": 7.13,
-      "latest_home_price": 229597,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 10.02,
+      "latest_ratio_household": 7.16,
+      "latest_home_price": 229743,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "AZ",
       "state_name": "Arizona",
-      "date": "2026-07-16",
-      "latest_ratio_single": 15.53,
-      "latest_ratio_household": 11.1,
-      "latest_home_price": 421843,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 15.56,
+      "latest_ratio_household": 11.12,
+      "latest_home_price": 421691,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "CA",
       "state_name": "California",
-      "date": "2026-07-16",
-      "latest_ratio_single": 21.36,
-      "latest_ratio_household": 15.26,
-      "latest_home_price": 774329,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 21.4,
+      "latest_ratio_household": 15.29,
+      "latest_home_price": 774140,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "CO",
       "state_name": "Colorado",
-      "date": "2026-07-16",
-      "latest_ratio_single": 16.95,
-      "latest_ratio_household": 12.11,
-      "latest_home_price": 540528,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 16.97,
+      "latest_ratio_household": 12.12,
+      "latest_home_price": 540077,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "CT",
       "state_name": "Connecticut",
-      "date": "2026-07-16",
-      "latest_ratio_single": 13.28,
-      "latest_ratio_household": 9.48,
-      "latest_home_price": 458148,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 13.32,
+      "latest_ratio_household": 9.51,
+      "latest_home_price": 458573,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "DC",
       "state_name": "District of Columbia",
-      "date": "2026-07-16",
-      "latest_ratio_single": 12.48,
-      "latest_ratio_household": 8.92,
-      "latest_home_price": 576239,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 12.5,
+      "latest_ratio_household": 8.93,
+      "latest_home_price": 575760,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "DE",
       "state_name": "Delaware",
-      "date": "2026-07-16",
-      "latest_ratio_single": 14.64,
-      "latest_ratio_household": 10.46,
-      "latest_home_price": 412391,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 14.68,
+      "latest_ratio_household": 10.48,
+      "latest_home_price": 412413,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "FL",
       "state_name": "Florida",
-      "date": "2026-07-16",
-      "latest_ratio_single": 13.92,
-      "latest_ratio_household": 9.94,
-      "latest_home_price": 377668,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 13.95,
+      "latest_ratio_household": 9.96,
+      "latest_home_price": 377597,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "GA",
       "state_name": "Georgia",
-      "date": "2026-07-16",
-      "latest_ratio_single": 12.11,
-      "latest_ratio_household": 8.65,
-      "latest_home_price": 335021,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 12.14,
+      "latest_ratio_household": 8.67,
+      "latest_home_price": 334969,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "HI",
       "state_name": "Hawaii",
-      "date": "2026-07-16",
-      "latest_ratio_single": 33.14,
-      "latest_ratio_household": 23.67,
-      "latest_home_price": 836441,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 33.22,
+      "latest_ratio_household": 23.73,
+      "latest_home_price": 836394,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "IA",
       "state_name": "Iowa",
-      "date": "2026-07-16",
-      "latest_ratio_single": 10.19,
-      "latest_ratio_household": 7.28,
-      "latest_home_price": 242033,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 10.22,
+      "latest_ratio_household": 7.3,
+      "latest_home_price": 242154,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "ID",
       "state_name": "Idaho",
-      "date": "2026-07-16",
-      "latest_ratio_single": 20.43,
-      "latest_ratio_household": 14.59,
-      "latest_home_price": 481503,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 20.47,
+      "latest_ratio_household": 14.62,
+      "latest_home_price": 481395,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "IL",
       "state_name": "Illinois",
-      "date": "2026-07-16",
-      "latest_ratio_single": 9.92,
-      "latest_ratio_household": 7.08,
-      "latest_home_price": 300301,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 9.95,
+      "latest_ratio_household": 7.11,
+      "latest_home_price": 300524,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "IN",
       "state_name": "Indiana",
-      "date": "2026-07-16",
-      "latest_ratio_single": 10.72,
-      "latest_ratio_household": 7.66,
-      "latest_home_price": 263074,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 10.75,
+      "latest_ratio_household": 7.68,
+      "latest_home_price": 263200,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "KS",
       "state_name": "Kansas",
-      "date": "2026-07-16",
-      "latest_ratio_single": 10.49,
-      "latest_ratio_household": 7.5,
-      "latest_home_price": 253431,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 10.52,
+      "latest_ratio_household": 7.52,
+      "latest_home_price": 253530,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "KY",
       "state_name": "Kentucky",
-      "date": "2026-07-16",
-      "latest_ratio_single": 10.07,
-      "latest_ratio_household": 7.19,
-      "latest_home_price": 235332,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 10.09,
+      "latest_ratio_household": 7.21,
+      "latest_home_price": 235328,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "LA",
       "state_name": "Louisiana",
-      "date": "2026-07-16",
-      "latest_ratio_single": 9.22,
-      "latest_ratio_household": 6.59,
-      "latest_home_price": 218775,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 9.25,
+      "latest_ratio_household": 6.61,
+      "latest_home_price": 218901,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "MA",
       "state_name": "Massachusetts",
-      "date": "2026-07-16",
-      "latest_ratio_single": 17.72,
-      "latest_ratio_household": 12.66,
-      "latest_home_price": 673291,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 17.76,
+      "latest_ratio_household": 12.69,
+      "latest_home_price": 673357,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "MD",
       "state_name": "Maryland",
-      "date": "2026-07-16",
-      "latest_ratio_single": 14.87,
-      "latest_ratio_household": 10.62,
-      "latest_home_price": 436113,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 14.9,
+      "latest_ratio_household": 10.65,
+      "latest_home_price": 436115,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "ME",
       "state_name": "Maine",
-      "date": "2026-07-16",
-      "latest_ratio_single": 17.27,
-      "latest_ratio_household": 12.34,
-      "latest_home_price": 425087,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 17.32,
+      "latest_ratio_household": 12.37,
+      "latest_home_price": 425240,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "MI",
       "state_name": "Michigan",
-      "date": "2026-07-16",
-      "latest_ratio_single": 10.26,
-      "latest_ratio_household": 7.33,
-      "latest_home_price": 271003,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 10.29,
+      "latest_ratio_household": 7.35,
+      "latest_home_price": 271164,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "MN",
       "state_name": "Minnesota",
-      "date": "2026-07-16",
-      "latest_ratio_single": 12.36,
-      "latest_ratio_household": 8.83,
-      "latest_home_price": 357350,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 12.39,
+      "latest_ratio_household": 8.85,
+      "latest_home_price": 357422,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "MO",
       "state_name": "Missouri",
-      "date": "2026-07-16",
-      "latest_ratio_single": 10.85,
-      "latest_ratio_household": 7.75,
-      "latest_home_price": 272452,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 10.88,
+      "latest_ratio_household": 7.77,
+      "latest_home_price": 272586,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "MS",
       "state_name": "Mississippi",
-      "date": "2026-07-16",
-      "latest_ratio_single": 10.16,
-      "latest_ratio_household": 7.26,
-      "latest_home_price": 199432,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 10.19,
+      "latest_ratio_household": 7.28,
+      "latest_home_price": 199589,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "MT",
       "state_name": "Montana",
-      "date": "2026-07-16",
-      "latest_ratio_single": 20.46,
-      "latest_ratio_household": 14.61,
-      "latest_home_price": 476976,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 20.51,
+      "latest_ratio_household": 14.65,
+      "latest_home_price": 477110,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "NC",
       "state_name": "North Carolina",
-      "date": "2026-07-16",
-      "latest_ratio_single": 12.64,
-      "latest_ratio_household": 9.03,
-      "latest_home_price": 340355,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 12.67,
+      "latest_ratio_household": 9.05,
+      "latest_home_price": 340343,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "ND",
       "state_name": "North Dakota",
-      "date": "2026-07-16",
-      "latest_ratio_single": 11.46,
-      "latest_ratio_household": 8.18,
-      "latest_home_price": 294886,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 11.49,
+      "latest_ratio_household": 8.21,
+      "latest_home_price": 295094,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "NE",
       "state_name": "Nebraska",
-      "date": "2026-07-16",
-      "latest_ratio_single": 12.13,
-      "latest_ratio_household": 8.67,
-      "latest_home_price": 285060,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 12.17,
+      "latest_ratio_household": 8.69,
+      "latest_home_price": 285153,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "NH",
       "state_name": "New Hampshire",
-      "date": "2026-07-16",
-      "latest_ratio_single": 16.99,
-      "latest_ratio_household": 12.13,
-      "latest_home_price": 523553,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 17.03,
+      "latest_ratio_household": 12.16,
+      "latest_home_price": 523648,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "NJ",
       "state_name": "New Jersey",
-      "date": "2026-07-16",
-      "latest_ratio_single": 18.15,
-      "latest_ratio_household": 12.96,
-      "latest_home_price": 587115,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 18.2,
+      "latest_ratio_household": 13.0,
+      "latest_home_price": 587494,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "NM",
       "state_name": "New Mexico",
-      "date": "2026-07-16",
-      "latest_ratio_single": 14.14,
-      "latest_ratio_household": 10.1,
-      "latest_home_price": 321947,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 14.17,
+      "latest_ratio_household": 10.12,
+      "latest_home_price": 322066,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "NV",
       "state_name": "Nevada",
-      "date": "2026-07-16",
-      "latest_ratio_single": 17.52,
-      "latest_ratio_household": 12.52,
-      "latest_home_price": 446961,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 17.55,
+      "latest_ratio_household": 12.54,
+      "latest_home_price": 446766,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "NY",
       "state_name": "New York",
-      "date": "2026-07-16",
-      "latest_ratio_single": 14.06,
-      "latest_ratio_household": 10.05,
-      "latest_home_price": 529476,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 14.11,
+      "latest_ratio_household": 10.08,
+      "latest_home_price": 530028,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "OH",
       "state_name": "Ohio",
-      "date": "2026-07-16",
-      "latest_ratio_single": 9.96,
-      "latest_ratio_household": 7.12,
-      "latest_home_price": 252362,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 9.99,
+      "latest_ratio_household": 7.14,
+      "latest_home_price": 252496,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "OK",
       "state_name": "Oklahoma",
-      "date": "2026-07-16",
-      "latest_ratio_single": 9.96,
-      "latest_ratio_household": 7.11,
-      "latest_home_price": 225986,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 9.98,
+      "latest_ratio_household": 7.13,
+      "latest_home_price": 226071,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "OR",
       "state_name": "Oregon",
-      "date": "2026-07-16",
-      "latest_ratio_single": 18.74,
-      "latest_ratio_household": 13.39,
-      "latest_home_price": 503077,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 18.78,
+      "latest_ratio_household": 13.41,
+      "latest_home_price": 502867,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "PA",
       "state_name": "Pennsylvania",
-      "date": "2026-07-16",
-      "latest_ratio_single": 10.63,
-      "latest_ratio_household": 7.59,
-      "latest_home_price": 294818,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 10.66,
+      "latest_ratio_household": 7.61,
+      "latest_home_price": 294930,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "RI",
       "state_name": "Rhode Island",
-      "date": "2026-07-16",
-      "latest_ratio_single": 20.04,
-      "latest_ratio_household": 14.32,
-      "latest_home_price": 518628,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 20.1,
+      "latest_ratio_household": 14.35,
+      "latest_home_price": 518870,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "SC",
       "state_name": "South Carolina",
-      "date": "2026-07-16",
-      "latest_ratio_single": 13.09,
-      "latest_ratio_household": 9.35,
-      "latest_home_price": 309777,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 13.12,
+      "latest_ratio_household": 9.37,
+      "latest_home_price": 309848,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "SD",
       "state_name": "South Dakota",
-      "date": "2026-07-16",
-      "latest_ratio_single": 14.33,
-      "latest_ratio_household": 10.23,
-      "latest_home_price": 326325,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 14.37,
+      "latest_ratio_household": 10.26,
+      "latest_home_price": 326436,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "TN",
       "state_name": "Tennessee",
-      "date": "2026-07-16",
-      "latest_ratio_single": 12.85,
-      "latest_ratio_household": 9.18,
-      "latest_home_price": 339088,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 12.89,
+      "latest_ratio_household": 9.2,
+      "latest_home_price": 339138,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "TX",
       "state_name": "Texas",
-      "date": "2026-07-16",
-      "latest_ratio_single": 10.2,
-      "latest_ratio_household": 7.29,
-      "latest_home_price": 302148,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 10.22,
+      "latest_ratio_household": 7.3,
+      "latest_home_price": 302016,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "UT",
       "state_name": "Utah",
-      "date": "2026-07-16",
-      "latest_ratio_single": 20.76,
-      "latest_ratio_household": 14.83,
-      "latest_home_price": 540294,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 20.8,
+      "latest_ratio_household": 14.85,
+      "latest_home_price": 540077,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "VA",
       "state_name": "Virginia",
-      "date": "2026-07-16",
-      "latest_ratio_single": 14.06,
-      "latest_ratio_household": 10.04,
-      "latest_home_price": 420536,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 14.1,
+      "latest_ratio_household": 10.07,
+      "latest_home_price": 420633,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "VT",
       "state_name": "Vermont",
-      "date": "2026-07-16",
-      "latest_ratio_single": 16.2,
-      "latest_ratio_household": 11.57,
-      "latest_home_price": 403467,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 16.25,
+      "latest_ratio_household": 11.6,
+      "latest_home_price": 403693,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "WA",
       "state_name": "Washington",
-      "date": "2026-07-16",
-      "latest_ratio_single": 15.82,
-      "latest_ratio_household": 11.3,
-      "latest_home_price": 600633,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 15.85,
+      "latest_ratio_household": 11.32,
+      "latest_home_price": 600219,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "WI",
       "state_name": "Wisconsin",
-      "date": "2026-07-16",
-      "latest_ratio_single": 13.84,
-      "latest_ratio_household": 9.88,
-      "latest_home_price": 343783,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 13.88,
+      "latest_ratio_household": 9.91,
+      "latest_home_price": 344018,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "WV",
       "state_name": "West Virginia",
-      "date": "2026-07-16",
-      "latest_ratio_single": 8.22,
-      "latest_ratio_household": 5.87,
-      "latest_home_price": 183581,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 8.25,
+      "latest_ratio_household": 5.89,
+      "latest_home_price": 183718,
+      "latest_mortgage_rate": 6.58
     },
     {
       "state": "WY",
       "state_name": "Wyoming",
-      "date": "2026-07-16",
-      "latest_ratio_single": 15.84,
-      "latest_ratio_household": 11.31,
-      "latest_home_price": 373834,
-      "latest_mortgage_rate": 6.55
+      "date": "2026-07-23",
+      "latest_ratio_single": 15.88,
+      "latest_ratio_household": 11.34,
+      "latest_home_price": 374038,
+      "latest_mortgage_rate": 6.58
     }
   ]
 }
