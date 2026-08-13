@@ -2,24 +2,13 @@
   "single_costs": [
     {
       "type": "single",
-      "date": "2016-08-11",
-      "total_cost": 826174,
-      "single_income": 71822,
-      "cost_to_income": "11.50",
-      "home_price": 514260,
-      "mortgage_rate": "3.45",
-      "observed": true,
-      "cpi": 240.545
-    },
-    {
-      "type": "single",
       "date": "2016-08-18",
-      "total_cost": 824910,
+      "total_cost": 824115,
       "single_income": 71921,
-      "cost_to_income": "11.47",
-      "home_price": 514756,
+      "cost_to_income": "11.46",
+      "home_price": 514260,
       "mortgage_rate": "3.43",
-      "observed": false,
+      "observed": true,
       "cpi": 240.545
     },
     {
@@ -5685,7 +5674,7 @@
       "home_price": 577199,
       "mortgage_rate": "6.43",
       "observed": false,
-      "cpi": 332.568,
+      "cpi": 332.813,
       "estimated": true,
       "estimation_details": {
         "price_estimated": true,
@@ -5702,7 +5691,7 @@
       "home_price": 576719,
       "mortgage_rate": "6.49",
       "observed": false,
-      "cpi": 332.568,
+      "cpi": 332.813,
       "estimated": true,
       "estimation_details": {
         "price_estimated": true,
@@ -5719,7 +5708,7 @@
       "home_price": 576239,
       "mortgage_rate": "6.55",
       "observed": false,
-      "cpi": 332.568,
+      "cpi": 332.813,
       "estimated": true,
       "estimation_details": {
         "price_estimated": true,
@@ -5736,7 +5725,7 @@
       "home_price": 575760,
       "mortgage_rate": "6.58",
       "observed": false,
-      "cpi": 332.568,
+      "cpi": 332.813,
       "estimated": true,
       "estimation_details": {
         "price_estimated": true,
@@ -5753,7 +5742,7 @@
       "home_price": 575280,
       "mortgage_rate": "6.66",
       "observed": false,
-      "cpi": 332.568,
+      "cpi": 332.813,
       "estimated": true,
       "estimation_details": {
         "price_estimated": true,
@@ -5770,7 +5759,24 @@
       "home_price": 574802,
       "mortgage_rate": "6.69",
       "observed": false,
-      "cpi": 332.568,
+      "cpi": 332.813,
+      "estimated": true,
+      "estimation_details": {
+        "price_estimated": true,
+        "rate_estimated": false,
+        "income_estimated": true
+      }
+    },
+    {
+      "type": "single",
+      "date": "2026-08-13",
+      "total_cost": 1330042,
+      "single_income": 105077,
+      "cost_to_income": "12.66",
+      "home_price": 574323,
+      "mortgage_rate": "6.67",
+      "observed": false,
+      "cpi": 332.813,
       "estimated": true,
       "estimation_details": {
         "price_estimated": true,
@@ -5782,24 +5788,13 @@
   "household_costs": [
     {
       "type": "household",
-      "date": "2016-08-11",
-      "total_cost": 826174,
-      "household_income": 100551,
-      "cost_to_income": "8.22",
-      "home_price": 514260,
-      "mortgage_rate": "3.45",
-      "observed": true,
-      "cpi": 240.545
-    },
-    {
-      "type": "household",
       "date": "2016-08-18",
-      "total_cost": 824910,
+      "total_cost": 824115,
       "household_income": 100690,
-      "cost_to_income": "8.19",
-      "home_price": 514756,
+      "cost_to_income": "8.18",
+      "home_price": 514260,
       "mortgage_rate": "3.43",
-      "observed": false,
+      "observed": true,
       "cpi": 240.545
     },
     {
@@ -11465,7 +11460,7 @@
       "home_price": 577199,
       "mortgage_rate": "6.43",
       "observed": false,
-      "cpi": 332.568,
+      "cpi": 332.813,
       "estimated": true,
       "estimation_details": {
         "price_estimated": true,
@@ -11482,7 +11477,7 @@
       "home_price": 576719,
       "mortgage_rate": "6.49",
       "observed": false,
-      "cpi": 332.568,
+      "cpi": 332.813,
       "estimated": true,
       "estimation_details": {
         "price_estimated": true,
@@ -11499,7 +11494,7 @@
       "home_price": 576239,
       "mortgage_rate": "6.55",
       "observed": false,
-      "cpi": 332.568,
+      "cpi": 332.813,
       "estimated": true,
       "estimation_details": {
         "price_estimated": true,
@@ -11516,7 +11511,7 @@
       "home_price": 575760,
       "mortgage_rate": "6.58",
       "observed": false,
-      "cpi": 332.568,
+      "cpi": 332.813,
       "estimated": true,
       "estimation_details": {
         "price_estimated": true,
@@ -11533,7 +11528,7 @@
       "home_price": 575280,
       "mortgage_rate": "6.66",
       "observed": false,
-      "cpi": 332.568,
+      "cpi": 332.813,
       "estimated": true,
       "estimation_details": {
         "price_estimated": true,
@@ -11550,7 +11545,24 @@
       "home_price": 574802,
       "mortgage_rate": "6.69",
       "observed": false,
-      "cpi": 332.568,
+      "cpi": 332.813,
+      "estimated": true,
+      "estimation_details": {
+        "price_estimated": true,
+        "rate_estimated": false,
+        "income_estimated": true
+      }
+    },
+    {
+      "type": "household",
+      "date": "2026-08-13",
+      "total_cost": 1330042,
+      "household_income": 147108,
+      "cost_to_income": "9.04",
+      "home_price": 574323,
+      "mortgage_rate": "6.67",
+      "observed": false,
+      "cpi": 332.813,
       "estimated": true,
       "estimation_details": {
         "price_estimated": true,
@@ -11560,26 +11572,26 @@
     }
   ],
   "metadata": {
-    "generated_at": "2026-08-11T14:49:40-04:00",
+    "generated_at": "2026-08-13T14:02:43-04:00",
     "state": "DC",
     "state_name": "District of Columbia",
     "frequency": "weekly_thursday_aligned",
     "date_range": {
-      "start": "2016-08-11",
-      "end": "2026-08-06",
+      "start": "2016-08-18",
+      "end": "2026-08-13",
       "last_actual_home_price": "2026-06-01",
       "last_actual_income": "2026-07-01"
     },
     "counts": {
       "total": 522,
-      "actual": 516,
-      "estimated": 6,
-      "income_estimated": 6
+      "actual": 515,
+      "estimated": 7,
+      "income_estimated": 7
     },
     "series_quality": {
       "observed": 119,
-      "interpolated": 397,
-      "extrapolated": 6
+      "interpolated": 396,
+      "extrapolated": 7
     },
     "data_sources": {
       "bls_series": "CES0500000011",
