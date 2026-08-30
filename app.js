@@ -15,7 +15,7 @@ import { HOUSING_EVENTS } from './modules/events.js';
 import { parseUrlParams, anyFilterNonDefault } from './modules/urlState.js';
 import { rangeEdgeIndices, clampedRangeIndices } from './modules/range.js';
 import { computeDelta } from './modules/deltas.js';
-import { isOverlayVisible, buildOverlayData } from './modules/overlay.js';
+import { isOverlayVisible, buildOverlayData, shouldIncludeLegendItem } from './modules/overlay.js';
 import { qualityLabel, estimationBadge } from './modules/quality.js';
 
 // Encapsulated Application State
@@ -498,6 +498,12 @@ const state = {
               color: textColor,
               font: { size: 14, weight: 'bold' },
               usePointStyle: true,
+              filter: item => shouldIncludeLegendItem(
+                item.datasetIndex,
+                state.currentState,
+                state.showNationalOverlay,
+                state.nationalCache,
+              ),
             },
           },
           tooltip: {
@@ -599,7 +605,6 @@ const state = {
     chart.data.datasets[1].data = state.chartData.household_costs.map(d => d.cost_to_income);
     if (chart.data.datasets[2]) {
       chart.data.datasets[2].data = nationalOverlayData(state.chartData.single_costs.length);
-      chart.data.datasets[2].hidden = !shouldShowNationalOverlay();
     }
 
     chart.options.scales.y.beginAtZero = state.yAxisZero;
@@ -653,6 +658,13 @@ const state = {
     else state.chartInstance.hide(0);
     if (showHousehold) state.chartInstance.show(1);
     else state.chartInstance.hide(1);
+    // Dataset.hidden is only the initial flag. After init, Chart.js stores
+    // live visibility on the meta via show()/hide(). Keep the overlay in
+    // sync here so a return to ALL actually drops it from the chart + legend.
+    if (state.chartInstance.data.datasets[2]) {
+      if (shouldShowNationalOverlay()) state.chartInstance.show(2);
+      else state.chartInstance.hide(2);
+    }
 
     state.currentView = BTN_TO_VIEW[btnId] || 'both';
 
@@ -675,7 +687,7 @@ const state = {
       state.chartInstance.resize();
     }
     const link = document.createElement('a');
-    link.download = `home-affordability-${state.currentState}-${new Date().toISOString().split('T')[0]}.png`;
+    link.download = `mortgage-vs-income-${state.currentState}-${new Date().toISOString().split('T')[0]}.png`;
     link.href = state.chartInstance.toBase64Image();
     link.click();
     if (tableActive) {
@@ -719,7 +731,7 @@ const state = {
     const blob = new Blob([lines.join('\n') + '\n'], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.download = `home-affordability-${state.currentState}-${toIsoLocal(new Date())}.csv`;
+    link.download = `mortgage-vs-income-${state.currentState}-${toIsoLocal(new Date())}.csv`;
     link.href = url;
     link.click();
     URL.revokeObjectURL(url);
@@ -746,7 +758,7 @@ const state = {
     const stateName = STATE_NAMES[state.currentState] || state.currentState;
     if (dom.dataTableCaption) {
       dom.dataTableCaption.textContent =
-        `Home affordability metrics for ${stateName}, ${formatDate(single[range.start].date)} to ${formatDate(single[range.end].date)}.`;
+        `Mortgage vs income metrics for ${stateName}, ${formatDate(single[range.start].date)} to ${formatDate(single[range.end].date)}.`;
     }
     const rows = [];
     for (let i = range.start; i <= range.end; i++) {
@@ -1017,8 +1029,8 @@ const state = {
     const ds = state.chartInstance.data.datasets[2];
     if (!ds) return;
     ds.data = nationalOverlayData(state.chartData.single_costs.length);
-    ds.hidden = !shouldShowNationalOverlay();
-    state.chartInstance.update('none');
+    if (shouldShowNationalOverlay()) state.chartInstance.show(2);
+    else state.chartInstance.hide(2);
   };
 
   const buildRetryButton = stateCode => {

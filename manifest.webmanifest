@@ -1,7 +1,7 @@
 {
-  "name": "Home Affordability Tracker",
-  "short_name": "Affordability",
-  "description": "U.S. home affordability trends - mortgage cost vs income, weekly.",
+  "name": "Mortgage vs Income",
+  "short_name": "vs Income",
+  "description": "U.S. mortgage vs income trends - weekly home prices, earnings, and rates.",
   "id": "/",
   "scope": "/",
   "start_url": "/",

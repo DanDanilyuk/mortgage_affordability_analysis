@@ -1,8 +1,8 @@
 {
-  "name": "home-affordability-tracker",
+  "name": "mortgage-vs-income",
   "version": "1.0.0",
   "private": true,
-  "description": "Single-page dashboard tracking U.S. home affordability trends.",
+  "description": "Single-page dashboard tracking U.S. mortgage cost vs income.",
   "type": "module",
   "scripts": {
     "test": "node --test test/js/*.test.js",

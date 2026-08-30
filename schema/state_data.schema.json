@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Home Affordability State Data",
+  "title": "Mortgage vs Income State Data",
   "description": "Per-state (or national) weekly mortgage affordability data with metadata.",
   "type": "object",
   "required": ["single_costs", "household_costs", "metadata"],

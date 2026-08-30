@@ -8,7 +8,7 @@
 //     controllerchange handler reloads any open tab once so it can't run mixed assets.
 // Bump CACHE_VERSION on any breaking change so old caches are evicted on activate.
 
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 const SHELL_CACHE = `shell-${CACHE_VERSION}`;
 const DATA_CACHE = `data-${CACHE_VERSION}`;
 

@@ -6,30 +6,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
     <!-- SEO -->
-    <title>Home Affordability Tracker - U.S. Mortgage Cost vs. Income</title>
-    <meta name="description" content="How many years of income does a home really cost? Track U.S. mortgage affordability trends with weekly-updated data on home prices, earnings, and interest rates across all 50 states.">
+    <title>Mortgage vs Income - U.S. Home Affordability</title>
+    <meta name="description" content="How many years of income does a home really cost? Track U.S. mortgage vs income trends with weekly-updated data on home prices, earnings, and interest rates across all 50 states.">
     <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
     <meta name="author" content="Dan Danilyuk">
-    <link rel="canonical" href="https://homeaffordabilitytracker.com/">
+    <link rel="canonical" href="https://mortgagevsincome.com/">
 
     <!-- Open Graph -->
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Home Affordability Tracker">
-    <meta property="og:description" content="How many years of income does a home really cost? Track U.S. mortgage affordability with weekly-updated data across all 50 states.">
-    <meta property="og:url" content="https://homeaffordabilitytracker.com/">
-    <meta property="og:site_name" content="Home Affordability Tracker">
-    <meta property="og:image" content="https://homeaffordabilitytracker.com/og-image.png">
+    <meta property="og:title" content="Mortgage vs Income">
+    <meta property="og:description" content="How many years of income does a home really cost? Track U.S. mortgage vs income with weekly-updated data across all 50 states.">
+    <meta property="og:url" content="https://mortgagevsincome.com/">
+    <meta property="og:site_name" content="Mortgage vs Income">
+    <meta property="og:image" content="https://mortgagevsincome.com/og-image.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="Home Affordability Tracker - U.S. mortgage cost vs. income trends">
+    <meta property="og:image:alt" content="Mortgage vs Income - U.S. home affordability trends">
     <meta property="og:locale" content="en_US">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Home Affordability Tracker">
-    <meta name="twitter:description" content="How many years of income does a home really cost? Track U.S. mortgage affordability with weekly-updated data across all 50 states.">
-    <meta name="twitter:image" content="https://homeaffordabilitytracker.com/og-image.png">
-    <meta name="twitter:image:alt" content="Home Affordability Tracker - U.S. mortgage cost vs. income trends">
+    <meta name="twitter:title" content="Mortgage vs Income">
+    <meta name="twitter:description" content="How many years of income does a home really cost? Track U.S. mortgage vs income with weekly-updated data across all 50 states.">
+    <meta name="twitter:image" content="https://mortgagevsincome.com/og-image.png">
+    <meta name="twitter:image:alt" content="Mortgage vs Income - U.S. home affordability trends">
 
     <!-- Theme & Favicon -->
     <meta name="theme-color" content="#d97706" media="(prefers-color-scheme: light)">
@@ -43,9 +43,9 @@
     {
         "@context": "https://schema.org",
         "@type": "WebApplication",
-        "name": "Home Affordability Tracker",
-        "url": "https://homeaffordabilitytracker.com/",
-        "description": "Track U.S. home affordability trends with weekly-updated data on mortgage costs, home prices, earnings, and interest rates across all 50 states.",
+        "name": "Mortgage vs Income",
+        "url": "https://mortgagevsincome.com/",
+        "description": "Track U.S. mortgage vs income trends with weekly-updated data on mortgage costs, home prices, earnings, and interest rates across all 50 states.",
         "applicationCategory": "FinanceApplication",
         "operatingSystem": "Any",
         "offers": {
@@ -64,9 +64,9 @@
     {
         "@context": "https://schema.org",
         "@type": "Dataset",
-        "name": "U.S. Home Affordability Weekly Dataset",
+        "name": "U.S. Mortgage vs Income Weekly Dataset",
         "description": "Weekly Thursday-aligned price-to-income ratio derived from BLS average weekly earnings, Zillow Home Value Index (via FRED), and Freddie Mac 30-year mortgage rate, for the U.S. and all 50 states + DC.",
-        "url": "https://homeaffordabilitytracker.com/",
+        "url": "https://mortgagevsincome.com/",
         "license": "https://opensource.org/licenses/MIT",
         "creator": {
             "@type": "Person",
@@ -88,13 +88,13 @@
             {
                 "@type": "DataDownload",
                 "encodingFormat": "application/json",
-                "contentUrl": "https://homeaffordabilitytracker.com/weekly_case_shiller_output.json",
+                "contentUrl": "https://mortgagevsincome.com/weekly_case_shiller_output.json",
                 "description": "National (U.S.) weekly affordability data"
             },
             {
                 "@type": "DataDownload",
                 "encodingFormat": "application/json",
-                "contentUrl": "https://homeaffordabilitytracker.com/data/index.json",
+                "contentUrl": "https://mortgagevsincome.com/data/index.json",
                 "description": "Per-state latest snapshot index"
             }
         ]
@@ -147,7 +147,7 @@
             </button>
             <div class="header-inner">
                 <div class="header-eyebrow" id="headerEyebrow">U.S. Housing Market</div>
-                <h1>Home Affordability<br><span class="header-accent">Tracker</span></h1>
+                <h1>Mortgage vs <span class="header-accent">Income</span></h1>
                 <p class="subtitle">How Many Years of Income Does a Home Really Cost?</p>
                 <p class="update-info" id="updateInfo">Fetching latest data...</p>
             </div>
@@ -338,14 +338,14 @@
                 </div>
 
                 <div class="chart-container" id="chartContainer">
-                    <canvas id="mortgageChart" role="img" aria-label="Home affordability price-to-income ratio chart"></canvas>
+                    <canvas id="mortgageChart" role="img" aria-label="Mortgage vs income price-to-income ratio chart"></canvas>
                     <div id="activePointMarkers" class="active-point-markers" aria-hidden="true"></div>
                     <div id="chartLiveRegion" aria-live="polite" aria-atomic="true" class="sr-only"></div>
                 </div>
 
                 <div class="data-table-wrapper" id="dataTableWrapper" hidden>
                     <table class="data-table" id="dataTable">
-                        <caption id="dataTableCaption">Home affordability metrics by Thursday for the selected range</caption>
+                        <caption id="dataTableCaption">Mortgage vs income metrics by Thursday for the selected range</caption>
                         <thead>
                             <tr>
                                 <th scope="col">Date</th>
@@ -419,7 +419,7 @@
                         target="_blank" rel="noopener noreferrer">Calculated Risk</a></p>
                 <p class="footer-meta">Built with Chart.js &middot; Data from BLS &amp; FRED &middot; Made by <a
                         href="https://www.dandanilyuk.com" target="_blank" rel="noopener noreferrer">Dan Danilyuk</a> &middot; <a
-                        href="https://github.com/DanDanilyuk/mortgage_affordability_analysis" target="_blank" rel="noopener noreferrer">View source on GitHub</a></p>
+                        href="https://github.com/DanDanilyuk/mortgagevsincome" target="_blank" rel="noopener noreferrer">View source on GitHub</a></p>
             </div>
         </footer>
     </div>

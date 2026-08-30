@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { isOverlayVisible, buildOverlayData } from '../../modules/overlay.js';
+import { isOverlayVisible, buildOverlayData, shouldIncludeLegendItem } from '../../modules/overlay.js';
 
 const nationalCache = {
   single_costs: [
@@ -25,6 +25,28 @@ describe('isOverlayVisible', () => {
 
   it('is visible for a single state with the toggle on and cache present', () => {
     assert.equal(isOverlayVisible('CA', true, nationalCache), true);
+  });
+});
+
+describe('shouldIncludeLegendItem', () => {
+  it('always includes the single-earner series, even on ALL', () => {
+    assert.equal(shouldIncludeLegendItem(0, 'ALL', true, nationalCache), true);
+  });
+
+  it('always includes the dual-income series, even on ALL', () => {
+    assert.equal(shouldIncludeLegendItem(1, 'ALL', true, nationalCache), true);
+  });
+
+  it('excludes the U.S. overlay on the national (ALL) view', () => {
+    assert.equal(shouldIncludeLegendItem(2, 'ALL', true, nationalCache), false);
+  });
+
+  it('includes the U.S. overlay for a state once the cache is present', () => {
+    assert.equal(shouldIncludeLegendItem(2, 'CA', true, nationalCache), true);
+  });
+
+  it('excludes the U.S. overlay when the cache has not loaded yet', () => {
+    assert.equal(shouldIncludeLegendItem(2, 'CA', true, null), false);
   });
 });
 

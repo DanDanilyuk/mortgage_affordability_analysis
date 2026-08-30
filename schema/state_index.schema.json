@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Home Affordability State Index",
+  "title": "Mortgage vs Income State Index",
   "description": "Latest-snapshot roll-up of every state's most recent reading (data/index.json), built by build_state_index and consumed by the all-states ranking grid. Distinct shape from the per-state files, so it has its own schema.",
   "type": "object",
   "required": ["generated_at", "states"],

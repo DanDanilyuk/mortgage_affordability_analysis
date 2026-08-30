@@ -1,8 +1,8 @@
-# Home Affordability Tracker
+# Mortgage vs Income
 
-A single-page dashboard tracking U.S. home affordability trends by comparing mortgage costs to income over time. Updated weekly with data from federal sources, covering all 50 states and Washington, D.C.
+A single-page dashboard tracking U.S. home affordability by comparing mortgage costs to income over time. Updated weekly with data from federal sources, covering all 50 states and Washington, D.C.
 
-Live at [homeaffordabilitytracker.com](https://homeaffordabilitytracker.com/)
+Live at [mortgagevsincome.com](https://mortgagevsincome.com/)
 
 ## What It Shows
 
@@ -26,7 +26,7 @@ The dashboard charts the **price-to-income ratio** - the total cost of a 30-year
 - **Charts**: Chart.js 4.4.0 with chartjs-plugin-zoom
 - **Data Pipeline**: Ruby script (`weekly_case_shiller.rb`) fetching from BLS and FRED APIs
 - **Automation**: GitHub Actions workflow runs every Thursday, regenerating all data files
-- **Hosting**: GitHub Pages - no build step, static files served directly
+- **Hosting**: GitHub Pages behind [mortgagevsincome.com](https://mortgagevsincome.com/) (Cloudflare DNS) - no build step, static files served directly
 
 ## Running Locally
 
